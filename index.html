@@ -148,11 +148,14 @@
 
   /* ---- 유저 맞춤 리포트 인쇄(print) 전용 규칙 ---- */
   @media print{
+    @page{ size:A4; margin:14mm; }
     body *{ visibility:hidden !important; }
-    .print-report, .print-report *{ visibility:visible !important; }
-    .print-report{ position:absolute; left:0; top:0; width:100%; padding:24px; color:#000 !important; }
+    .print-report, .print-report *{ visibility:visible !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .print-report{ position:absolute; left:0; top:0; width:100%; padding:0; color:#000 !important; }
+    .print-report .surface-2, .print-report .tooltip-box{ break-inside:avoid; }
+    .print-report .grid{ break-inside:avoid; }
     #modalOverlay{ position:static !important; background:none !important; padding:0 !important; }
-    #modalOverlay > div{ position:static !important; max-height:none !important; overflow:visible !important; box-shadow:none !important; border:none !important; width:100% !important; max-width:100% !important; }
+    #modalOverlay > div{ position:static !important; max-height:none !important; overflow:visible !important; box-shadow:none !important; border:none !important; width:100% !important; max-width:100% !important; padding:0 !important; }
   }
 
   /* ---- 라운딩(Border-Radius) 모듈: 버튼/칩류는 관리자 라운딩 값을 따르도록 우선순위 확보 ---- */
@@ -417,6 +420,51 @@
 const SUPABASE_URL = "https://fbnrcglyeqpfesxgabma.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZibnJjZ2x5ZXFwZmVzeGdhYm1hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk4NjE5OTgsImV4cCI6MjEwNTQzNzk5OH0.aoLRvDX3yr3JtTKHpX2xTaW-h6p4UutDIEVeD1joNAc";
 const SUPABASE_TABLE = "user_analytics"; // 진단 데이터를 저장/조회할 테이블명
+
+/* ============================================================
+   Supabase 테이블 준비 SQL (Supabase 대시보드 → SQL Editor에서 실행)
+   ------------------------------------------------------------
+   -- 1) 테이블이 없다면 새로 생성
+   create table if not exists public.user_analytics (
+     id                   bigint generated always as identity primary key,
+     dog_name             text,
+     breed                text,
+     weight               numeric,
+     target_weight        numeric,
+     bcs                  text,
+     plan_type            text,
+     rer                  numeric,   -- 기초대사에너지 (kcal)
+     ibw                  numeric,   -- 과학적 이상체중 (kg)
+     mer                  numeric,   -- 일일 권장 칼로리 (kcal)
+     daily_feed_g         numeric,   -- 일일 권장 급여량 (g)
+     treat_limit_kcal     numeric,   -- 간식 한도 칼로리 (kcal)
+     water_recommend_ml   numeric,   -- 권장 음수량 (ml)
+     protein_min_g        numeric,   -- 최소 단백질 요구량 (g)
+     protein_max_g        numeric,   -- 최대(권장) 단백질 요구량 (g)
+     ratio_protein        numeric,   -- 권장 단백질 비율 (%)
+     ratio_fat            numeric,   -- 권장 지방 비율 (%)
+     ratio_carb           numeric,   -- 권장 탄수화물/섬유질 비율 (%)
+     created_at           timestamptz default now()
+   );
+
+   -- 2) 이미 테이블이 있고 기존 6개 필드만 있다면 아래로 컬럼만 추가
+   alter table public.user_analytics add column if not exists rer numeric;
+   alter table public.user_analytics add column if not exists ibw numeric;
+   alter table public.user_analytics add column if not exists mer numeric;
+   alter table public.user_analytics add column if not exists daily_feed_g numeric;
+   alter table public.user_analytics add column if not exists treat_limit_kcal numeric;
+   alter table public.user_analytics add column if not exists water_recommend_ml numeric;
+   alter table public.user_analytics add column if not exists protein_min_g numeric;
+   alter table public.user_analytics add column if not exists protein_max_g numeric;
+   alter table public.user_analytics add column if not exists ratio_protein numeric;
+   alter table public.user_analytics add column if not exists ratio_fat numeric;
+   alter table public.user_analytics add column if not exists ratio_carb numeric;
+
+   -- 3) RLS를 사용 중이라면 anon 역할에 INSERT/SELECT 정책이 있는지 꼭 확인하세요.
+   -- alter table public.user_analytics enable row level security;
+   -- create policy "anon insert" on public.user_analytics for insert to anon with check (true);
+   -- create policy "anon select" on public.user_analytics for select to anon using (true);
+============================================================ */
 
 let supabaseClient = null;
 try{
@@ -1151,7 +1199,9 @@ function buildTransitionSchedule(oldG, newG){
 function runCalculation(){
   const r = computeResults();
 
-  // ---- 유저 진단 제출 데이터 정규화 & 저장 (localStorage 임시 저장 + Supabase DB 저장) ----
+  // ---- 유저 진단 제출 데이터 정규화 & 저장 (기본 정보 + 수의영양학 계산 결과 전체) ----
+  const proteinMinG = r.extra.type==='kidney' ? r.extra.proteinLow : r.proteinMin;
+  const proteinMaxG = r.extra.type==='kidney' ? r.extra.proteinHigh : r.proteinRec;
   saveUserAnalyticsData({
     dog_name: dog.name,
     breed: dog.breed,
@@ -1160,6 +1210,18 @@ function runCalculation(){
     bcs: dog.bcs,
     plan_type: PLAN_TYPE_LABEL[dog.plan] || dog.plan,
     created_at: new Date().toISOString(),
+    // ---- 수의영양학 계산 결과 (Step4 결과 화면과 동일한 근거 데이터) ----
+    rer: Math.round(r.RER * 10) / 10,
+    ibw: Math.round(r.IBW * 100) / 100,
+    mer: Math.round(r.MER * 10) / 10,
+    daily_feed_g: Math.round(r.dailyFoodG * 10) / 10,
+    treat_limit_kcal: Math.round(r.snackKcalLimit * 10) / 10,
+    water_recommend_ml: Math.round(r.waterMl * 10) / 10,
+    protein_min_g: Math.round(proteinMinG * 10) / 10,
+    protein_max_g: Math.round(proteinMaxG * 10) / 10,
+    ratio_protein: r.planCfg.macro.protein,
+    ratio_fat: r.planCfg.macro.fat,
+    ratio_carb: r.planCfg.macro.carb,
   }).catch(err=>{
     console.error('[seon] saveUserAnalyticsData 실행 중 처리되지 않은 오류가 발생했어요:', err);
   });
@@ -1631,9 +1693,10 @@ function updateChallengeProgress(){
 /* ============================================================
    8. MODALS
 ============================================================ */
-function modalShell(inner){
+function modalShell(inner, wide){
+  const widthClass = wide ? 'max-w-2xl' : 'max-w-md';
   return `<div class="fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4" id="modalOverlay">
-    <div class="surface rounded-[var(--radius-card)] max-w-md w-full p-6 sm:p-7 panel-enter relative max-h-[88vh] overflow-y-auto">
+    <div class="surface rounded-[var(--radius-card)] ${widthClass} w-full p-6 sm:p-7 panel-enter relative max-h-[88vh] overflow-y-auto">
       <button id="modalCloseBtn" class="absolute top-4 right-4 text-muted hover:text-current">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>
       </button>
@@ -1642,8 +1705,8 @@ function modalShell(inner){
   </div>`;
 }
 function closeModal(){ document.getElementById('modalRoot').innerHTML = ''; }
-function mountModal(html){
-  document.getElementById('modalRoot').innerHTML = modalShell(html);
+function mountModal(html, wide){
+  document.getElementById('modalRoot').innerHTML = modalShell(html, wide);
   document.getElementById('modalOverlay').addEventListener('click', e=>{ if(e.target.id==='modalOverlay') closeModal(); });
   document.getElementById('modalCloseBtn').addEventListener('click', closeModal);
 }
@@ -1729,6 +1792,42 @@ function openCouponModal(){
 }
 
 /* ---- 관리자 스튜디오: 유저 맞춤 영양 리포트 조회/인쇄 모달 ---- */
+/* ---- 저장된 계산값이 있으면 그대로, 없으면(구버전 데이터) 근사 재계산 ---- */
+function getReportNutritionData(rec){
+  const hasFull = [rec.rer, rec.ibw, rec.mer].every(v => Number.isFinite(parseFloat(v)));
+  if(hasFull){
+    return {
+      rer: parseFloat(rec.rer), ibw: parseFloat(rec.ibw), mer: parseFloat(rec.mer),
+      dailyFeedG: numOrNull(rec.daily_feed_g), treatLimitKcal: numOrNull(rec.treat_limit_kcal),
+      waterMl: numOrNull(rec.water_recommend_ml),
+      proteinMinG: numOrNull(rec.protein_min_g), proteinMaxG: numOrNull(rec.protein_max_g),
+      ratioProtein: numOrNull(rec.ratio_protein), ratioFat: numOrNull(rec.ratio_fat), ratioCarb: numOrNull(rec.ratio_carb),
+      approximated: false,
+    };
+  }
+  // ---- 구버전 데이터 근사 재계산: 활동량·중성화 정보가 없어 표준값(보통 활동)으로 가정해요 ----
+  const weight = parseFloat(rec.weight), target = parseFloat(rec.target_weight), bcs = parseFloat(rec.bcs);
+  if(!Number.isFinite(weight) || !Number.isFinite(bcs)) return null;
+  const RER = 70 * Math.pow(weight, 0.75);
+  const IBW = weight / (1 + (bcs - 5) * 0.1);
+  let goalType = 'maintain';
+  if(Number.isFinite(target)){
+    if(target < weight*0.98) goalType = 'loss';
+    else if(target > weight*1.02) goalType = 'gain';
+  }
+  const factor = (goalType==='loss' || bcs>=6) ? 0.85 : (goalType==='gain' || bcs<=3) ? 1.4 : 1.6;
+  const MER = RER * factor;
+  const planEntry = PLANS.find(p => PLAN_TYPE_LABEL[p.id] === rec.plan_type) || PLANS[0];
+  return {
+    rer: RER, ibw: IBW, mer: MER,
+    dailyFeedG: null, // 사료 kcal/100g 정보가 없어 재구성 불가
+    treatLimitKcal: MER*0.10, waterMl: RER,
+    proteinMinG: IBW*2.5, proteinMaxG: IBW*3.5,
+    ratioProtein: planEntry.macro.protein, ratioFat: planEntry.macro.fat, ratioCarb: planEntry.macro.carb,
+    approximated: true,
+  };
+}
+
 function openUserReportModal(rec){
   const weight = parseFloat(rec.weight);
   const target = parseFloat(rec.target_weight);
@@ -1737,6 +1836,60 @@ function openUserReportModal(rec){
     ? '체중 유지 상태'
     : diff > 0 ? `${diff.toFixed(1)}kg 감량 필요` : `${Math.abs(diff).toFixed(1)}kg 증량 필요`;
   const createdLabel = rec.created_at ? new Date(rec.created_at).toLocaleString('ko-KR') : '기록 없음';
+  const n = getReportNutritionData(rec);
+
+  const approxNote = n && n.approximated ? `
+    <div class="tooltip-box p-3 text-[11px] text-muted mb-4">
+      ⚠️ 상세 계산 데이터가 저장되기 전 기록이라, 아래 수치는 체중·BCS 기준 근사 재계산 값이에요 (활동량·중성화 정보 없이 표준값 가정).
+      ${n.dailyFeedG===null ? ' 일일 급여량(g)은 사료 열량 정보가 없어 표시할 수 없어요.' : ''}
+    </div>` : '';
+
+  const kpiSection = n ? `
+    <p class="text-xs font-bold text-primary-dark mb-2">핵심 지표</p>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-5">
+      ${metricCard('일일 급여량', (n.dailyFeedG!=null ? Math.round(n.dailyFeedG) : '—') + '<span class="text-sm font-medium"> g</span>', '하루 총량 기준', 'bone')}
+      ${metricCard('일일 권장 칼로리', Math.round(n.mer) + '<span class="text-sm font-medium"> kcal</span>', 'MER 기준', 'flame')}
+      ${metricCard('간식 한도', Math.round(n.treatLimitKcal) + '<span class="text-sm font-medium"> kcal</span>', 'MER의 10% 이내', 'cookie')}
+      ${metricCard('권장 음수량', Math.round(n.waterMl) + '<span class="text-sm font-medium"> ml</span>', 'RER 1:1 대응', 'droplet')}
+    </div>` : `<div class="tooltip-box p-4 mb-5 text-xs text-muted">체중/BCS 정보가 불완전해 상세 계산을 재구성할 수 없어요.</div>`;
+
+  const calcBasisSection = n ? `
+    <p class="text-xs font-bold text-primary-dark mb-2">수의영양학 계산 근거</p>
+    <div class="tooltip-box p-4 mb-5">
+      <div class="grid grid-cols-3 gap-3 text-[11px]">
+        <div>
+          <p class="font-semibold mb-0.5 font-display">RER</p>
+          <p class="text-muted mb-0.5">70 × 체중^0.75</p>
+          <p class="font-display font-bold text-primary-dark">${Math.round(n.rer)}kcal</p>
+        </div>
+        <div>
+          <p class="font-semibold mb-0.5 font-display">IBW</p>
+          <p class="text-muted mb-0.5">체중÷(1+(BCS−5)×0.1)</p>
+          <p class="font-display font-bold text-primary-dark">${n.ibw.toFixed(2)}kg</p>
+        </div>
+        <div>
+          <p class="font-semibold mb-0.5 font-display">MER</p>
+          <p class="text-muted mb-0.5">RER × 계수</p>
+          <p class="font-display font-bold text-primary-dark">${Math.round(n.mer)}kcal</p>
+        </div>
+      </div>
+    </div>` : '';
+
+  const macroSection = (n && n.ratioProtein!=null) ? `
+    <p class="text-xs font-bold text-primary-dark mb-2">권장 영양소 비율 (DM 기준)</p>
+    <div class="mb-5">${renderMacroBar({protein:n.ratioProtein, fat:n.ratioFat, carb:n.ratioCarb})}</div>` : '';
+
+  const proteinWaterSection = n ? `
+    <div class="grid sm:grid-cols-2 gap-2.5 mb-5">
+      <div class="surface-2 rounded-xl p-3">
+        <p class="text-[10px] text-muted mb-0.5">최소 단백질 요구량</p>
+        <p class="font-display font-bold text-sm">${n.proteinMinG!=null ? `${Math.round(n.proteinMinG)}g ~ ${Math.round(n.proteinMaxG)}g / 일` : '—'}</p>
+      </div>
+      <div class="surface-2 rounded-xl p-3">
+        <p class="text-[10px] text-muted mb-0.5">하루 권장 음수량</p>
+        <p class="font-display font-bold text-sm">${Math.round(n.waterMl)}ml / 일</p>
+      </div>
+    </div>` : '';
 
   mountModal(`
     <div class="print-report">
@@ -1758,28 +1911,29 @@ function openUserReportModal(rec){
         <div class="surface-2 rounded-xl p-3"><p class="text-[10px] text-muted mb-0.5">맞춤 케어 플랜</p><p class="font-semibold text-sm">${rec.plan_type || '-'}</p></div>
       </div>
 
-      <p class="text-xs font-bold text-primary-dark mb-2">영양 계산 분석</p>
       <div class="tooltip-box p-4 mb-5">
-        <div class="flex items-center justify-between text-sm mb-2">
+        <div class="flex items-center justify-between text-sm">
           <span class="text-muted">감량/증량 필요 체중</span>
           <span class="font-display font-bold text-primary-dark">${diffLabel}</span>
         </div>
-        <div class="flex items-center justify-between text-sm">
-          <span class="text-muted">적용된 케어 플랜 유형</span>
-          <span class="font-semibold">${rec.plan_type || '-'}</span>
-        </div>
       </div>
+
+      ${approxNote}
+      ${kpiSection}
+      ${calcBasisSection}
+      ${macroSection}
+      ${proteinWaterSection}
 
       <p class="text-xs font-bold text-primary-dark mb-2">관리자 메모 (내부용)</p>
       <textarea id="reportAdminNote" rows="3" placeholder="상담 시 참고할 메모를 남겨보세요. 인쇄물에도 함께 포함돼요." class="w-full rounded-xl border border-token px-3 py-2 text-sm mb-1" style="background:var(--surface); color:var(--text);"></textarea>
-      <p class="text-[10px] text-muted mb-5">* 메모는 저장되지 않으며 이 창을 닫으면 사라져요.</p>
+      <p class="text-[10px] text-muted mb-1">* 메모는 저장되지 않으며 이 창을 닫으면 사라져요.</p>
     </div>
 
-    <div class="flex gap-2">
+    <div class="flex gap-2 mt-4">
       <button id="reportPrintBtn" class="btn-primary flex-1 rounded-xl py-2.5 text-sm">🖨️ PDF/프린트 인쇄</button>
       <button id="reportCloseBtn" class="btn-ghost flex-1 rounded-xl py-2.5 text-sm">닫기</button>
     </div>
-  `);
+  `, true);
   document.getElementById('reportPrintBtn').addEventListener('click', ()=>window.print());
   document.getElementById('reportCloseBtn').addEventListener('click', closeModal);
 }
@@ -1918,10 +2072,15 @@ function saveAdminSettingsToStorage(){
    - 지금은 localStorage에만 쌓이고, 위쪽 SUPABASE_URL/ANON_KEY를 채우면
      supabaseClient가 자동으로 생성되어 이 함수가 그대로 DB 저장까지 수행해요.
 ============================================================ */
+function numOrNull(v){
+  const n = parseFloat(v);
+  return Number.isFinite(n) ? n : null;
+}
+
 async function saveUserAnalyticsData(record){
   console.log('[seon] saveUserAnalyticsData() 호출됨 — 제출 데이터:', record);
 
-  // 0) 컬럼 타입에 맞게 정규화 — 숫자형은 parseFloat, 문자형은 String으로 명시 변환
+  // 0) 컬럼 타입에 맞게 정규화 — 숫자형은 parseFloat/Number, 문자형은 String으로 명시 변환
   const payload = {
     dog_name: String(record.dog_name ?? ''),
     breed: String(record.breed ?? ''),
@@ -1929,6 +2088,18 @@ async function saveUserAnalyticsData(record){
     target_weight: parseFloat(record.target_weight),
     bcs: String(record.bcs ?? ''),
     plan_type: String(record.plan_type ?? ''),
+    // ---- 수의영양학 계산 결과 (숫자형) ----
+    rer: numOrNull(record.rer),
+    ibw: numOrNull(record.ibw),
+    mer: numOrNull(record.mer),
+    daily_feed_g: numOrNull(record.daily_feed_g),
+    treat_limit_kcal: numOrNull(record.treat_limit_kcal),
+    water_recommend_ml: numOrNull(record.water_recommend_ml),
+    protein_min_g: numOrNull(record.protein_min_g),
+    protein_max_g: numOrNull(record.protein_max_g),
+    ratio_protein: numOrNull(record.ratio_protein),
+    ratio_fat: numOrNull(record.ratio_fat),
+    ratio_carb: numOrNull(record.ratio_carb),
   };
 
   // 1) 로컬(메모리 + localStorage)에 항상 먼저 쌓아요 — DB 연결 여부와 무관하게 안전망 역할
@@ -1959,6 +2130,32 @@ async function saveUserAnalyticsData(record){
     console.log('[seon] Supabase 미연결 — 로컬 저장만 수행했어요.');
     refreshAnalyticsIfOpen();
   }
+}
+
+function exportAnalyticsCSV(){
+  if(!analyticsRecords.length){ alert('내보낼 진단 데이터가 아직 없어요.'); return; }
+  const columns = [
+    ['dog_name','이름'], ['breed','견종'], ['weight','현재체중(kg)'], ['target_weight','목표체중(kg)'],
+    ['bcs','BCS'], ['plan_type','케어플랜'],
+    ['rer','RER(kcal)'], ['ibw','IBW(kg)'], ['mer','MER(kcal)'],
+    ['daily_feed_g','일일급여량(g)'], ['treat_limit_kcal','간식한도(kcal)'], ['water_recommend_ml','권장음수량(ml)'],
+    ['protein_min_g','최소단백질(g)'], ['protein_max_g','최대단백질(g)'],
+    ['ratio_protein','단백질비율(%)'], ['ratio_fat','지방비율(%)'], ['ratio_carb','탄수화물비율(%)'],
+    ['created_at','제출일시'],
+  ];
+  const escapeCell = (v)=>{
+    if(v===null || v===undefined) return '';
+    const s = String(v);
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s;
+  };
+  const header = columns.map(c=>c[1]).join(',');
+  const lines = analyticsRecords.map(rec=>columns.map(c=>escapeCell(rec[c[0]])).join(','));
+  const csv = '\uFEFF' + [header, ...lines].join('\r\n'); // BOM 포함 → 엑셀 한글 깨짐 방지
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `seon-user-analytics-${new Date().toISOString().slice(0,10)}.csv`; a.click();
+  URL.revokeObjectURL(url);
 }
 
 function computeAnalyticsSummary(){
@@ -2035,6 +2232,11 @@ async function loadAnalyticsFromDB(){
         dog_name: row.dog_name, breed: row.breed, weight: row.weight,
         target_weight: row.target_weight, bcs: row.bcs, plan_type: row.plan_type,
         created_at: row.created_at || new Date().toISOString(),
+        rer: numOrNull(row.rer), ibw: numOrNull(row.ibw), mer: numOrNull(row.mer),
+        daily_feed_g: numOrNull(row.daily_feed_g), treat_limit_kcal: numOrNull(row.treat_limit_kcal),
+        water_recommend_ml: numOrNull(row.water_recommend_ml),
+        protein_min_g: numOrNull(row.protein_min_g), protein_max_g: numOrNull(row.protein_max_g),
+        ratio_protein: numOrNull(row.ratio_protein), ratio_fat: numOrNull(row.ratio_fat), ratio_carb: numOrNull(row.ratio_carb),
       }));
       try{ localStorage.setItem(ANALYTICS_STORAGE_KEY, JSON.stringify(analyticsRecords)); }catch(e){}
     }
@@ -2298,7 +2500,10 @@ const STUDIO_TAB_HTML = {
       </div>
 
       <div>
-        <p class="text-xs font-semibold text-muted mb-2">고객 데이터 (최근 10건)</p>
+        <div class="flex items-center justify-between mb-2">
+          <p class="text-xs font-semibold text-muted">고객 데이터 (최근 10건 표시 · CSV는 전체 내보내기)</p>
+          <button id="adm_csv_btn" class="btn-ghost rounded-lg px-2.5 py-1.5 text-[10px] flex items-center gap-1 whitespace-nowrap">📥 CSV 다운로드</button>
+        </div>
         <div class="overflow-x-auto">
           <table class="w-full text-[11px]" style="table-layout:fixed;">
             <colgroup>
@@ -2354,6 +2559,10 @@ const STUDIO_TAB_HTML = {
 };
 
 function bindStudioTabEvents(){
+  if(studioTab==='analytics'){
+    const csvBtn = document.getElementById('adm_csv_btn');
+    if(csvBtn) csvBtn.addEventListener('click', exportAnalyticsCSV);
+  }
   if(studioTab==='brand'){
     document.querySelectorAll('[data-logo-mode]').forEach(b=>b.addEventListener('click', ()=>{
       adminSettings.logo.mode = b.dataset.logoMode; applyAdminTheme(); renderStudioTab();
