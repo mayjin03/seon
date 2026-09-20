@@ -1,0 +1,2051 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>멍플랜 · DogDiet Plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  :root{
+    --font-body:'Noto Sans KR','Malgun Gothic',sans-serif;
+    --font-display:'Noto Sans KR','Malgun Gothic',sans-serif;
+
+    --c-surface-light:#FBF7F2;
+    --c-surface-dark:#181410;
+
+    --c-primary:#F97A3D;
+    --c-mint:#2FBF9F;
+    --c-primary-dark: color-mix(in srgb, var(--c-primary) 78%, black 22%);
+    --c-primary-light: color-mix(in srgb, var(--c-primary) 20%, var(--bg) 80%);
+    --c-mint-light: color-mix(in srgb, var(--c-mint) 20%, var(--bg) 80%);
+    --c-fat:#E1614E;
+    --c-carb:#8BA3C7;
+
+    --bg: var(--c-surface-light);
+    --surface:#FFFFFF;
+    --surface-2:#F4EEE6;
+    --text:#2B2420;
+    --text-muted:#7A7069;
+    --border:#EAE1D6;
+    --shadow: 0 1px 2px rgba(43,36,32,.04), 0 8px 24px -8px rgba(43,36,32,.10);
+
+    --radius-card: 20px;
+    --radius-ui: 14px;
+    --scale:1;
+    --base-font:16px;
+    --tracking:0em;
+    --leading:1.5;
+    --section-gap:24px;
+    --max-w-site:1024px;
+  }
+  :root[data-theme="dark"]{
+    --bg: var(--c-surface-dark);
+    --surface:#241E19;
+    --surface-2:#2C2520;
+    --text:#F3EDE6;
+    --text-muted:#B2A79D;
+    --border:#3A322B;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 28px -8px rgba(0,0,0,.55);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{background:var(--bg);}
+  html{ font-size:calc(var(--base-font,16px) * var(--scale,1)); transition:font-size .2s ease; }
+  body{
+    font-family:var(--font-body);
+    color:var(--text);
+    -webkit-font-smoothing:antialiased;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+    transition:background .25s ease,color .25s ease;
+  }
+  #app{ letter-spacing:var(--tracking,0em); line-height:var(--leading,1.5); }
+  .font-display{font-family:var(--font-display);}
+  ::selection{background:var(--c-primary-light);color:var(--c-primary-dark);}
+
+  .surface{background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow);}
+  .surface-2{background:var(--surface-2);}
+  .text-muted{color:var(--text-muted);}
+  .border-token{border-color:var(--border);}
+  .bg-primary{background:var(--c-primary);}
+  .text-primary{color:var(--c-primary);}
+  .border-primary{border-color:var(--c-primary);}
+  .bg-primary-light{background:var(--c-primary-light);}
+  .text-primary-dark{color:var(--c-primary-dark);}
+  .bg-mint{background:var(--c-mint);}
+  .text-mint{color:var(--c-mint);}
+  .bg-mint-light{background:var(--c-mint-light);}
+
+  .btn-primary{
+    background:var(--c-primary); color:#fff; font-weight:700;
+    transition:transform .15s ease, box-shadow .15s ease, background .15s ease;
+    box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--c-primary) 60%, transparent);
+  }
+  .btn-primary:hover{background:var(--c-primary-dark); transform:translateY(-1px);}
+  .btn-primary:active{transform:translateY(0);}
+  .btn-primary:disabled{opacity:.4; cursor:not-allowed; transform:none;}
+
+  .btn-ghost{
+    background:transparent;border:1.5px solid var(--border);color:var(--text);font-weight:600;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .btn-ghost:hover{border-color:var(--c-primary); background:var(--c-primary-light);}
+
+  .chip{
+    border:1.5px solid var(--border); background:var(--surface); color:var(--text);
+    transition:all .15s ease; cursor:pointer;
+  }
+  .chip.active{ border-color:var(--c-primary); background:var(--c-primary-light); color:var(--c-primary-dark); font-weight:700;}
+
+  .plan-card{border:1.5px solid var(--border); background:var(--surface); cursor:pointer; transition:all .15s ease;}
+  .plan-card:hover{border-color:var(--c-primary);}
+  .plan-card.active{border-color:var(--c-primary); background:var(--c-primary-light); box-shadow:0 0 0 3px color-mix(in srgb, var(--c-primary) 18%, transparent);}
+
+  .step-dot{width:9px;height:9px;border-radius:99px;background:var(--border);transition:all .25s ease;}
+  .step-dot.active{background:var(--c-primary); width:26px; border-radius:99px;}
+  .step-dot.done{background:var(--c-mint);}
+
+  .fade-in{animation:fadeIn .35s ease both;}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+
+  .bar-fill{transition:width 1s cubic-bezier(.22,1,.36,1);}
+  .macro-seg{transition:width 1.1s cubic-bezier(.22,1,.36,1);}
+
+  input[type=number], input[type=text], input[type=email], select{
+    background:var(--surface); border:1.5px solid var(--border); color:var(--text);
+  }
+  input[type=number]:focus, input[type=text]:focus, input[type=email]:focus, select:focus{
+    outline:none; border-color:var(--c-primary); box-shadow:0 0 0 3px var(--c-primary-light);
+  }
+  input[type=checkbox]{accent-color:var(--c-primary);}
+
+  ::-webkit-scrollbar{height:8px;width:8px;}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px;}
+
+  .modal-backdrop{background:rgba(20,16,12,.55); backdrop-filter:blur(2px);}
+  .tooltip-box{ background:var(--surface-2); border:1px dashed var(--border); border-radius:14px; }
+
+  .bcs-btn svg{transition:transform .2s ease;}
+  .bcs-btn:hover svg{transform:translateY(-2px);}
+  .bcs-btn.active{border-color:var(--c-primary); background:var(--c-primary-light);}
+
+  .day-cell{transition:all .15s ease;}
+  .day-cell.checked{background:var(--c-mint); border-color:var(--c-mint); color:#fff;}
+
+  a{color:var(--c-primary-dark);}
+
+  .panel-enter{animation:panelIn .2s ease both;}
+  @keyframes panelIn{from{opacity:0; transform:translateY(6px) scale(.98);} to{opacity:1; transform:translateY(0) scale(1);}}
+
+  .verify-badge{background:var(--surface); border:1.5px solid var(--c-mint); color:var(--c-mint);}
+
+  @media (max-width:640px){ .container-px{padding-left:16px;padding-right:16px;} }
+
+  /* ---- 라운딩(Border-Radius) 모듈: 버튼/칩류는 관리자 라운딩 값을 따르도록 우선순위 확보 ---- */
+  .btn-primary.rounded-xl, .btn-ghost.rounded-xl, .chip.rounded-xl, .chip.rounded-full,
+  .btn-primary.rounded-lg, .btn-ghost.rounded-lg, .day-cell.rounded-lg, .plan-card.rounded-xl{
+    border-radius: var(--radius-ui, 14px);
+  }
+
+  /* ---- 관리자 스튜디오 드로어 ---- */
+  .studio-backdrop{ background:rgba(20,16,12,.5); backdrop-filter:blur(2px); transition:opacity .25s ease; }
+  .studio-drawer{
+    transition:transform .35s cubic-bezier(.22,1,.36,1);
+    box-shadow:-12px 0 40px -10px rgba(0,0,0,.25);
+  }
+  .studio-tab{ transition:all .15s ease; }
+  .studio-tab.active{ background:var(--c-primary); color:#fff; }
+
+  input[type=range]{ -webkit-appearance:none; appearance:none; height:4px; border-radius:99px; background:var(--border); outline:none; }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none; appearance:none; width:17px; height:17px; border-radius:50%;
+    background:#fff; border:1px solid var(--border); box-shadow:0 1px 3px rgba(0,0,0,.25); cursor:pointer; margin-top:-6.5px;
+  }
+  input[type=color]{ padding:2px; height:38px; }
+
+  .u-switch{ width:38px; height:22px; border-radius:99px; background:var(--border); position:relative; transition:background .2s ease; flex-shrink:0; cursor:pointer; }
+  .u-switch.on{ background:var(--c-mint); }
+  .u-switch .knob{ position:absolute; top:2px; left:2px; width:18px; height:18px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.3); transition:left .2s ease; }
+  .u-switch.on .knob{ left:18px; }
+
+  /* ---- 사이드바 헤더 모드 ---- */
+  #sidebarNav{ width:230px; backdrop-filter:blur(8px); }
+  .glass-side{ backdrop-filter:blur(8px); }
+  .side-link{ transition:all .15s ease; cursor:pointer; }
+  .side-link:hover{ background:var(--c-primary-light); }
+  .side-link.dim{ opacity:.4; }
+
+  /* ---- 유저 뷰포트 컨트롤 위젯 ---- */
+  #userWidget{ transition:transform .2s ease; }
+  #userWidget button{ transition:background .15s ease; }
+</style>
+</head>
+<body>
+
+<div id="app" class="min-h-screen">
+
+  <div id="layoutRow" class="flex items-stretch">
+
+    <!-- ============ SIDEBAR (좌측 사이드바 헤더 모드 전용) ============ -->
+    <aside id="sidebarNav" class="hidden shrink-0 border-r border-token glass-side flex-col gap-1 p-4 sticky top-0 self-start overflow-y-auto" style="background:color-mix(in srgb, var(--bg) 92%, transparent); max-height:100vh;">
+      <div id="logoSlotSidebar" class="mb-4"></div>
+      <p class="text-[11px] font-bold text-muted uppercase tracking-wide mb-1 mt-2">바로가기</p>
+      <div id="sidebarLinks" class="flex flex-col gap-0.5"></div>
+      <div class="flex-1"></div>
+      <div id="sidebarActions" class="flex flex-col gap-2 pt-3 border-t border-token"></div>
+    </aside>
+
+    <div class="flex-1 min-w-0">
+
+  <!-- ===================== HEADER ===================== -->
+  <header id="topHeader" class="sticky top-0 z-30 border-b border-token" style="background:color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter:blur(8px);">
+    <div class="mx-auto container-px px-4 py-3 grid items-center gap-2" style="grid-template-columns:1fr auto 1fr; max-width:var(--max-w-site);">
+      <div id="logoSlotLeft" class="flex items-center"></div>
+      <div id="logoSlotCenter" class="flex items-center justify-center"></div>
+      <div class="flex items-center justify-end gap-2">
+        <div id="logoSlotRight" class="flex items-center"></div>
+        <div id="headerRight" class="flex items-center gap-2"></div>
+        <button id="studioOpenBtn" class="hidden btn-ghost rounded-xl px-3 py-2 text-xs sm:text-sm items-center gap-1.5">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/><circle cx="12" cy="12" r="4"/></svg>
+          <span class="hidden sm:inline">관리자 스튜디오</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="mx-auto container-px px-4 pb-32 pt-6" style="max-width:var(--max-w-site);">
+
+    <!-- ===================== FORM SECTION ===================== -->
+    <section id="formSection">
+
+      <div class="flex items-center justify-center gap-2 mb-7" id="stepDots"></div>
+
+      <div class="surface rounded-[var(--radius-card)] p-6 sm:p-8 max-w-2xl mx-auto">
+
+        <!-- STEP 1: 케어 플랜 선택 -->
+        <div id="step1" class="fade-in">
+          <p class="text-xs font-bold text-primary-dark tracking-wide mb-1">STEP 1</p>
+          <h2 class="font-display text-2xl font-bold mb-1">어떤 케어 플랜이 필요하신가요?</h2>
+          <p class="text-sm text-muted mb-6">선택한 플랜에 따라 계산 지표와 추천 제품이 달라져요.</p>
+          <div id="planGrid" class="grid gap-3"></div>
+        </div>
+
+        <!-- STEP 2: 아이 정보 -->
+        <div id="step2" class="fade-in hidden">
+          <p class="text-xs font-bold text-primary-dark tracking-wide mb-1">STEP 2</p>
+          <h2 class="font-display text-2xl font-bold mb-1">우리 아이를 소개해주세요</h2>
+          <p class="text-sm text-muted mb-6">기본 정보를 입력하면 맞춤 계산이 시작돼요.</p>
+
+          <label class="block text-sm font-semibold mb-1.5">이름</label>
+          <input id="in_name" type="text" placeholder="예: 초코" class="w-full rounded-xl px-4 py-3 mb-5 text-sm">
+
+          <label class="block text-sm font-semibold mb-1.5">견종</label>
+          <select id="in_breed" class="w-full rounded-xl px-4 py-3 mb-2 text-sm"></select>
+          <input id="in_breed_custom" type="text" placeholder="견종을 직접 입력해주세요" class="w-full rounded-xl px-4 py-3 mb-5 text-sm hidden">
+
+          <label class="block text-sm font-semibold mb-1.5">나이</label>
+          <div class="grid grid-cols-2 gap-3 mb-2">
+            <div class="relative">
+              <input id="in_age_year" type="number" min="0" max="25" placeholder="0" class="w-full rounded-xl px-4 py-3 text-sm">
+              <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-muted">년</span>
+            </div>
+            <div class="relative">
+              <input id="in_age_month" type="number" min="0" max="11" placeholder="0" class="w-full rounded-xl px-4 py-3 text-sm">
+              <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-muted">개월</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 3: 신체 조건 & 상태 -->
+        <div id="step3" class="fade-in hidden">
+          <p class="text-xs font-bold text-primary-dark tracking-wide mb-1">STEP 3</p>
+          <h2 class="font-display text-2xl font-bold mb-1">신체 조건 &amp; 건강 상태</h2>
+          <p class="text-sm text-muted mb-6">체중과 체형을 정확히 입력할수록 계산이 정밀해져요.</p>
+
+          <div class="grid grid-cols-2 gap-3 mb-5">
+            <div>
+              <label class="block text-sm font-semibold mb-1.5">현재 체중</label>
+              <div class="relative">
+                <input id="in_weight" type="number" step="0.1" min="0.5" placeholder="5.0" class="w-full rounded-xl px-4 py-3 text-sm">
+                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-muted">kg</span>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold mb-1.5">목표 체중</label>
+              <div class="relative">
+                <input id="in_target" type="number" step="0.1" min="0.5" placeholder="4.5" class="w-full rounded-xl px-4 py-3 text-sm">
+                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-muted">kg</span>
+              </div>
+            </div>
+          </div>
+
+          <label class="block text-sm font-semibold mb-1.5">중성화 여부</label>
+          <div class="flex gap-2 mb-5" id="neuterGroup">
+            <button data-val="true" class="chip flex-1 rounded-xl py-2.5 text-sm">완료</button>
+            <button data-val="false" class="chip flex-1 rounded-xl py-2.5 text-sm">안 함</button>
+          </div>
+
+          <label class="block text-sm font-semibold mb-2">비만도 (BCS: Body Condition Score)</label>
+          <div id="bcsRow" class="grid grid-cols-9 gap-1 mb-2"></div>
+          <p id="bcsDesc" class="text-xs text-center text-muted mb-6 min-h-[16px]">체형에 가까운 번호를 선택해주세요</p>
+
+          <label class="block text-sm font-semibold mb-2">보유 질환 (중복 선택 가능)</label>
+          <div id="conditionGroup" class="grid grid-cols-2 sm:grid-cols-3 gap-2"></div>
+        </div>
+
+        <!-- STEP 4: 활동량 & 급여 정보 -->
+        <div id="step4" class="fade-in hidden">
+          <p class="text-xs font-bold text-primary-dark tracking-wide mb-1">STEP 4</p>
+          <h2 class="font-display text-2xl font-bold mb-1">활동량 &amp; 급여 정보</h2>
+          <p class="text-sm text-muted mb-6">에너지 소비량과 사료 열량을 계산에 반영해요.</p>
+
+          <label class="block text-sm font-semibold mb-1.5">일일 산책 시간</label>
+          <div class="relative mb-5">
+            <input id="in_walk" type="number" min="0" max="300" placeholder="30" class="w-full rounded-xl px-4 py-3 text-sm">
+            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-muted">분 / 일</span>
+          </div>
+
+          <label class="block text-sm font-semibold mb-2">활동 강도</label>
+          <div class="grid grid-cols-3 gap-2 mb-6" id="activityGroup">
+            <button data-val="low" class="chip rounded-xl py-3 text-sm">저활동</button>
+            <button data-val="normal" class="chip rounded-xl py-3 text-sm">보통</button>
+            <button data-val="high" class="chip rounded-xl py-3 text-sm">고활동</button>
+          </div>
+
+          <label class="block text-sm font-semibold mb-2">현재 급여 중인 사료</label>
+          <div class="grid grid-cols-1 gap-2 mb-3" id="foodPresetGroup"></div>
+          <div class="relative">
+            <input id="in_food_kcal" type="number" min="150" max="600" placeholder="예: 350" class="w-full rounded-xl px-4 py-3 text-sm">
+            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-muted">kcal / 100g</span>
+          </div>
+          <p class="text-xs text-muted mt-1.5">사료 포장지 뒷면의 "대사에너지(ME)"를 확인하면 더 정확해요.</p>
+        </div>
+
+        <!-- nav buttons -->
+        <div class="flex items-center justify-between mt-8 pt-5 border-t border-token">
+          <button id="prevBtn" class="btn-ghost rounded-xl px-5 py-2.5 text-sm">이전</button>
+          <button id="nextBtn" class="btn-primary rounded-xl px-6 py-2.5 text-sm">다음</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== DASHBOARD SECTION ===================== -->
+    <section id="dashboardSection" class="hidden"></section>
+
+  </main>
+
+  <!-- ===================== FOOTER (관리자 진입 트리거 포함) ===================== -->
+  <footer class="mx-auto container-px px-4 pb-10 pt-4" style="max-width:var(--max-w-site);">
+    <div class="border-t border-token pt-5 flex flex-col items-center gap-1">
+      <button id="footerAdminTrigger" class="flex items-center gap-1.5 text-[11px] text-muted hover:text-current transition select-none" title="">
+        <span class="w-4 h-4 rounded bg-primary flex items-center justify-center shrink-0">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M6 10c1 0 1.8-1 1.8-2.4S7 5.2 6 5.2 4.2 6.2 4.2 7.6 5 10 6 10Zm12 0c1 0 1.8-1 1.8-2.4S19 5.2 18 5.2s-1.8 1-1.8 2.4S17 10 18 10Zm-4.6-1.3c1.1 0 2-1.2 2-2.7S14.5 3.3 13.4 3.3s-2 1.2-2 2.7 .9 2.7 2 2.7Zm-4.8 0c1.1 0 2-1.2 2-2.7S9.7 3.3 8.6 3.3s-2 1.2-2 2.7 .9 2.7 2 2.7Zm4.4 2.1c-2.6 0-6 1.9-6 4.6 0 1.4 1 2.3 2.3 2.3.9 0 1.4-.3 2.2-.3.9 0 1.3.3 2.2.3.9 0 1.3-.3 2.2-.3.8 0 1.4-.3 2.2-.3 1.3 0 2.3-.9 2.3-2.3 0-2.7-3.4-4.6-7.4-4.6Z" fill="#fff"/></svg>
+        </span>
+        <span>© 2026 멍플랜 · DogDiet Plan</span>
+      </button>
+      <p class="text-[10px] text-muted opacity-60">건강한 강아지, 행복한 보호자를 위해 · 수의영양학 기반 맞춤 다이어트 플랫폼</p>
+    </div>
+  </footer>
+
+    </div><!-- /flex-1 -->
+  </div><!-- /layoutRow -->
+
+  <!-- ===================== USER VIEWPORT CONTROLS (방문자용) ===================== -->
+  <div id="userWidget" class="fixed bottom-5 left-5 z-40 surface rounded-full flex items-center gap-0.5 p-1.5">
+    <button id="fontMinusBtn" class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold hover:bg-primary-light">A-</button>
+    <span id="fontScaleLabel" class="text-[11px] font-mono w-11 text-center text-muted">100%</span>
+    <button id="fontPlusBtn" class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold hover:bg-primary-light">A+</button>
+    <span class="w-px h-5 border-l border-token mx-1"></span>
+    <button data-mode="light" class="user-theme-btn w-8 h-8 rounded-full flex items-center justify-center hover:bg-primary-light" title="라이트 모드">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+    </button>
+    <button data-mode="dark" class="user-theme-btn w-8 h-8 rounded-full flex items-center justify-center hover:bg-primary-light" title="다크 모드">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"/></svg>
+    </button>
+    <button data-mode="system" class="user-theme-btn w-8 h-8 rounded-full flex items-center justify-center hover:bg-primary-light" title="시스템 설정 동기화">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+    </button>
+  </div>
+
+  <!-- ===================== ADMIN STUDIO (관리자 인증 후에만 노출) ===================== -->
+  <button id="studioFabBtn" class="hidden fixed bottom-5 right-5 z-40 btn-primary rounded-full flex items-center gap-1.5 px-4 py-3 text-xs font-bold" title="관리자 스튜디오 열기">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/><circle cx="12" cy="12" r="4"/></svg>
+    ⚙️ Admin
+  </button>
+
+  <div id="studioBackdrop" class="studio-backdrop fixed inset-0 z-40 hidden"></div>
+  <aside id="studioDrawer" class="studio-drawer fixed top-0 right-0 h-full w-full sm:w-[420px] z-50 surface flex flex-col" style="transform:translateX(100%); border-radius:0;">
+    <div class="p-4 border-b border-token flex items-center justify-between shrink-0">
+      <div>
+        <p class="font-bold text-sm">관리자 스튜디오</p>
+        <p class="text-[11px] text-muted">브랜드 · 레이아웃 실시간 제어</p>
+      </div>
+      <button id="studioCloseBtn" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-primary-light">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="px-3 pt-3 pb-2 flex gap-1.5 flex-wrap border-b border-token shrink-0" id="studioTabs"></div>
+    <div class="p-5 overflow-y-auto flex-1" id="studioBody"></div>
+  </aside>
+
+  <!-- ===================== MODALS ===================== -->
+  <div id="modalRoot"></div>
+
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============================================================
+   0. STATE
+============================================================ */
+const dog = {
+  plan:null,
+  name:"", breed:"", ageYear:"", ageMonth:"",
+  weight:null, target:null, neutered:null, bcs:null, conditions:[],
+  walk:null, activity:null, foodKcal:null
+};
+let currentStep = 1;
+const totalSteps = 4;
+let challengeDays = Array(28).fill(false);
+let charts = {};
+
+const BREEDS = ["말티즈","토이/미니어처 푸들","포메라니안","치와와","시츄","비숑프리제","요크셔테리어","닥스훈트","웰시코기","골든리트리버","래브라도리트리버","시베리안허스키","진돗개","프렌치불독","잭러셀테리어","코카스파니엘","사모예드","보더콜리","비글","믹스견","직접입력"];
+
+const BCS_INFO = [
+  {label:"매우 마름", tone:"#5B9BD5"},
+  {label:"마름", tone:"#6FB1DD"},
+  {label:"약간 마름", tone:"#7FC7C0"},
+  {label:"다소 이상적", tone:"#6FCBA6"},
+  {label:"이상적", tone:"#2FBF9F"},
+  {label:"약간 과체중", tone:"#F2C14E"},
+  {label:"과체중", tone:"#F0A54E"},
+  {label:"비만", tone:"#EF7F4E"},
+  {label:"고도비만", tone:"#E15C4E"},
+];
+
+/* Top-down(위에서 본) 체형 실루엣 기준 폭 데이터 — 갈비뼈/허리/엉덩이 반폭(half-width) */
+const BCS_SHAPE = [
+  {neck:6.5,  rib:11.5, waist:5.0,  hip:11.0, tail:4.0, ribBone:true,  hipBone:true }, // 1 매우 마름
+  {neck:7.0,  rib:12.0, waist:6.0,  hip:12.0, tail:4.2, ribBone:true,  hipBone:false}, // 2 마름
+  {neck:7.5,  rib:12.8, waist:7.5,  hip:13.0, tail:4.4, ribBone:true,  hipBone:false}, // 3 약간 마름
+  {neck:8.0,  rib:13.5, waist:9.5,  hip:14.0, tail:4.6, ribBone:false, hipBone:false}, // 4 다소 이상적
+  {neck:8.5,  rib:14.0, waist:11.0, hip:15.0, tail:4.8, ribBone:false, hipBone:false}, // 5 이상적
+  {neck:9.0,  rib:15.0, waist:13.0, hip:16.0, tail:5.0, ribBone:false, hipBone:false}, // 6 약간 과체중
+  {neck:9.8,  rib:16.0, waist:15.5, hip:17.5, tail:5.2, ribBone:false, hipBone:false}, // 7 과체중
+  {neck:10.5, rib:17.5, waist:18.0, hip:18.8, tail:5.4, ribBone:false, hipBone:false}, // 8 비만
+  {neck:11.5, rib:19.0, waist:20.5, hip:20.0, tail:5.6, ribBone:false, hipBone:false}, // 9 고도비만
+];
+
+const CONDITIONS = [
+  {id:"joint", label:"슬개골/관절"},
+  {id:"arthritis", label:"관절염"},
+  {id:"kidney", label:"신장질환"},
+  {id:"protein", label:"단백질 제한"},
+  {id:"pancreas", label:"췌장질환"},
+  {id:"diabetes", label:"당뇨"},
+  {id:"none", label:"해당 없음"},
+];
+
+const FOOD_PRESETS = [
+  {id:"general", label:"일반 성견용 사료", desc:"약 350kcal / 100g", kcal:350},
+  {id:"diet", label:"체중관리(다이어트) 전용 사료", desc:"약 300kcal / 100g", kcal:300},
+  {id:"highprotein", label:"고단백 저탄수 사료", desc:"약 380kcal / 100g", kcal:380},
+  {id:"custom", label:"직접 입력", desc:"사료 포장지의 kcal/100g 확인", kcal:null},
+];
+
+const VEGGIES = [
+  {name:"당근", kcalPer100:41, icon:"🥕"},
+  {name:"오이", kcalPer100:15, icon:"🥒"},
+  {name:"브로콜리(데친 것)", kcalPer100:34, icon:"🥦"},
+];
+
+/* ---------- 케어 플랜 설정 ---------- */
+const PLANS = [
+  {id:"diet", emoji:"🏋️‍♂️", title:"체중 감량 & 다이어트 플랜", desc:"과체중 교정을 위한 칼로리 제한 관리",
+    macro:{protein:30, fat:12, carb:58}, autoCondition:null,
+    tips:["고섬유·저지방 조합으로 포만감은 높이고 칼로리는 낮춰요.","단백질 비율 30% 이상을 유지해 감량 중 근손실을 최소화해요."]},
+  {id:"joint", emoji:"🦴", title:"관절 & 슬개골 건강 케어 플랜", desc:"체중 부담을 줄이고 관절 영양을 강화",
+    macro:{protein:28, fat:14, carb:58}, autoCondition:"joint",
+    tips:["오메가-3(EPA/DHA)를 충분히 공급해 관절 염증 반응 관리에 도움을 줘요.","표준 체중 근처를 유지하는 것이 가장 확실한 관절 보호법이에요."]},
+  {id:"kidney", emoji:"🫘", title:"신장 & 요로계 케어 플랜", desc:"저단백·저인 설계로 신장 부담 완화",
+    macro:{protein:16, fat:18, carb:66}, autoCondition:"kidney",
+    tips:["인(P) 함량 0.4% 이하 사료를 우선 고려하고, 반드시 수의사 처방을 따르세요.","단백질은 낮추되 필수아미노산이 풍부한 고품질 단백질원을 사용해야 해요."]},
+  {id:"pancreas", emoji:"🥑", title:"췌장염 & 저지방 영양 플랜", desc:"지방 10% 이하로 췌장 부담 최소화",
+    macro:{protein:25, fat:9, carb:66}, autoCondition:"pancreas",
+    tips:["전체 식단 대비 지방 유래 칼로리 10% 이하를 목표로 관리해요.","기름진 수제간식이나 사람 음식은 재발 위험이 있어 철저히 제한해요."]},
+  {id:"senior", emoji:"🐾", title:"일반 성견/노령견 맞춤 칼로리 플랜", desc:"연령별 대사량 변화를 반영한 표준 관리",
+    macro:{protein:25, fat:15, carb:60}, autoCondition:"none",
+    tips:["7세 이상이라면 3~6개월마다 체중과 BCS를 재평가해보세요.","오메가-3, 항산화제 등 관절·인지 지원 성분이 포함된 사료를 고려해보세요."]},
+];
+
+const CONDITION_GUIDE = {
+  joint: {
+    title:"슬개골 / 관절 케어", icon:"🦴",
+    points:[
+      "체중이 1kg만 줄어도 걸을 때 무릎·고관절에 가해지는 부하가 크게 줄어드는 것으로 알려져 있어요. 감량 자체가 가장 확실한 관절 보호법이에요.",
+      "오메가-3(EPA/DHA) 지방산은 관절 염증 완화에 도움을 줄 수 있다고 알려져 있어요. 정확한 용량은 체중과 상태에 따라 다르므로 수의사와 상담 후 급여하세요.",
+      "글루코사민·콘드로이친이 포함된 관절 전용 사료나 영양제를 고려해볼 수 있어요.",
+      "미끄러운 바닥에는 매트를 깔아 슬개골 탈구 위험을 줄여주세요."
+    ]},
+  arthritis: {
+    title:"관절염 케어", icon:"🐾",
+    points:[
+      "체중 감량은 관절염 통증 관리의 1차적이고 가장 효과적인 방법 중 하나예요.",
+      "딱딱한 바닥보다는 평지 산책, 수영 등 저충격 운동을 권장해요.",
+      "오메가-3 지방산 및 항산화 성분이 포함된 사료가 도움이 될 수 있어요.",
+      "통증이 있어 보이면 임의로 진통제를 급여하지 말고 반드시 수의사의 처방을 따르세요."
+    ]},
+  kidney: {
+    title:"신장질환 케어", icon:"💧",
+    points:[
+      "신장질환이 있는 경우 인(P)과 단백질 함량이 조절된 처방식 사료가 필요할 수 있어요.",
+      "본 계산기의 일반 다이어트 수치를 그대로 적용하지 마시고, 반드시 수의사가 처방한 신장 전용 식단과 급여량을 우선하세요.",
+      "정기적인 혈액검사(BUN, 크레아티닌)로 신장 수치를 모니터링하며 식단을 조절해야 해요.",
+      "음수량이 충분한지 항상 확인해주세요 (신선한 물 상시 급여)."
+    ]},
+  protein: {
+    title:"단백질 제한 케어", icon:"⚠️",
+    points:[
+      "다이어트 중 단백질을 과도하게 제한하면 지방보다 근육이 먼저 빠지는 근손실 위험이 있어요.",
+      "단백질 제한이 필요한 기저질환(신장·간 질환 등)이 있다면, 다이어트 목표와 제한 목표를 반드시 수의사와 함께 조율하세요.",
+      "일반적으로 체중 감량 중에도 이상체중 1kg당 최소 2.5g 이상의 양질의 단백질 급여가 권장돼요 (질환별 예외 있음)."
+    ]},
+  pancreas: {
+    title:"췌장질환 케어", icon:"🍽️",
+    points:[
+      "췌장염 병력이 있다면 저지방(low-fat) 처방식이 핵심이에요. 일반 다이어트 사료도 지방 함량을 반드시 확인하세요.",
+      "기름진 간식·사람 음식은 췌장염 재발 위험을 높일 수 있어 엄격히 제한해야 해요.",
+      "급여는 소량씩 자주 나누어 주는 것이 췌장 부담을 줄이는 데 도움이 될 수 있어요."
+    ]},
+  diabetes: {
+    title:"당뇨 케어", icon:"🩺",
+    points:[
+      "인슐린 투여 스케줄이 있다면 매일 정해진 시간에 동일한 양을 급여하는 것이 혈당 관리에 매우 중요해요.",
+      "고섬유·저단순당 식단이 혈당 변동 폭을 줄이는 데 도움이 될 수 있어요.",
+      "체중 변화가 인슐린 용량에 영향을 줄 수 있으므로, 다이어트를 진행하기 전 반드시 담당 수의사와 상의하세요."
+    ]},
+  none: {
+    title:"일반 체중관리 팁", icon:"✅",
+    points:[
+      "특별한 기저질환이 없다면, 계산된 급여량과 간식 한도를 꾸준히 지키는 것만으로도 안전한 감량이 가능해요.",
+      "매주 같은 요일, 같은 시간대에 체중을 측정해 변화 추이를 기록해보세요.",
+      "산책 등 활동량을 서서히 늘리면 근손실 없이 체지방 감량 효과를 높일 수 있어요."
+    ]}
+};
+
+/* ---------- 제휴 큐레이션 (플랜별) ---------- */
+const AFFILIATE_MAP = {
+  diet: [
+    {name:"라이트바디 다이어트 처방식", brand:"베트누리", type:"사료", kcal100:300, badge:"다이어트",
+      points:["DM 기준 단백질 32% 고단백 저칼로리 설계","조단백:지방 2.3:1 비율로 근손실 최소화"]},
+    {name:"슬림트릿 저칼로리 트릿", brand:"베터스낵", type:"간식", isSnack:true, kcal100:250, badge:"간식",
+      points:["1개당 약 3kcal · 훈련·보상용으로 적합","간식 한도 내에서 부담 없이 급여 가능"]},
+    {name:"락토바이오 유산균 파우더", brand:"펫바이옴", type:"영양제", dosageText:"체중 5kg 기준 하루 1스틱(1g)", badge:"장건강",
+      points:["체중감량기 장내 미생물 균형 지원","포만감 보조 프리바이오틱 식이섬유 함유"]},
+  ],
+  joint: [
+    {name:"조인트가드 관절 처방식", brand:"베트누리", type:"사료", kcal100:340, badge:"관절",
+      points:["DM 기준 지방 14%, EPA/DHA 강화 배합","글루코사민 500mg/100g 함유"]},
+    {name:"콜라겐플러스 관절 츄어블", brand:"조인트랩", type:"영양제", dosageText:"체중 10kg당 하루 1정", badge:"임상검증",
+      points:["UC-II 콜라겐 + MSM 복합 처방","임상 데이터 기반 관절 유연성 지원 연구 보유"]},
+    {name:"관절사랑 수제트릿", brand:"홈쿡펫", type:"간식", isSnack:true, kcal100:180, badge:"수제간식",
+      points:["닭가슴살 + 초록입홍합 추출물 함유","자연 유래 글루코사민 소량 공급"]},
+  ],
+  kidney: [
+    {name:"리날케어 신장 처방식", brand:"베트누리", type:"사료", kcal100:320, badge:"신장",
+      points:["인(P) 함량 0.4% 이하 저인 설계","나트륨 제한으로 심혈관 부담 완화"]},
+    {name:"오메가리날 EPA 영양제", brand:"펫오메가", type:"영양제", dosageText:"체중 5kg 기준 하루 500mg", badge:"신장지지",
+      points:["신장 여과 부담 완화 보조 관련 연구 존재","고순도 정제 오메가-3(EPA 우세)"]},
+    {name:"저인 수제 간식", brand:"홈쿡펫", type:"간식", isSnack:true, kcal100:150, badge:"저인",
+      points:["계란흰자 베이스로 인·나트륨 함량 최소화"]},
+  ],
+  pancreas: [
+    {name:"로우팻 프리미엄 처방식", brand:"베트누리", type:"사료", kcal100:290, badge:"저지방",
+      points:["DM 기준 지방 8% 이하 초저지방 설계","가수분해 단백질로 소화 부담 최소화"]},
+    {name:"췌장 소화효소 보조제", brand:"펫자임", type:"영양제", dosageText:"매 식사 시 1캡슐", badge:"소화지원",
+      points:["지방·단백질 분해 효소 보충으로 췌장 부담 경감"]},
+    {name:"저지방 호박·닭안심 수제간식", brand:"홈쿡펫", type:"간식", isSnack:true, kcal100:120, badge:"저지방간식",
+      points:["지방 함량 1% 미만 초저지방 레시피"]},
+  ],
+  senior: [
+    {name:"시니어 밸런스 사료", brand:"베트누리", type:"사료", kcal100:330, badge:"시니어",
+      points:["연령별 대사 저하를 반영한 저칼로리 고단백 설계","항산화 복합체로 인지 건강 지원"]},
+    {name:"관절+피부 종합 영양제", brand:"올케어펫", type:"영양제", dosageText:"체중 10kg당 하루 1스쿱", badge:"종합영양",
+      points:["오메가-3 + 히알루론산 복합 처방"]},
+    {name:"소프트 저작 트릿", brand:"베터스낵", type:"간식", isSnack:true, kcal100:200, badge:"소프트간식",
+      points:["치아·잇몸이 약한 노령견도 편하게 급여 가능"]},
+  ],
+};
+
+/* ============================================================
+   0-B. ADMIN STUDIO — 상태 & 상수
+============================================================ */
+const FONT_OPTIONS = [
+  {id:"notosans", label:"Noto Sans KR (기본)", stack:"'Noto Sans KR','Malgun Gothic',sans-serif", google:null},
+  {id:"gowun", label:"고운돋움 · 둥근 감성", stack:"'Gowun Dodum','Noto Sans KR',sans-serif", google:"Gowun+Dodum"},
+  {id:"jua", label:"주아 · 귀여운 느낌", stack:"'Jua','Noto Sans KR',sans-serif", google:"Jua"},
+  {id:"myeongjo", label:"나눔명조 · 고급스러운 세리프", stack:"'Nanum Myeongjo','Noto Serif KR',serif", google:"Nanum+Myeongjo:wght@400;700;800"},
+  {id:"inter", label:"Inter · 모던 산세리프", stack:"'Inter','Noto Sans KR',sans-serif", google:"Inter:wght@400;500;600;700;800"},
+  {id:"poppins", label:"Poppins · 라운드 산세리프", stack:"'Poppins','Noto Sans KR',sans-serif", google:"Poppins:wght@400;500;600;700"},
+];
+const injectedFonts = new Set(["notosans"]);
+function ensureGoogleFont(fontId){
+  const opt = FONT_OPTIONS.find(f=>f.id===fontId);
+  if(!opt || !opt.google || injectedFonts.has(opt.id)) return;
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = `https://fonts.googleapis.com/css2?family=${opt.google}&display=swap`;
+  document.head.appendChild(link);
+  injectedFonts.add(opt.id);
+}
+
+const SECTION_LABELS = {
+  metrics:"핵심 지표", calcBasis:"계산 근거", macro:"영양소 비율", proteinWater:"단백질·음수량",
+  chart:"체중 예측 차트", transition:"사료 전환 스케줄", guide:"플랜·질환 가이드",
+  veggie:"야채 간식 환산기", affiliate:"제휴 큐레이션", premium:"프리미엄 안내", challenge:"28일 챌린지",
+};
+
+const DEFAULT_ADMIN = {
+  logo:{mode:"text", text:"멍플랜", imageSrc:null, scale:1, position:"left"},
+  colors:{primary:"#F97A3D", mint:"#2FBF9F", surfaceLight:"#FBF7F2", surfaceDark:"#181410"},
+  typography:{family:"notosans", baseFontSize:16, letterSpacing:0, lineHeight:1.5},
+  layout:{headerMode:"fixed", maxWidth:1024, gap:24, radius:20},
+  sections: Object.keys(SECTION_LABELS).map(id=>({id, label:SECTION_LABELS[id], visible:true})),
+};
+let adminSettings = JSON.parse(JSON.stringify(DEFAULT_ADMIN));
+let userSettings = {fontScale:1, themeMode:"system"};
+const FONT_SCALE_STEPS = [0.9, 1.0, 1.1, 1.2, 1.3];
+
+/* ---- 관리자 스튜디오 접근 제어 ---- */
+const ADMIN_PASSWORD = "ejin2021";
+let isAdminAuthenticated = false;
+
+/* ============================================================
+   1. INIT UI
+============================================================ */
+function init(){
+  // plan cards
+  const planGrid = document.getElementById('planGrid');
+  PLANS.forEach(p=>{
+    const btn = document.createElement('button');
+    btn.className = 'plan-card rounded-xl p-4 text-left flex items-center gap-3';
+    btn.dataset.id = p.id;
+    btn.innerHTML = `
+      <span class="text-2xl shrink-0">${p.emoji}</span>
+      <span class="flex-1">
+        <span class="block font-bold text-sm">${p.title}</span>
+        <span class="block text-xs text-muted mt-0.5">${p.desc}</span>
+      </span>`;
+    btn.addEventListener('click', ()=>selectPlan(p.id));
+    planGrid.appendChild(btn);
+  });
+
+  const breedSel = document.getElementById('in_breed');
+  BREEDS.forEach(b=>{
+    const o = document.createElement('option'); o.value=b; o.textContent=b; breedSel.appendChild(o);
+  });
+  breedSel.addEventListener('change', e=>{
+    document.getElementById('in_breed_custom').classList.toggle('hidden', e.target.value !== "직접입력");
+  });
+
+  // BCS row
+  const bcsRow = document.getElementById('bcsRow');
+  BCS_INFO.forEach((info,i)=>{
+    const n = i+1;
+    const btn = document.createElement('button');
+    btn.className = 'bcs-btn chip rounded-xl py-2 flex flex-col items-center gap-1';
+    btn.dataset.val = n;
+    btn.innerHTML = `${bcsSilhouette(n)}<span class="text-[11px] font-bold">${n}</span>`;
+    btn.addEventListener('click', ()=>{
+      dog.bcs = n;
+      document.querySelectorAll('.bcs-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('bcsDesc').textContent = `BCS ${n} · ${BCS_INFO[i].label}`;
+      document.getElementById('bcsDesc').style.color = BCS_INFO[i].tone;
+    });
+    bcsRow.appendChild(btn);
+  });
+
+  // condition chips
+  const condGroup = document.getElementById('conditionGroup');
+  CONDITIONS.forEach(c=>{
+    const btn = document.createElement('button');
+    btn.className = 'chip rounded-xl py-2.5 text-sm';
+    btn.textContent = c.label;
+    btn.dataset.id = c.id;
+    btn.addEventListener('click', ()=>toggleCondition(c.id, btn));
+    condGroup.appendChild(btn);
+  });
+
+  // neuter group
+  document.querySelectorAll('#neuterGroup button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      dog.neutered = btn.dataset.val === 'true';
+      document.querySelectorAll('#neuterGroup button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  // activity group
+  document.querySelectorAll('#activityGroup button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      dog.activity = btn.dataset.val;
+      document.querySelectorAll('#activityGroup button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  // food presets
+  const foodGroup = document.getElementById('foodPresetGroup');
+  FOOD_PRESETS.forEach(f=>{
+    const btn = document.createElement('button');
+    btn.className = 'chip rounded-xl px-4 py-3 text-sm flex items-center justify-between text-left';
+    btn.dataset.id = f.id;
+    btn.innerHTML = `<span class="font-semibold">${f.label}</span><span class="text-xs text-muted">${f.desc}</span>`;
+    btn.addEventListener('click', ()=>{
+      foodGroup.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      const kcalInput = document.getElementById('in_food_kcal');
+      if(f.kcal){ kcalInput.value = f.kcal; dog.foodKcal = f.kcal; kcalInput.disabled = true; }
+      else { kcalInput.disabled = false; kcalInput.value=''; kcalInput.focus(); }
+    });
+    foodGroup.appendChild(btn);
+  });
+  document.getElementById('in_food_kcal').addEventListener('input', e=>{ dog.foodKcal = parseFloat(e.target.value)||null; });
+
+  buildStepDots();
+  document.getElementById('prevBtn').addEventListener('click', ()=>goStep(currentStep-1));
+  document.getElementById('nextBtn').addEventListener('click', onNext);
+  updateStepView();
+
+  // ---- 유저 뷰포트 컨트롤 (방문자용) ----
+  document.getElementById('fontMinusBtn').addEventListener('click', ()=>stepFontScale(-1));
+  document.getElementById('fontPlusBtn').addEventListener('click', ()=>stepFontScale(1));
+  document.querySelectorAll('.user-theme-btn').forEach(b=>{
+    b.addEventListener('click', ()=>{ userSettings.themeMode = b.dataset.mode; applyResolvedTheme(); updateUserWidgetUI(); });
+  });
+  const sysMq = window.matchMedia('(prefers-color-scheme: dark)');
+  const sysListener = ()=>{ if(userSettings.themeMode==='system') applyResolvedTheme(); };
+  sysMq.addEventListener ? sysMq.addEventListener('change', sysListener) : sysMq.addListener(sysListener);
+  updateUserWidgetUI();
+  applyResolvedTheme();
+
+  // ---- 관리자 스튜디오 ----
+  document.getElementById('studioOpenBtn').addEventListener('click', requestAdminAccess);
+  document.getElementById('studioFabBtn').addEventListener('click', openStudio);
+  document.getElementById('studioCloseBtn').addEventListener('click', closeStudio);
+  document.getElementById('studioBackdrop').addEventListener('click', closeStudio);
+  buildStudioTabs();
+
+  // ---- 관리자 진입 트리거: 푸터 카피라이트 클릭 & 단축키(Ctrl/Cmd+Shift+A) ----
+  document.getElementById('footerAdminTrigger').addEventListener('click', requestAdminAccess);
+  document.addEventListener('keydown', e=>{
+    if((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key==='A' || e.key==='a')){
+      e.preventDefault();
+      requestAdminAccess();
+    }
+  });
+  renderStudioTab();
+
+  applyAdminTheme();
+}
+
+function stepFontScale(dir){
+  const idx = FONT_SCALE_STEPS.indexOf(userSettings.fontScale);
+  const next = Math.min(FONT_SCALE_STEPS.length-1, Math.max(0, idx+dir));
+  userSettings.fontScale = FONT_SCALE_STEPS[next];
+  document.documentElement.style.setProperty('--scale', userSettings.fontScale);
+  updateUserWidgetUI();
+}
+function updateUserWidgetUI(){
+  document.getElementById('fontScaleLabel').textContent = Math.round(userSettings.fontScale*100)+'%';
+  document.querySelectorAll('.user-theme-btn').forEach(b=>{
+    b.style.background = b.dataset.mode===userSettings.themeMode ? 'var(--c-primary-light)' : '';
+    b.style.color = b.dataset.mode===userSettings.themeMode ? 'var(--c-primary-dark)' : '';
+  });
+}
+function applyResolvedTheme(){
+  const sysDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const resolved = userSettings.themeMode==='system' ? (sysDark?'dark':'light') : userSettings.themeMode;
+  document.documentElement.setAttribute('data-theme', resolved);
+  refreshChartsTheme();
+}
+
+function selectPlan(id){
+  dog.plan = id;
+  document.querySelectorAll('.plan-card').forEach(b=>b.classList.toggle('active', b.dataset.id===id));
+  const cfg = PLANS.find(p=>p.id===id);
+  // 플랜에 맞는 질환 자동 선택 (사용자가 Step3에서 자유롭게 수정 가능)
+  if(cfg.autoCondition){
+    dog.conditions = [cfg.autoCondition];
+    document.querySelectorAll('#conditionGroup button').forEach(b=>b.classList.toggle('active', b.dataset.id===cfg.autoCondition));
+  }
+}
+
+function toggleCondition(id, btn){
+  const condGroup = document.getElementById('conditionGroup');
+  if(id === 'none'){
+    dog.conditions = ['none'];
+    condGroup.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+  } else {
+    dog.conditions = dog.conditions.filter(x=>x!=='none');
+    condGroup.querySelector('[data-id="none"]').classList.remove('active');
+    const idx = dog.conditions.indexOf(id);
+    if(idx>-1){ dog.conditions.splice(idx,1); btn.classList.remove('active'); }
+    else { dog.conditions.push(id); btn.classList.add('active'); }
+  }
+}
+
+/* Catmull-Rom → Cubic Bezier: 점들을 부드러운 폐곡선으로 연결 (실제 몸통 굴곡 표현) */
+function smoothClosedPath(pts){
+  const n = pts.length;
+  const d = [`M ${pts[0][0].toFixed(2)} ${pts[0][1].toFixed(2)}`];
+  for(let i=0;i<n;i++){
+    const p0 = pts[(i-1+n)%n], p1 = pts[i], p2 = pts[(i+1)%n], p3 = pts[(i+2)%n];
+    const cp1x = p1[0] + (p2[0]-p0[0])/6, cp1y = p1[1] + (p2[1]-p0[1])/6;
+    const cp2x = p2[0] - (p3[0]-p1[0])/6, cp2y = p2[1] - (p3[1]-p1[1])/6;
+    d.push(`C ${cp1x.toFixed(2)} ${cp1y.toFixed(2)}, ${cp2x.toFixed(2)} ${cp2y.toFixed(2)}, ${p2[0].toFixed(2)} ${p2[1].toFixed(2)}`);
+  }
+  d.push('Z');
+  return d.join(' ');
+}
+
+/* BCS 단계별 '위에서 내려다본(Top-down)' 몸통 실루엣 — 목·갈비뼈·허리·엉덩이 굴곡을 실제 곡선으로 표현 */
+function bcsSilhouette(n){
+  const s = BCS_SHAPE[n-1];
+  const color = BCS_INFO[n-1].tone;
+  const cx = 30;
+  const yShoulder=14, yNeck=21, yRib=37, yWaist=55, yHip=72, yTail=88, yTailTip=95;
+
+  const pts = [
+    [cx+s.neck*0.8, yShoulder],
+    [cx+s.neck,     yNeck],
+    [cx+s.rib,      yRib],
+    [cx+s.waist,    yWaist],
+    [cx+s.hip,      yHip],
+    [cx+s.tail,     yTail],
+    [cx,            yTailTip],
+    [cx-s.tail,     yTail],
+    [cx-s.hip,      yHip],
+    [cx-s.waist,    yWaist],
+    [cx-s.rib,      yRib],
+    [cx-s.neck,     yNeck],
+    [cx-s.neck*0.8, yShoulder],
+  ];
+  const bodyD = smoothClosedPath(pts);
+
+  // 마른 체형(BCS 1~3): 갈비뼈가 드러나 보이는 결 표현
+  let ribLines = '';
+  if(s.ribBone){
+    [-6,0,6].forEach(off=>{
+      const w = s.rib*0.55;
+      ribLines += `<path d="M ${cx-w} ${yRib+off-8} Q ${cx} ${yRib+off-11} ${cx+w} ${yRib+off-8}" stroke="rgba(0,0,0,.28)" stroke-width="1" fill="none" stroke-linecap="round"/>`;
+    });
+  }
+  // 매우 마름(BCS 1): 골반뼈 돌출 표현
+  let hipBone = '';
+  if(s.hipBone){
+    hipBone += `<path d="M ${cx-s.hip+2} ${yHip-4} l -3 -4" stroke="rgba(0,0,0,.3)" stroke-width="1.4" fill="none" stroke-linecap="round"/>`;
+    hipBone += `<path d="M ${cx+s.hip-2} ${yHip-4} l 3 -4" stroke="rgba(0,0,0,.3)" stroke-width="1.4" fill="none" stroke-linecap="round"/>`;
+  }
+  // 허리 라인 가이드: 이상적 체형(4~5)일수록 잘록한 곡선을 은은하게 강조
+  let waistGuide = '';
+  if(n>=4 && n<=6){
+    waistGuide = `<path d="M ${cx-s.waist} ${yWaist} Q ${cx} ${yWaist+4} ${cx+s.waist} ${yWaist}" stroke="rgba(255,255,255,.35)" stroke-width="1" fill="none"/>`;
+  }
+
+  return `<svg width="27" height="43" viewBox="0 0 60 100" xmlns="http://www.w3.org/2000/svg">
+    <path d="${bodyD}" fill="${color}" opacity="0.92"/>
+    ${ribLines}
+    ${hipBone}
+    ${waistGuide}
+    <ellipse cx="${cx-6.5}" cy="8" rx="3" ry="5.2" fill="${color}" transform="rotate(-30 ${cx-6.5} 8)"/>
+    <ellipse cx="${cx+6.5}" cy="8" rx="3" ry="5.2" fill="${color}" transform="rotate(30 ${cx+6.5} 8)"/>
+    <circle cx="${cx}" cy="12" r="7.2" fill="${color}"/>
+  </svg>`;
+}
+
+/* ============================================================
+   2. STEP NAVIGATION
+============================================================ */
+function buildStepDots(){
+  const wrap = document.getElementById('stepDots');
+  wrap.innerHTML = '';
+  for(let i=1;i<=totalSteps;i++){
+    const d = document.createElement('div');
+    d.className = 'step-dot' + (i===currentStep?' active':'');
+    d.id = 'dot'+i;
+    wrap.appendChild(d);
+  }
+}
+function updateDots(){
+  for(let i=1;i<=totalSteps;i++){
+    const d = document.getElementById('dot'+i);
+    d.classList.toggle('active', i===currentStep);
+    d.classList.toggle('done', i<currentStep);
+  }
+}
+function updateStepView(){
+  for(let i=1;i<=totalSteps;i++){
+    document.getElementById('step'+i).classList.toggle('hidden', i!==currentStep);
+  }
+  document.getElementById('prevBtn').style.visibility = currentStep===1 ? 'hidden':'visible';
+  document.getElementById('nextBtn').textContent = currentStep===totalSteps ? '결과 계산하기' : '다음';
+  updateDots();
+}
+function validateStep(step){
+  if(step===1){
+    if(!dog.plan){ alert('케어 플랜을 선택해주세요.'); return false; }
+    return true;
+  }
+  if(step===2){
+    dog.name = document.getElementById('in_name').value.trim() || "우리 아이";
+    const breedSel = document.getElementById('in_breed').value;
+    dog.breed = breedSel === "직접입력" ? (document.getElementById('in_breed_custom').value.trim() || "믹스견") : breedSel;
+    dog.ageYear = parseInt(document.getElementById('in_age_year').value)||0;
+    dog.ageMonth = parseInt(document.getElementById('in_age_month').value)||0;
+    if(!breedSel){ alert('견종을 선택해주세요.'); return false; }
+    return true;
+  }
+  if(step===3){
+    dog.weight = parseFloat(document.getElementById('in_weight').value);
+    dog.target = parseFloat(document.getElementById('in_target').value);
+    if(!dog.weight || dog.weight<=0){ alert('현재 체중을 입력해주세요.'); return false; }
+    if(!dog.target || dog.target<=0){ alert('목표 체중을 입력해주세요.'); return false; }
+    if(dog.neutered===null){ alert('중성화 여부를 선택해주세요.'); return false; }
+    if(!dog.bcs){ alert('비만도(BCS)를 선택해주세요.'); return false; }
+    if(dog.conditions.length===0){ alert('보유 질환을 선택해주세요. (없다면 "해당 없음")'); return false; }
+    return true;
+  }
+  if(step===4){
+    dog.walk = parseFloat(document.getElementById('in_walk').value)||0;
+    dog.foodKcal = parseFloat(document.getElementById('in_food_kcal').value);
+    if(!dog.activity){ alert('활동 강도를 선택해주세요.'); return false; }
+    if(!dog.foodKcal || dog.foodKcal<=0){ alert('사료의 100g당 칼로리를 입력해주세요.'); return false; }
+    return true;
+  }
+  return true;
+}
+function onNext(){
+  if(!validateStep(currentStep)) return;
+  if(currentStep < totalSteps){ goStep(currentStep+1); }
+  else { runCalculation(); }
+}
+function goStep(n){
+  if(n<1) return;
+  currentStep = n;
+  updateStepView();
+  document.getElementById('formSection').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+/* ============================================================
+   3. VETERINARY NUTRITION CALCULATION ENGINE
+   근거: WSAVA Global Nutrition Guidelines / AAFCO 대사에너지 산정 원칙 기반
+   표준 RER-MER 공식 + 케어 플랜별 보정치 적용
+============================================================ */
+function computeResults(){
+  const W = dog.weight;
+  const RER = 70 * Math.pow(W, 0.75);
+  const IBW = W / (1 + (dog.bcs - 5) * 0.1);
+
+  let goalType = 'maintain';
+  if(dog.target < W * 0.98) goalType = 'loss';
+  else if(dog.target > W * 1.02) goalType = 'gain';
+
+  let factor, factorNote;
+  if(goalType === 'loss' || dog.bcs>=6){
+    let base = dog.activity==='low' ? 0.80 : dog.activity==='high' ? 1.00 : 0.90;
+    if(dog.neutered) base -= 0.05;
+    factor = Math.min(1.0, Math.max(0.8, base));
+    factorNote = `감량 모드: 기본 ${dog.activity==='low'?'0.80':dog.activity==='high'?'1.00':'0.90'} ${dog.neutered?'− 중성화 보정 0.05':''} → 최종 ${factor.toFixed(2)}`;
+  } else if(goalType === 'gain' || dog.bcs<=3){
+    let base = 1.4 + (dog.activity==='high'?0.2:dog.activity==='low'?-0.1:0) + (dog.bcs<=3?0.2:0);
+    factor = Math.min(1.8, Math.max(1.2, base));
+    factorNote = `증량 모드: 활동량 및 저체중 보정 반영 → 최종 ${factor.toFixed(2)}`;
+  } else {
+    let base = (dog.neutered?1.6:1.8) + (dog.activity==='high'?0.2:dog.activity==='low'?-0.2:0);
+    factor = Math.min(2.0, Math.max(1.4, base));
+    factorNote = `유지 모드: ${dog.neutered?'중성화(1.6)':'미중성화(1.8)'} ${dog.activity!=='normal' ? (dog.activity==='high'?'+ 고활동 0.2':'− 저활동 0.2'):''} → 최종 ${factor.toFixed(2)}`;
+  }
+  const MER = RER * factor;
+
+  const dailyFoodG = (MER / dog.foodKcal) * 100;
+  const snackKcalLimit = MER * 0.10;
+  const waterMl = RER * 1;
+
+  const proteinMin = IBW * 2.5;
+  const proteinRec = IBW * 3.5;
+
+  const weeklyPlan = buildWeeklyProjection(W, dog.target, goalType);
+
+  const oldFactor = dog.neutered ? 1.6 : 1.8;
+  const oldDailyG = (RER * oldFactor / dog.foodKcal) * 100;
+  const transitionSchedule = buildTransitionSchedule(oldDailyG, dailyFoodG);
+
+  const planCfg = PLANS.find(p=>p.id===dog.plan) || PLANS[0];
+
+  const r = {
+    RER, IBW, MER, factor, factorNote, goalType,
+    dailyFoodG, snackKcalLimit, waterMl, proteinMin, proteinRec,
+    weeklyPlan, transitionSchedule, oldDailyG, planCfg
+  };
+  r.extra = planExtras(r);
+  return r;
+}
+
+function planExtras(r){
+  const W = dog.weight;
+  if(dog.plan === 'kidney'){
+    return {
+      type:'kidney',
+      proteinLow: r.IBW*2.0, proteinHigh: r.IBW*2.5,
+      note:"신장 부담 완화를 위해 일반 기준보다 낮춘 참고용 단백질 범위예요. 정확한 목표량은 반드시 처방 수의사와 상의해 결정하세요."
+    };
+  }
+  if(dog.plan === 'pancreas'){
+    const fatCapG = (r.MER * 0.10) / 9; // 지방 1g ≈ 9kcal, 지방칼로리 10% 상한 기준
+    return {
+      type:'pancreas',
+      fatCapG,
+      note:"전체 하루 섭취 칼로리 중 지방 유래 칼로리가 10%를 넘지 않도록 관리해요 (지방 1g ≈ 9kcal로 환산)."
+    };
+  }
+  if(dog.plan === 'joint'){
+    return {
+      type:'joint',
+      omega3Low: Math.round(W*50), omega3High: Math.round(W*110),
+      note:"일반적으로 언급되는 체중 대비 오메가-3(EPA+DHA) 권장 범위예요. 정확한 용량은 제품 농도와 수의사 상담에 따라 조정하세요."
+    };
+  }
+  return {type:'none'};
+}
+
+function buildWeeklyProjection(W, target, goalType){
+  const points = [{week:0, weight:+W.toFixed(2)}];
+  let w = W;
+  const rate = goalType==='loss' ? -0.0125 : goalType==='gain' ? 0.01 : 0;
+  let week = 0;
+  if(goalType === 'maintain'){
+    for(let i=1;i<=8;i++) points.push({week:i, weight:+W.toFixed(2)});
+    return {points, weeks: 0};
+  }
+  while(week < 52){
+    week++;
+    w = w * (1+rate);
+    if((goalType==='loss' && w<=target) || (goalType==='gain' && w>=target)){
+      points.push({week, weight:+target.toFixed(2)});
+      break;
+    }
+    points.push({week, weight:+w.toFixed(2)});
+  }
+  return {points, weeks: week};
+}
+
+function buildTransitionSchedule(oldG, newG){
+  const steps = [
+    {label:"1~2일차", ratioOld:1.00, ratioNew:0.00},
+    {label:"3~4일차", ratioOld:0.75, ratioNew:0.25},
+    {label:"5~6일차", ratioOld:0.50, ratioNew:0.50},
+    {label:"7~8일차", ratioOld:0.25, ratioNew:0.75},
+    {label:"9일차~ (2주차 목표)", ratioOld:0.00, ratioNew:1.00},
+  ];
+  return steps.map(s=>({label:s.label, grams: Math.round(oldG*s.ratioOld + newG*s.ratioNew)}));
+}
+
+/* ============================================================
+   4. RENDER DASHBOARD
+============================================================ */
+function runCalculation(){
+  const r = computeResults();
+  document.getElementById('formSection').classList.add('hidden');
+  const dash = document.getElementById('dashboardSection');
+  dash.classList.remove('hidden');
+  dash.innerHTML = renderDashboard(r);
+  document.getElementById('headerRight').innerHTML = `<button id="restartBtn" class="btn-ghost rounded-xl px-3 py-2 text-xs sm:text-sm">다시 입력</button>`;
+  document.getElementById('restartBtn').addEventListener('click', ()=>{
+    dash.classList.add('hidden');
+    document.getElementById('formSection').classList.remove('hidden');
+    document.getElementById('headerRight').innerHTML = '';
+    buildSidebarLinks();
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+
+  requestAnimationFrame(()=>{
+    animateBars();
+    drawWeightChart(r.weeklyPlan, dog.target);
+  });
+  bindDashboardEvents(r);
+  buildSidebarLinks();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+/* ---- 섹션 빌더: 각 함수는 하나의 대시보드 블록 HTML을 반환하며,
+   admin.sections 의 순서/노출(ON·OFF) 설정에 따라 조립돼요. ---- */
+const SECTION_BUILDERS = {
+  metrics: (r) => `
+    <div style="display:flex;flex-direction:column;gap:var(--section-gap)">
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        ${metricCard('일일 급여량', Math.round(r.dailyFoodG)+'<span class="text-base font-medium"> g</span>', '하루 총량 기준', 'bone')}
+        ${metricCard('일일 권장 칼로리', Math.round(r.MER)+'<span class="text-base font-medium"> kcal</span>', 'MER 기준', 'flame')}
+        ${metricCard('간식 한도', Math.round(r.snackKcalLimit)+'<span class="text-base font-medium"> kcal</span>', 'MER의 10% 이내', 'cookie')}
+        ${metricCard('권장 음수량', Math.round(r.waterMl)+'<span class="text-base font-medium"> ml</span>', 'RER 1:1 대응', 'droplet')}
+      </div>
+      ${renderPlanExtraCard(r)}
+    </div>`,
+
+  calcBasis: (r) => `
+    <div class="tooltip-box p-5 sm:p-6">
+      <p class="font-bold text-sm mb-3 flex items-center gap-1.5">${icon('info')} 수의영양학 계산 근거</p>
+      <div class="grid sm:grid-cols-3 gap-4 text-xs">
+        <div>
+          <p class="font-semibold mb-1 font-display">RER (기초대사에너지)</p>
+          <p class="text-muted mb-1">70 × (현재체중)^0.75</p>
+          <p class="font-display font-bold text-primary-dark">= 70 × ${dog.weight}^0.75 = ${Math.round(r.RER)} kcal</p>
+        </div>
+        <div>
+          <p class="font-semibold mb-1 font-display">IBW (과학적 이상체중)</p>
+          <p class="text-muted mb-1">현재체중 ÷ (1 + (BCS−5) × 0.1)</p>
+          <p class="font-display font-bold text-primary-dark">= ${dog.weight} ÷ (1 + (${dog.bcs}−5)×0.1) = ${r.IBW.toFixed(2)} kg</p>
+        </div>
+        <div>
+          <p class="font-semibold mb-1 font-display">MER (유지/조정 에너지)</p>
+          <p class="text-muted mb-1">RER × 계수(활동량·중성화·목표 반영)</p>
+          <p class="font-display font-bold text-primary-dark">= ${Math.round(r.RER)} × ${r.factor.toFixed(2)} = ${Math.round(r.MER)} kcal</p>
+        </div>
+      </div>
+      <p class="text-[11px] text-muted mt-3 pt-3 border-t border-token">${r.factorNote} · 과학적 이상체중(IBW)은 ${r.IBW.toFixed(2)}kg로 산출되었어요. 보호자 설정 목표(${dog.target}kg)와 함께 참고해주세요.</p>
+    </div>`,
+
+  macro: (r) => `
+    <div class="surface rounded-[var(--radius-card)] p-6">
+      <p class="font-bold mb-1 flex items-center gap-1.5">${icon('scale')} ${r.planCfg.title} 권장 영양소 비율 (DM 기준)</p>
+      <p class="text-xs text-muted mb-4">건물(수분 제외) 기준 대략적인 목표 비율이에요. 실제 제품 라벨의 수치와 함께 확인하세요.</p>
+      ${renderMacroBar(r.planCfg.macro)}
+    </div>`,
+
+  proteinWater: (r) => `
+    <div class="grid sm:grid-cols-2 gap-4">
+      <div class="surface rounded-2xl p-5">
+        <p class="font-bold text-sm mb-2 flex items-center gap-1.5">${icon('drumstick')} 최소 단백질 요구량</p>
+        ${r.extra.type==='kidney' ? `
+          <p class="font-display text-2xl font-bold text-primary-dark mb-1">${Math.round(r.extra.proteinLow)}g ~ ${Math.round(r.extra.proteinHigh)}g <span class="text-sm font-medium text-muted font-body">/ 일</span></p>
+          <p class="text-xs text-muted">${r.extra.note}</p>
+        ` : `
+          <p class="font-display text-2xl font-bold text-primary-dark mb-1">${Math.round(r.proteinMin)}g ~ ${Math.round(r.proteinRec)}g <span class="text-sm font-medium text-muted font-body">/ 일</span></p>
+          <p class="text-xs text-muted">감량 중 근손실 방지를 위한 이상체중(IBW) 기준 최소~권장 섭취량이에요.</p>
+        `}
+      </div>
+      <div class="surface rounded-2xl p-5">
+        <p class="font-bold text-sm mb-2 flex items-center gap-1.5">${icon('droplet')} 하루 권장 음수량</p>
+        <p class="font-display text-2xl font-bold text-primary-dark mb-1">${Math.round(r.waterMl)}ml</p>
+        <p class="text-xs text-muted">RER(kcal)과 1:1 대응하는 표준 음수량 가이드예요. 사료의 수분 함량에 따라 달라질 수 있어요.</p>
+      </div>
+    </div>`,
+
+  chart: (r) => `
+    <div class="surface rounded-[var(--radius-card)] p-6">
+      <div class="flex items-center justify-between mb-1">
+        <p class="font-bold">주차별 목표 체중 변화 예측</p>
+        <span class="text-xs px-2.5 py-1 rounded-full bg-mint-light text-mint font-semibold">${r.weeklyPlan.weeks>0 ? `약 ${r.weeklyPlan.weeks}주 소요 예상` : '체중 유지 모드'}</span>
+      </div>
+      <p class="text-xs text-muted mb-4">안전 감량/증량 속도(주당 체중의 약 1.0~1.5%) 기준 시뮬레이션이에요.</p>
+      <div class="relative" style="height:260px;"><canvas id="weightChart"></canvas></div>
+    </div>`,
+
+  transition: (r) => `
+    <div class="surface rounded-[var(--radius-card)] p-6">
+      <p class="font-bold mb-1 flex items-center gap-1.5">${icon('calendar')} 사료 감량 적응 스케줄 (1~2주차)</p>
+      <p class="text-xs text-muted mb-4">급격한 급여량 감소로 인한 공복토·위산 과다를 막기 위해 단계적으로 줄여주세요.</p>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm min-w-[420px]">
+          <thead><tr class="text-left text-xs text-muted border-b border-token">
+            <th class="py-2 font-semibold">기간</th><th class="py-2 font-semibold">급여량</th><th class="py-2 font-semibold">목표 대비 비율</th>
+          </tr></thead>
+          <tbody>
+            ${r.transitionSchedule.map(row=>`
+              <tr class="border-b border-token last:border-0">
+                <td class="py-2.5">${row.label}</td>
+                <td class="py-2.5 font-display font-bold">${row.grams}g</td>
+                <td class="py-2.5">
+                  <div class="w-full h-2 rounded-full surface-2 overflow-hidden max-w-[160px]">
+                    <div class="h-full bar-fill bg-primary" style="width:0%" data-target="${Math.round(row.grams/r.dailyFoodG*100)}"></div>
+                  </div>
+                </td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`,
+
+  guide: (r) => `
+    <div style="display:flex;flex-direction:column;gap:var(--section-gap)">
+      <div class="surface rounded-[var(--radius-card)] p-6">
+        <p class="font-bold mb-3 flex items-center gap-1.5">${r.planCfg.emoji} 케어플랜 포인트</p>
+        <ul class="space-y-1.5">
+          ${r.planCfg.tips.map(t=>`<li class="text-sm text-muted flex gap-1.5"><span class="text-primary shrink-0">•</span>${t}</li>`).join('')}
+        </ul>
+      </div>
+      <div>
+        <p class="font-bold mb-3 flex items-center gap-1.5">${icon('shield')} 질환별 맞춤 영양 가이드</p>
+        <div class="grid sm:grid-cols-2 gap-4">
+          ${dog.conditions.map(cid=>{
+            const g = CONDITION_GUIDE[cid];
+            return `<div class="surface rounded-2xl p-5">
+              <p class="font-bold text-sm mb-2">${g.icon} ${g.title}</p>
+              <ul class="space-y-1.5">
+                ${g.points.map(p=>`<li class="text-xs text-muted flex gap-1.5"><span class="text-primary shrink-0">•</span>${p}</li>`).join('')}
+              </ul>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+    </div>`,
+
+  veggie: (r) => `
+    <div class="surface rounded-[var(--radius-card)] p-6">
+      <p class="font-bold mb-1 flex items-center gap-1.5">${icon('leaf')} 포만감 대체 간식 칼로리 환산기</p>
+      <p class="text-xs text-muted mb-4">간식 한도(${Math.round(r.snackKcalLimit)}kcal) 내에서 급여 가능한 저칼로리 야채 양이에요.</p>
+      <div class="grid grid-cols-3 gap-3">
+        ${VEGGIES.map(v=>{
+          const grams = Math.round(r.snackKcalLimit / v.kcalPer100 * 100);
+          return `<div class="surface-2 rounded-xl p-4 text-center">
+            <p class="text-2xl mb-1">${v.icon}</p>
+            <p class="text-xs font-semibold mb-1">${v.name}</p>
+            <p class="font-display font-bold text-primary-dark">${grams}g</p>
+            <p class="text-[10px] text-muted">까지 하루 급여 가능</p>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`,
+
+  affiliate: (r) => renderAffiliateSection(r),
+
+  premium: (r) => `
+    <div class="rounded-[var(--radius-card)] p-6 sm:p-8 bg-primary-light border border-token flex flex-col sm:flex-row items-center gap-5 justify-between">
+      <div>
+        <p class="font-bold text-lg mb-1">더 정밀한 분석이 필요하다면?</p>
+        <p class="text-sm text-muted">전문 수의영양사가 ${dog.name}만을 위한 상세 리포트를 작성해드려요.</p>
+      </div>
+      <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto shrink-0">
+        <button id="openPremiumPdf" class="btn-primary rounded-xl px-5 py-3 text-sm whitespace-nowrap">상세 분석 PDF 소장하기</button>
+        <button id="openPremiumConsult" class="btn-ghost rounded-xl px-5 py-3 text-sm whitespace-nowrap">1:1 서면 상담 신청</button>
+      </div>
+    </div>`,
+
+  challenge: (r) => `
+    <div id="challengeSection" class="surface rounded-[var(--radius-card)] p-6 sm:p-8">
+      <div class="flex items-center justify-between mb-1">
+        <p class="font-bold text-lg flex items-center gap-1.5">${icon('trophy')} 28일 다이어트 챌린지</p>
+        <span id="challengeProgressLabel" class="text-xs font-semibold text-primary-dark">0 / 28일</span>
+      </div>
+      <p class="text-xs text-muted mb-4">매일 체중/급여 인증을 체크하고, 28일을 모두 채우면 제휴 브랜드 할인 쿠폰을 드려요.</p>
+      <div class="w-full h-2.5 rounded-full surface-2 overflow-hidden mb-5">
+        <div id="challengeBar" class="h-full bar-fill bg-mint" style="width:0%"></div>
+      </div>
+      <div class="grid grid-cols-7 gap-2" id="challengeGrid"></div>
+      <button id="claimCouponBtn" disabled class="btn-primary rounded-xl px-5 py-3 text-sm mt-5 w-full sm:w-auto">28일 완주 후 쿠폰 받기</button>
+    </div>`,
+};
+
+function renderDashboard(r){
+  const goalLabelMap = {loss:"체중 감량", gain:"체중 증량", maintain:"체중 유지"};
+  const challengeOn = adminSettings.sections.find(s=>s.id==='challenge')?.visible;
+
+  const heroHtml = `
+    <div class="surface rounded-[var(--radius-card)] p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div>
+        <div class="inline-flex items-center gap-1.5 bg-primary-light text-primary-dark text-xs font-bold px-3 py-1 rounded-full mb-2">
+          <span>${r.planCfg.emoji}</span><span>${r.planCfg.title}</span>
+        </div>
+        <h2 class="font-display text-3xl font-bold mb-1">${dog.name}의 ${goalLabelMap[r.goalType]} 플랜</h2>
+        <p class="text-sm text-muted">${dog.breed} · ${dog.ageYear}년 ${dog.ageMonth}개월 · 현재 ${dog.weight}kg → 목표 ${dog.target}kg</p>
+      </div>
+      <div class="flex gap-2 shrink-0">
+        <button id="savePdfBtn" class="btn-ghost rounded-xl px-4 py-2.5 text-xs sm:text-sm flex items-center gap-1.5">${icon('download')} 리포트 저장</button>
+        ${challengeOn ? `<button id="challengeScrollBtn" class="btn-primary rounded-xl px-4 py-2.5 text-xs sm:text-sm">28일 챌린지</button>` : ''}
+      </div>
+    </div>`;
+
+  const body = adminSettings.sections
+    .filter(s=>s.visible)
+    .map(s=>`<div id="section-${s.id}">${SECTION_BUILDERS[s.id](r)}</div>`)
+    .join('');
+
+  const emptyNotice = `<div class="text-center py-16 text-sm text-muted">모든 섹션이 숨겨져 있어요. 관리자 스튜디오의 '섹션' 탭에서 켜보세요.</div>`;
+
+  return `
+  <div class="fade-in" style="display:flex;flex-direction:column;gap:var(--section-gap)">
+    ${heroHtml}
+    ${body || emptyNotice}
+  </div>`;
+}
+
+function renderPlanExtraCard(r){
+  if(r.extra.type==='pancreas'){
+    return `<div class="surface rounded-2xl p-5 border-l-4" style="border-left-color:var(--c-fat);">
+      <p class="font-bold text-sm mb-1 flex items-center gap-1.5">🥑 췌장 보호 지방 섭취 상한 (전체 식단 기준)</p>
+      <p class="font-display text-2xl font-bold text-primary-dark mb-1">${r.extra.fatCapG.toFixed(1)}g <span class="text-sm font-medium text-muted font-body">/ 일 이하</span></p>
+      <p class="text-xs text-muted">${r.extra.note}</p>
+    </div>`;
+  }
+  if(r.extra.type==='joint'){
+    return `<div class="surface rounded-2xl p-5 border-l-4 border-primary">
+      <p class="font-bold text-sm mb-1 flex items-center gap-1.5">🦴 오메가-3(EPA+DHA) 권장 범위</p>
+      <p class="font-display text-2xl font-bold text-primary-dark mb-1">${r.extra.omega3Low} ~ ${r.extra.omega3High}mg <span class="text-sm font-medium text-muted font-body">/ 일</span></p>
+      <p class="text-xs text-muted">${r.extra.note}</p>
+    </div>`;
+  }
+  if(r.extra.type==='kidney'){
+    return `<div class="surface rounded-2xl p-5 border-l-4 border-primary">
+      <p class="font-bold text-sm mb-1 flex items-center gap-1.5">🫘 신장 보호 참고 지표</p>
+      <p class="text-sm font-semibold mb-1">인(P) 목표: 사료 기준 0.4% 이하 권장</p>
+      <p class="text-xs text-muted">${r.extra.note}</p>
+    </div>`;
+  }
+  return '';
+}
+
+function renderMacroBar(macro){
+  return `
+  <div class="w-full h-8 rounded-full overflow-hidden flex surface-2 mb-3">
+    <div class="macro-seg h-full flex items-center justify-center text-[11px] font-bold text-white" style="width:${macro.protein}%; background:var(--c-primary);">${macro.protein}%</div>
+    <div class="macro-seg h-full flex items-center justify-center text-[11px] font-bold text-white" style="width:${macro.fat}%; background:var(--c-fat);">${macro.fat}%</div>
+    <div class="macro-seg h-full flex items-center justify-center text-[11px] font-bold text-white" style="width:${macro.carb}%; background:var(--c-carb);">${macro.carb}%</div>
+  </div>
+  <div class="flex flex-wrap gap-4 text-xs">
+    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full inline-block" style="background:var(--c-primary)"></span>단백질 ${macro.protein}%</span>
+    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full inline-block" style="background:var(--c-fat)"></span>지방 ${macro.fat}%</span>
+    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full inline-block" style="background:var(--c-carb)"></span>탄수화물/섬유질 ${macro.carb}%</span>
+  </div>`;
+}
+
+function metricCard(label, value, sub, iconName){
+  return `<div class="surface rounded-2xl p-4 sm:p-5">
+    <div class="w-8 h-8 rounded-lg bg-primary-light flex items-center justify-center mb-2 text-primary-dark">${icon(iconName)}</div>
+    <p class="text-xs text-muted mb-0.5">${label}</p>
+    <p class="font-display font-bold text-2xl leading-tight">${value}</p>
+    <p class="text-[11px] text-muted mt-0.5">${sub}</p>
+  </div>`;
+}
+
+/* ---------- 제휴 큐레이션 렌더링 ---------- */
+function renderAffiliateSection(r){
+  const items = AFFILIATE_MAP[dog.plan] || AFFILIATE_MAP.diet;
+  return `
+  <div class="surface rounded-[var(--radius-card)] p-6 sm:p-8">
+    <p class="font-bold text-lg mb-1 flex items-center gap-1.5">${icon('sparkles')} 수의영양학 검증 제휴 라인업</p>
+    <p class="text-xs text-muted mb-4">아래 3가지 엄격 기준을 통과한 제품만 큐레이션돼요.</p>
+    <div class="grid sm:grid-cols-3 gap-3 mb-6">
+      <div class="verify-badge rounded-xl p-3 flex items-start gap-2">
+        <span class="shrink-0 mt-0.5">${icon('check')}</span>
+        <span class="text-xs font-semibold leading-snug">AAFCO / WSAVA 가이드라인 준수 · DM 기준 영양성분 100% 공개</span>
+      </div>
+      <div class="verify-badge rounded-xl p-3 flex items-start gap-2">
+        <span class="shrink-0 mt-0.5">${icon('check')}</span>
+        <span class="text-xs font-semibold leading-snug">인공 보존제·부산물·합성첨가물 배제 및 라벨 투명성 확보</span>
+      </div>
+      <div class="verify-badge rounded-xl p-3 flex items-start gap-2">
+        <span class="shrink-0 mt-0.5">${icon('check')}</span>
+        <span class="text-xs font-semibold leading-snug">수의 영양 전문가 처방 검증 또는 임상 데이터 보유</span>
+      </div>
+    </div>
+    <div class="grid sm:grid-cols-3 gap-4">
+      ${items.map((it,idx)=>renderAffiliateCard(it, idx, r)).join('')}
+    </div>
+    <p class="text-[10px] text-muted mt-4">* 위 제품·브랜드명은 서비스 데모를 위한 예시 큐레이션이며, 실제 구매 전 반드시 최신 라벨을 확인하고 수의사와 상담하세요.</p>
+  </div>`;
+}
+
+function renderAffiliateCard(it, idx, r){
+  let guideText;
+  if(it.type === '영양제'){
+    guideText = it.dosageText;
+  } else if(it.isSnack){
+    const g = Math.round(r.snackKcalLimit / it.kcal100 * 100);
+    guideText = `간식 한도 기준 하루 최대 ${g}g`;
+  } else {
+    const g = Math.round(r.MER / it.kcal100 * 100);
+    guideText = `우리 아이 기준 하루 ${g}g 급여`;
+  }
+  return `
+  <div class="surface-2 rounded-xl p-4 flex flex-col" data-idx="${idx}">
+    <span class="text-[10px] font-bold text-mint bg-mint-light w-fit px-2 py-0.5 rounded-full mb-2">${it.badge}</span>
+    <p class="font-semibold text-sm mb-0.5">${it.name}</p>
+    <p class="text-[11px] text-muted mb-2">${it.brand} · ${it.type}</p>
+    <ul class="space-y-1 mb-3 flex-1">
+      ${it.points.map(p=>`<li class="text-xs text-muted flex gap-1"><span class="text-primary shrink-0">•</span>${p}</li>`).join('')}
+    </ul>
+    <div class="surface rounded-lg px-3 py-2 mb-3">
+      <p class="text-[11px] font-bold text-primary-dark">${guideText}</p>
+    </div>
+    <div class="flex gap-2">
+      <button class="ingredient-btn btn-ghost rounded-lg py-2 text-xs flex-1" data-idx="${idx}">검증 성분표 보기</button>
+      <button class="buy-btn btn-primary rounded-lg py-2 text-xs flex-1" data-idx="${idx}">제휴 특가 구매</button>
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   5. ICONS
+============================================================ */
+function icon(name){
+  const set = {
+    info:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>',
+    download:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16"/></svg>',
+    bone:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 10a2 2 0 100 4 2 2 0 000-4zm16 0a2 2 0 100 4 2 2 0 000-4zM6 12h12"/></svg>',
+    flame:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2c2 3-1 4-1 7a3 3 0 003 3c2 0 3-2 3-2s2 2 2 5a6 6 0 11-12 0c0-4 2-5 3-8 0 0 1 1 2 0z"/></svg>',
+    cookie:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="9" cy="10" r="1" fill="currentColor"/><circle cx="14" cy="14" r="1" fill="currentColor"/><circle cx="13" cy="8" r="1" fill="currentColor"/></svg>',
+    droplet:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3s6 6.5 6 11a6 6 0 01-12 0c0-4.5 6-11 6-11z"/></svg>',
+    drumstick:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 12l5 5m-8-3a5 5 0 117-7l1 1a3 3 0 01-4 4z"/></svg>',
+    calendar:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
+    shield:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z"/></svg>',
+    leaf:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 21c9-2 13-8 13-16 0 0-8 1-11 6-2.5 4-2 8-2 10z"/></svg>',
+    sparkles:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z"/></svg>',
+    trophy:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 01-10 0V4zM7 6H4a3 3 0 003 3M17 6h3a3 3 0 01-3 3"/></svg>',
+    check:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M4 12l5 5L20 6"/></svg>',
+    scale:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M4 7h16M4 7l-2 6a3 3 0 006 0L6 7M20 7l-2 6a3 3 0 006 0L22 7"/></svg>',
+    up:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 15l-6-6-6 6"/></svg>',
+    down:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>',
+    upload:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0-12l-4 4m4-4l4 4"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>',
+    reset:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>',
+  };
+  return set[name] || '';
+}
+
+/* ============================================================
+   6. CHARTS
+============================================================ */
+function chartColors(){
+  const styles = getComputedStyle(document.documentElement);
+  return {
+    primary: styles.getPropertyValue('--c-primary').trim(),
+    mint: styles.getPropertyValue('--c-mint').trim(),
+    text: styles.getPropertyValue('--text').trim(),
+    muted: styles.getPropertyValue('--text-muted').trim(),
+    border: styles.getPropertyValue('--border').trim(),
+  };
+}
+function drawWeightChart(plan, target){
+  const ctx = document.getElementById('weightChart');
+  if(!ctx) return;
+  const c = chartColors();
+  if(charts.weight) charts.weight.destroy();
+  charts.weight = new Chart(ctx, {
+    type:'line',
+    data:{
+      labels: plan.points.map(p=>p.week===0?'현재':`${p.week}주`),
+      datasets:[
+        { label:'예상 체중(kg)', data: plan.points.map(p=>p.weight),
+          borderColor:c.primary, backgroundColor:c.primary+'22',
+          fill:true, tension:.35, pointRadius:3, pointBackgroundColor:c.primary },
+        { label:'목표 체중', data: plan.points.map(()=>target),
+          borderColor:c.mint, borderDash:[6,5], pointRadius:0, borderWidth:2 }
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      animation:{duration:900, easing:'easeOutQuart'},
+      plugins:{ legend:{position:'bottom', labels:{color:c.text, font:{size:11}, boxWidth:12}}},
+      scales:{
+        x:{ ticks:{color:c.muted, font:{size:10}}, grid:{color:c.border} },
+        y:{ ticks:{color:c.muted, font:{size:10}}, grid:{color:c.border} }
+      }
+    }
+  });
+}
+function refreshChartsTheme(){
+  setTimeout(()=>{
+    if(document.getElementById('weightChart')){
+      const r = computeResults();
+      drawWeightChart(r.weeklyPlan, dog.target);
+    }
+  }, 260);
+}
+function animateBars(){
+  document.querySelectorAll('.bar-fill[data-target]').forEach(el=>{
+    const t = el.dataset.target;
+    requestAnimationFrame(()=>{ el.style.width = Math.min(100,t)+'%'; });
+  });
+}
+
+/* ============================================================
+   7. DASHBOARD EVENTS
+============================================================ */
+function bindDashboardEvents(r){
+  document.getElementById('challengeScrollBtn')?.addEventListener('click', ()=>{
+    document.getElementById('challengeSection')?.scrollIntoView({behavior:'smooth', block:'center'});
+  });
+  document.getElementById('savePdfBtn')?.addEventListener('click', ()=>window.print());
+  document.getElementById('openPremiumPdf')?.addEventListener('click', ()=>openPremiumModal('pdf'));
+  document.getElementById('openPremiumConsult')?.addEventListener('click', ()=>openPremiumModal('consult'));
+
+  const items = AFFILIATE_MAP[dog.plan] || AFFILIATE_MAP.diet;
+  document.querySelectorAll('.ingredient-btn').forEach(b=>b.addEventListener('click', ()=>openIngredientModal(items[parseInt(b.dataset.idx)])));
+  document.querySelectorAll('.buy-btn').forEach(b=>b.addEventListener('click', ()=>openMockBuyModal(items[parseInt(b.dataset.idx)])));
+
+  if(document.getElementById('challengeGrid')) buildChallengeGrid();
+}
+
+function buildChallengeGrid(){
+  const grid = document.getElementById('challengeGrid');
+  if(!grid) return;
+  grid.innerHTML = '';
+  challengeDays.forEach((checked,i)=>{
+    const cell = document.createElement('button');
+    cell.className = 'day-cell rounded-lg py-2.5 text-xs font-semibold border border-token surface-2' + (checked?' checked':'');
+    cell.textContent = i+1;
+    cell.addEventListener('click', ()=>{
+      challengeDays[i] = !challengeDays[i];
+      cell.classList.toggle('checked', challengeDays[i]);
+      updateChallengeProgress();
+    });
+    grid.appendChild(cell);
+  });
+  updateChallengeProgress();
+}
+function updateChallengeProgress(){
+  const bar = document.getElementById('challengeBar');
+  if(!bar) return;
+  const done = challengeDays.filter(Boolean).length;
+  document.getElementById('challengeProgressLabel').textContent = `${done} / 28일`;
+  bar.style.width = (done/28*100)+'%';
+  const claimBtn = document.getElementById('claimCouponBtn');
+  if(done>=28){
+    claimBtn.disabled = false;
+    claimBtn.textContent = '완주 쿠폰 받기 🎉';
+    claimBtn.onclick = openCouponModal;
+  } else {
+    claimBtn.disabled = true;
+    claimBtn.textContent = `28일 완주 후 쿠폰 받기 (${28-done}일 남음)`;
+  }
+}
+
+/* ============================================================
+   8. MODALS
+============================================================ */
+function modalShell(inner){
+  return `<div class="fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4" id="modalOverlay">
+    <div class="surface rounded-[var(--radius-card)] max-w-md w-full p-6 sm:p-7 panel-enter relative max-h-[88vh] overflow-y-auto">
+      <button id="modalCloseBtn" class="absolute top-4 right-4 text-muted hover:text-current">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+      ${inner}
+    </div>
+  </div>`;
+}
+function closeModal(){ document.getElementById('modalRoot').innerHTML = ''; }
+function mountModal(html){
+  document.getElementById('modalRoot').innerHTML = modalShell(html);
+  document.getElementById('modalOverlay').addEventListener('click', e=>{ if(e.target.id==='modalOverlay') closeModal(); });
+  document.getElementById('modalCloseBtn').addEventListener('click', closeModal);
+}
+
+function openIngredientModal(item){
+  mountModal(`
+    <p class="text-xs font-bold text-mint mb-1">${item.badge}</p>
+    <h3 class="font-display text-xl font-bold mb-1">${item.name}</h3>
+    <p class="text-xs text-muted mb-4">${item.brand} · ${item.type}</p>
+    <div class="surface-2 rounded-xl p-4 mb-4">
+      <p class="text-xs font-semibold mb-2">검증된 핵심 영양 포인트</p>
+      <ul class="space-y-1.5">
+        ${item.points.map(p=>`<li class="text-xs text-muted flex gap-1.5"><span class="text-primary shrink-0">•</span>${p}</li>`).join('')}
+      </ul>
+    </div>
+    <div class="grid grid-cols-3 gap-2 mb-4 text-center">
+      <div class="surface-2 rounded-lg py-2"><p class="text-[10px] text-muted">AAFCO/WSAVA</p><p class="text-xs font-bold text-mint">준수</p></div>
+      <div class="surface-2 rounded-lg py-2"><p class="text-[10px] text-muted">첨가물</p><p class="text-xs font-bold text-mint">무첨가</p></div>
+      <div class="surface-2 rounded-lg py-2"><p class="text-[10px] text-muted">검증</p><p class="text-xs font-bold text-mint">완료</p></div>
+    </div>
+    <button id="ingClose" class="btn-primary w-full rounded-xl py-3 text-sm">확인</button>
+  `);
+  document.getElementById('ingClose').addEventListener('click', closeModal);
+}
+
+function openMockBuyModal(item){
+  mountModal(`
+    <h3 class="font-display text-xl font-bold mb-2">제휴 스토어 안내</h3>
+    <p class="text-sm text-muted mb-1"><b>${item.name}</b> (${item.brand})</p>
+    <p class="text-sm text-muted mb-5">이 제품은 예시 큐레이션이에요. 실제 서비스에서는 제휴 스토어의 구매 페이지로 연결돼요.</p>
+    <button id="mockOkBtn" class="btn-primary w-full rounded-xl py-3 text-sm">확인</button>
+  `);
+  document.getElementById('mockOkBtn').addEventListener('click', closeModal);
+}
+
+function openPremiumModal(type){
+  const title = type==='pdf' ? '상세 영양소 분석 PDF' : '수의 영양 전문가 1:1 서면 상담';
+  const desc = type==='pdf'
+    ? `${dog.name}의 전체 데이터를 기반으로 영양소별(단백질/지방/섬유질/비타민) 상세 분석 리포트를 PDF로 제작해드려요.`
+    : `수의영양학 전공 상담사가 ${dog.name}의 식단표를 검토하고 서면으로 맞춤 피드백을 드려요.`;
+  mountModal(`
+    <p class="text-xs font-bold text-primary-dark mb-1">PREMIUM</p>
+    <h3 class="font-display text-xl font-bold mb-2">${title}</h3>
+    <p class="text-sm text-muted mb-5">${desc}</p>
+    <div class="surface-2 rounded-xl p-4 mb-5">
+      <div class="flex items-center justify-between text-sm mb-1"><span>이용 방식</span><span class="font-semibold">${type==='pdf'?'즉시 발급':'영업일 기준 2일 이내 회신'}</span></div>
+      <div class="flex items-center justify-between text-sm"><span>가격</span><span class="font-semibold text-primary-dark">${type==='pdf'?'9,900원':'29,000원'}</span></div>
+    </div>
+    <form id="premiumForm" class="space-y-3">
+      <input required type="text" placeholder="보호자 성함" class="w-full rounded-xl px-4 py-2.5 text-sm">
+      <input required type="email" placeholder="이메일 주소" class="w-full rounded-xl px-4 py-2.5 text-sm">
+      <button type="submit" class="btn-primary w-full rounded-xl py-3 text-sm">신청하기</button>
+    </form>
+    <p class="text-[10px] text-muted mt-3">* 데모 화면입니다. 실제 결제/발송은 이루어지지 않아요.</p>
+  `);
+  document.getElementById('premiumForm').addEventListener('submit', e=>{
+    e.preventDefault();
+    document.querySelector('#modalOverlay .surface').innerHTML = `
+      <button id="modalCloseBtn2" class="absolute top-4 right-4 text-muted"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      <div class="text-center py-6">
+        <div class="w-14 h-14 rounded-full bg-mint-light text-mint flex items-center justify-center mx-auto mb-4">${icon('check')}</div>
+        <h3 class="font-display text-xl font-bold mb-2">신청이 완료됐어요!</h3>
+        <p class="text-sm text-muted">입력하신 이메일로 곧 안내를 보내드릴게요.</p>
+      </div>`;
+    document.getElementById('modalCloseBtn2').addEventListener('click', closeModal);
+  });
+}
+
+function openCouponModal(){
+  const code = 'DOGDIET20-' + Math.random().toString(36).slice(2,7).toUpperCase();
+  mountModal(`
+    <div class="text-center">
+      <p class="text-5xl mb-3">🎉</p>
+      <h3 class="font-display text-xl font-bold mb-2">28일 챌린지 완주!</h3>
+      <p class="text-sm text-muted mb-5">제휴 브랜드 다이어트 사료 20% 할인 쿠폰이 발급됐어요.</p>
+      <div class="surface-2 border-2 border-dashed border-token rounded-xl py-4 mb-5">
+        <p class="font-display font-bold text-lg tracking-widest">${code}</p>
+      </div>
+      <button id="couponOkBtn" class="btn-primary w-full rounded-xl py-3 text-sm">확인했어요</button>
+    </div>
+  `);
+  document.getElementById('couponOkBtn').addEventListener('click', closeModal);
+}
+
+/* ============================================================
+   9. ADMIN STUDIO — 브랜드 / 컬러 / 타이포 / 레이아웃 / 섹션 / 데이터
+============================================================ */
+
+/* ---- 로고 ---- */
+function renderLogoHTML(small){
+  const l = adminSettings.logo;
+  const scaleVal = small ? 1 : l.scale;
+  if(l.mode === 'image' && l.imageSrc){
+    return `<img src="${l.imageSrc}" alt="logo" style="height:${28*scaleVal}px; object-fit:contain;">`;
+  }
+  return `<div class="flex items-center gap-2.5" style="transform:scale(${scaleVal}); transform-origin:left center;">
+    <div class="w-9 h-9 rounded-2xl bg-primary flex items-center justify-center shrink-0">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 10c1 0 1.8-1 1.8-2.4S7 5.2 6 5.2 4.2 6.2 4.2 7.6 5 10 6 10Zm12 0c1 0 1.8-1 1.8-2.4S19 5.2 18 5.2s-1.8 1-1.8 2.4S17 10 18 10Zm-4.6-1.3c1.1 0 2-1.2 2-2.7S14.5 3.3 13.4 3.3s-2 1.2-2 2.7 .9 2.7 2 2.7Zm-4.8 0c1.1 0 2-1.2 2-2.7S9.7 3.3 8.6 3.3s-2 1.2-2 2.7 .9 2.7 2 2.7Zm4.4 2.1c-2.6 0-6 1.9-6 4.6 0 1.4 1 2.3 2.3 2.3.9 0 1.4-.3 2.2-.3.9 0 1.3.3 2.2.3.9 0 1.3-.3 2.2-.3.8 0 1.4-.3 2.2-.3 1.3 0 2.3-.9 2.3-2.3 0-2.7-3.4-4.6-7.4-4.6Z" fill="#fff"/></svg>
+    </div>
+    <div>
+      <p class="font-display font-bold text-[17px] leading-none">${l.text || '멍플랜'}</p>
+      ${small?'':'<p class="text-[11px] text-muted leading-none mt-0.5">DogDiet Plan</p>'}
+    </div>
+  </div>`;
+}
+function renderLogo(){
+  ['logoSlotLeft','logoSlotCenter','logoSlotRight','logoSlotSidebar'].forEach(id=>{
+    const el = document.getElementById(id); if(el) el.innerHTML='';
+  });
+  const mode = adminSettings.layout.headerMode;
+  if(mode === 'sidebar'){
+    document.getElementById('logoSlotSidebar').innerHTML = renderLogoHTML(true);
+    return;
+  }
+  const slotId = adminSettings.logo.position==='center' ? 'logoSlotCenter' : adminSettings.logo.position==='right' ? 'logoSlotRight' : 'logoSlotLeft';
+  const slot = document.getElementById(slotId);
+  if(slot) slot.innerHTML = renderLogoHTML(false);
+}
+
+/* ---- 헤더 모드 (상단 고정 / 좌측 사이드바 / 숨김) ---- */
+function applyHeaderMode(){
+  const mode = adminSettings.layout.headerMode;
+  const topHeader = document.getElementById('topHeader');
+  const sidebar = document.getElementById('sidebarNav');
+  const headerRightEl = document.getElementById('headerRight');
+  const studioBtn = document.getElementById('studioOpenBtn');
+  const rightGroup = document.getElementById('logoSlotRight').parentElement;
+  const sidebarActions = document.getElementById('sidebarActions');
+
+  if(mode === 'sidebar'){
+    topHeader.classList.add('hidden');
+    sidebar.classList.remove('hidden');
+    sidebar.classList.add('flex');
+    sidebarActions.appendChild(headerRightEl);
+    sidebarActions.appendChild(studioBtn);
+    buildSidebarLinks();
+  } else {
+    sidebar.classList.add('hidden');
+    sidebar.classList.remove('flex');
+    topHeader.classList.toggle('hidden', mode==='hidden');
+    rightGroup.appendChild(headerRightEl);
+    rightGroup.appendChild(studioBtn);
+  }
+  renderLogo();
+}
+function buildSidebarLinks(){
+  const wrap = document.getElementById('sidebarLinks');
+  const inDashboard = !document.getElementById('dashboardSection').classList.contains('hidden');
+  if(!inDashboard){
+    wrap.innerHTML = `<p class="text-xs text-muted px-2">정보를 입력하고 계산하면<br>바로가기가 표시돼요.</p>`;
+    return;
+  }
+  wrap.innerHTML = adminSettings.sections.map(s=>`
+    <button class="side-link sidebar-jump-btn text-left text-sm rounded-lg px-2.5 py-2 ${s.visible?'':'dim'}" data-id="${s.id}" ${s.visible?'':'disabled'}>${s.label}</button>
+  `).join('');
+  wrap.querySelectorAll('.sidebar-jump-btn').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const target = document.getElementById('section-'+b.dataset.id);
+      if(target) target.scrollIntoView({behavior:'smooth', block:'start'});
+    });
+  });
+}
+
+/* ---- 전체 테마 적용 (색상/타이포/레이아웃 → CSS 변수) ---- */
+function applyAdminTheme(){
+  const root = document.documentElement.style;
+  root.setProperty('--c-primary', adminSettings.colors.primary);
+  root.setProperty('--c-mint', adminSettings.colors.mint);
+  root.setProperty('--c-surface-light', adminSettings.colors.surfaceLight);
+  root.setProperty('--c-surface-dark', adminSettings.colors.surfaceDark);
+
+  const fontOpt = FONT_OPTIONS.find(f=>f.id===adminSettings.typography.family) || FONT_OPTIONS[0];
+  ensureGoogleFont(fontOpt.id);
+  root.setProperty('--font-body', fontOpt.stack);
+  root.setProperty('--font-display', fontOpt.stack);
+  root.setProperty('--base-font', adminSettings.typography.baseFontSize+'px');
+  root.setProperty('--tracking', adminSettings.typography.letterSpacing+'em');
+  root.setProperty('--leading', adminSettings.typography.lineHeight);
+
+  root.setProperty('--max-w-site', adminSettings.layout.maxWidth+'px');
+  root.setProperty('--section-gap', adminSettings.layout.gap+'px');
+  root.setProperty('--radius-card', adminSettings.layout.radius+'px');
+  root.setProperty('--radius-ui', Math.max(8, Math.round(adminSettings.layout.radius*0.65))+'px');
+
+  applyHeaderMode();
+
+  // 대시보드가 이미 표시 중이면 섹션 구성 변경을 즉시 재반영
+  if(!document.getElementById('dashboardSection').classList.contains('hidden')){
+    const r = computeResults();
+    document.getElementById('dashboardSection').innerHTML = renderDashboard(r);
+    requestAnimationFrame(()=>{ animateBars(); drawWeightChart(r.weeklyPlan, dog.target); });
+    bindDashboardEvents(r);
+    buildSidebarLinks();
+  }
+  refreshChartsTheme();
+}
+
+/* ---- 데이터 저장/내보내기/불러오기/리셋 ---- */
+function exportAdminJSON(){
+  const blob = new Blob([JSON.stringify(adminSettings, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'dogdiet-brand-settings.json'; a.click();
+  URL.revokeObjectURL(url);
+}
+function importAdminJSON(file){
+  const reader = new FileReader();
+  reader.onload = e=>{
+    try{
+      const parsed = JSON.parse(e.target.result);
+      adminSettings = {...JSON.parse(JSON.stringify(DEFAULT_ADMIN)), ...parsed,
+        logo:{...DEFAULT_ADMIN.logo, ...(parsed.logo||{})},
+        colors:{...DEFAULT_ADMIN.colors, ...(parsed.colors||{})},
+        typography:{...DEFAULT_ADMIN.typography, ...(parsed.typography||{})},
+        layout:{...DEFAULT_ADMIN.layout, ...(parsed.layout||{})},
+        sections: Array.isArray(parsed.sections) && parsed.sections.length ? parsed.sections : DEFAULT_ADMIN.sections,
+      };
+      applyAdminTheme();
+      renderStudioTab();
+      alert('설정을 불러왔어요.');
+    }catch(err){ alert('JSON 파일을 읽는 중 오류가 발생했어요. 형식을 확인해주세요.'); }
+  };
+  reader.readAsText(file);
+}
+function resetAdminSettings(){
+  if(!confirm('멍플랜 기본 테마로 되돌릴까요? 현재 브랜드 설정은 사라져요.')) return;
+  adminSettings = JSON.parse(JSON.stringify(DEFAULT_ADMIN));
+  applyAdminTheme();
+  renderStudioTab();
+}
+
+/* ---- 관리자 접근 제어: 비밀번호 인증 모달 ---- */
+function requestAdminAccess(){
+  if(isAdminAuthenticated){ openStudio(); return; }
+  openAdminAuthModal();
+}
+function openAdminAuthModal(){
+  mountModal(`
+    <p class="text-xs font-bold text-primary-dark mb-1">RESTRICTED ACCESS</p>
+    <h3 class="font-display text-xl font-bold mb-2">관리자 인증</h3>
+    <p class="text-sm text-muted mb-5">UI Management Studio는 관리자 전용 공간이에요. 비밀번호를 입력하면 입장할 수 있어요.</p>
+    <div class="space-y-3">
+      <input id="adminAuthInput" type="password" placeholder="비밀번호" class="w-full rounded-xl px-4 py-2.5 text-sm" autocomplete="off">
+      <p id="adminAuthError" class="text-xs hidden" style="color:var(--c-fat);">비밀번호가 올바르지 않아요. 다시 시도해주세요.</p>
+      <button id="adminAuthSubmitBtn" type="button" class="btn-primary w-full rounded-xl py-3 text-sm">인증하고 입장하기</button>
+    </div>
+    <p class="text-[10px] text-muted mt-3">단축키 Ctrl(⌘)+Shift+A 로도 이 창을 열 수 있어요.</p>
+  `);
+  const input = document.getElementById('adminAuthInput');
+  const errorEl = document.getElementById('adminAuthError');
+  const submitBtn = document.getElementById('adminAuthSubmitBtn');
+  input.focus();
+
+  function attemptAdminLogin(){
+    const value = (input.value || '').trim();
+    if(value === ADMIN_PASSWORD){
+      isAdminAuthenticated = true;
+      errorEl.classList.add('hidden');
+      closeModal();
+      const fab = document.getElementById('studioFabBtn');
+      if(fab) fab.classList.remove('hidden');
+      openStudio();
+    } else {
+      errorEl.classList.remove('hidden');
+      input.value = '';
+      input.focus();
+    }
+  }
+
+  // 버튼 클릭과 Enter 키 입력 모두 동일한 로직으로 처리 (네이티브 form submit에 의존하지 않아
+  // 샌드박스 iframe 등 일부 렌더링 환경에서도 새로고침/이벤트 유실 없이 안정적으로 동작해요)
+  submitBtn.addEventListener('click', e=>{ e.preventDefault(); attemptAdminLogin(); });
+  input.addEventListener('keydown', e=>{
+    if(e.key === 'Enter'){ e.preventDefault(); attemptAdminLogin(); }
+  });
+}
+
+/* ---- 드로어 열기/닫기 ---- */
+function openStudio(){
+  const drawer = document.getElementById('studioDrawer');
+  const backdrop = document.getElementById('studioBackdrop');
+  if(drawer) drawer.style.transform = 'translateX(0)';
+  if(backdrop) backdrop.classList.remove('hidden');
+}
+function closeStudio(){
+  const drawer = document.getElementById('studioDrawer');
+  const backdrop = document.getElementById('studioBackdrop');
+  if(drawer) drawer.style.transform = 'translateX(100%)';
+  if(backdrop) backdrop.classList.add('hidden');
+}
+
+/* ---- 탭 구성 ---- */
+const STUDIO_TABS = [
+  {id:'brand', label:'브랜드'},
+  {id:'color', label:'컬러'},
+  {id:'type', label:'타이포'},
+  {id:'layout', label:'레이아웃'},
+  {id:'sections', label:'섹션'},
+  {id:'data', label:'데이터'},
+];
+let studioTab = 'brand';
+function buildStudioTabs(){
+  const wrap = document.getElementById('studioTabs');
+  wrap.innerHTML = STUDIO_TABS.map(t=>`<button class="studio-tab chip rounded-full px-3 py-1.5 text-xs font-semibold" data-tab="${t.id}">${t.label}</button>`).join('');
+  wrap.querySelectorAll('.studio-tab').forEach(b=>{
+    b.addEventListener('click', ()=>{ studioTab = b.dataset.tab; renderStudioTab(); });
+  });
+}
+function fieldLabel(label, hint){
+  return `<div class="flex items-center justify-between mb-1.5"><label class="text-sm font-semibold">${label}</label>${hint!==undefined?`<span class="text-xs text-muted font-mono">${hint}</span>`:''}</div>`;
+}
+
+function renderStudioTab(){
+  document.querySelectorAll('.studio-tab').forEach(b=>b.classList.toggle('active', b.dataset.tab===studioTab));
+  const body = document.getElementById('studioBody');
+  body.innerHTML = STUDIO_TAB_HTML[studioTab]();
+  bindStudioTabEvents();
+}
+
+const STUDIO_TAB_HTML = {
+  brand: ()=>{
+    const l = adminSettings.logo;
+    return `
+    <div class="space-y-5">
+      <div>
+        ${fieldLabel('로고 모드')}
+        <div class="flex gap-2 mb-3">
+          <button data-logo-mode="text" class="chip flex-1 rounded-xl py-2 text-sm ${l.mode==='text'?'active':''}">텍스트</button>
+          <button data-logo-mode="image" class="chip flex-1 rounded-xl py-2 text-sm ${l.mode==='image'?'active':''}">이미지</button>
+        </div>
+      </div>
+      ${l.mode==='text' ? `
+        <div>${fieldLabel('로고 텍스트')}<input id="adm_logo_text" type="text" value="${l.text}" class="w-full rounded-xl px-3 py-2.5 text-sm"></div>
+      ` : `
+        <div>
+          ${fieldLabel('로고 이미지 업로드 (PNG · SVG · WebP)')}
+          <button id="adm_logo_upload_btn" class="w-full rounded-xl border-2 border-dashed border-token px-3 py-4 text-sm text-muted hover:border-primary transition">파일 선택</button>
+          <input id="adm_logo_file" type="file" accept=".png,.svg,.webp,image/png,image/svg+xml,image/webp" class="hidden">
+          ${l.imageSrc?`<img src="${l.imageSrc}" class="h-10 object-contain mt-2">`:''}
+        </div>
+      `}
+      <div>${fieldLabel('로고 크기', l.scale.toFixed(1)+'x')}<input id="adm_logo_scale" type="range" min="0.5" max="2" step="0.1" value="${l.scale}" class="w-full"></div>
+      <div>${fieldLabel('로고 위치')}
+        <div class="flex gap-2">
+          <button data-logo-pos="left" class="chip flex-1 rounded-xl py-2 text-xs ${l.position==='left'?'active':''}">좌</button>
+          <button data-logo-pos="center" class="chip flex-1 rounded-xl py-2 text-xs ${l.position==='center'?'active':''}">중앙</button>
+          <button data-logo-pos="right" class="chip flex-1 rounded-xl py-2 text-xs ${l.position==='right'?'active':''}">우</button>
+        </div>
+        ${adminSettings.layout.headerMode==='sidebar' ? '<p class="text-[11px] text-muted mt-1.5">사이드바 모드에서는 위치와 무관하게 상단에 표시돼요.</p>' : ''}
+      </div>
+    </div>`;
+  },
+  color: ()=>{
+    const c = adminSettings.colors;
+    const colorRow = (key,label)=>`<div>${fieldLabel(label)}
+      <div class="flex items-center gap-2">
+        <input data-color="${key}" type="color" value="${c[key]}" class="w-10 h-10 rounded-lg border border-token cursor-pointer bg-surface">
+        <input data-color-text="${key}" type="text" value="${c[key]}" class="flex-1 rounded-lg border border-token px-3 py-2 text-sm font-mono">
+      </div></div>`;
+    return `<div class="space-y-5">
+      ${colorRow('primary','시그니처 컬러 (Primary)')}
+      ${colorRow('mint','포인트 컬러 (Accent)')}
+      ${colorRow('surfaceLight','배경 톤 · 라이트')}
+      ${colorRow('surfaceDark','배경 톤 · 다크')}
+      <div class="tooltip-box p-3 text-xs text-muted">시그니처·포인트 컬러는 라이트/다크 모드에서도 자동으로 대비를 유지하며 적용돼요.</div>
+    </div>`;
+  },
+  type: ()=>{
+    const t = adminSettings.typography;
+    return `<div class="space-y-5">
+      <div>${fieldLabel('폰트 패밀리 (Google Fonts 연동)')}
+        <select id="adm_font_family" class="w-full rounded-xl px-3 py-2.5 text-sm">
+          ${FONT_OPTIONS.map(f=>`<option value="${f.id}" ${f.id===t.family?'selected':''}>${f.label}</option>`).join('')}
+        </select>
+      </div>
+      <div>${fieldLabel('기본 폰트 크기 (Base)', t.baseFontSize+'px')}<input id="adm_font_size" type="range" min="14" max="20" step="1" value="${t.baseFontSize}" class="w-full"></div>
+      <div>${fieldLabel('자간 (Letter Spacing)', t.letterSpacing+'em')}<input id="adm_letterspacing" type="range" min="-0.02" max="0.06" step="0.005" value="${t.letterSpacing}" class="w-full"></div>
+      <div>${fieldLabel('행간 (Line Height)', t.lineHeight)}<input id="adm_lineheight" type="range" min="1.2" max="2.0" step="0.05" value="${t.lineHeight}" class="w-full"></div>
+    </div>`;
+  },
+  layout: ()=>{
+    const ly = adminSettings.layout;
+    return `<div class="space-y-5">
+      <div>${fieldLabel('GNB / 헤더 구조')}
+        <div class="flex gap-2">
+          <button data-header-mode="fixed" class="chip flex-1 rounded-xl py-2 text-xs ${ly.headerMode==='fixed'?'active':''}">상단 고정</button>
+          <button data-header-mode="sidebar" class="chip flex-1 rounded-xl py-2 text-xs ${ly.headerMode==='sidebar'?'active':''}">좌측 사이드바</button>
+          <button data-header-mode="hidden" class="chip flex-1 rounded-xl py-2 text-xs ${ly.headerMode==='hidden'?'active':''}">숨김</button>
+        </div>
+      </div>
+      <div>${fieldLabel('콘텐츠 Max-Width', ly.maxWidth+'px')}<input id="adm_maxwidth" type="range" min="880" max="1400" step="10" value="${ly.maxWidth}" class="w-full"></div>
+      <div>${fieldLabel('섹션 간 여백 (Gap)', ly.gap+'px')}<input id="adm_gap" type="range" min="12" max="64" step="2" value="${ly.gap}" class="w-full"></div>
+      <div>${fieldLabel('카드 / 버튼 라운딩', ly.radius+'px')}<input id="adm_radius" type="range" min="8" max="32" step="1" value="${ly.radius}" class="w-full"></div>
+    </div>`;
+  },
+  sections: ()=>{
+    return `<div class="space-y-2">
+      <p class="text-xs text-muted mb-2">화살표로 순서를 바꾸고, 스위치로 노출 여부를 정해요. (Hero·계산 결과 헤더는 항상 상단 고정)</p>
+      ${adminSettings.sections.map((s,idx)=>`
+        <div class="flex items-center gap-2 surface-2 rounded-xl p-2.5">
+          <span class="flex-1 text-sm font-semibold pl-1">${s.label}</span>
+          <button data-move="${idx}:-1" class="w-7 h-7 rounded-lg surface flex items-center justify-center disabled:opacity-30" ${idx===0?'disabled':''}>${icon('up')}</button>
+          <button data-move="${idx}:1" class="w-7 h-7 rounded-lg surface flex items-center justify-center disabled:opacity-30" ${idx===adminSettings.sections.length-1?'disabled':''}>${icon('down')}</button>
+          <div data-toggle="${idx}" class="u-switch ${s.visible?'on':''}"><span class="knob"></span></div>
+        </div>
+      `).join('')}
+    </div>`;
+  },
+  data: ()=>{
+    return `<div class="space-y-3">
+      <button id="adm_export_btn" class="btn-primary w-full rounded-xl py-2.5 text-sm flex items-center justify-center gap-2">${icon('download')} 현재 설정 내보내기 (JSON)</button>
+      <button id="adm_import_btn" class="btn-ghost w-full rounded-xl py-2.5 text-sm flex items-center justify-center gap-2">${icon('upload')} 설정 불러오기 (JSON)</button>
+      <input id="adm_import_file" type="file" accept="application/json" class="hidden">
+      <button id="adm_reset_btn" class="w-full rounded-xl py-2.5 text-sm font-semibold border" style="border-color:var(--c-fat); color:var(--c-fat);">${icon('reset')} 멍플랜 기본 테마로 리셋</button>
+      <div class="tooltip-box p-3 text-xs text-muted">설정은 브라우저 저장소 없이 이 세션에서만 유지돼요. 계속 사용하려면 JSON으로 내보내 보관하세요.</div>
+    </div>`;
+  },
+};
+
+function bindStudioTabEvents(){
+  if(studioTab==='brand'){
+    document.querySelectorAll('[data-logo-mode]').forEach(b=>b.addEventListener('click', ()=>{
+      adminSettings.logo.mode = b.dataset.logoMode; applyAdminTheme(); renderStudioTab();
+    }));
+    const textInput = document.getElementById('adm_logo_text');
+    if(textInput) textInput.addEventListener('input', e=>{ adminSettings.logo.text = e.target.value; applyAdminTheme(); });
+    const uploadBtn = document.getElementById('adm_logo_upload_btn');
+    const fileInput = document.getElementById('adm_logo_file');
+    if(uploadBtn) uploadBtn.addEventListener('click', ()=>fileInput.click());
+    if(fileInput) fileInput.addEventListener('change', e=>{
+      const file = e.target.files[0]; if(!file) return;
+      const reader = new FileReader();
+      reader.onload = ev=>{ adminSettings.logo.imageSrc = ev.target.result; applyAdminTheme(); renderStudioTab(); };
+      reader.readAsDataURL(file);
+    });
+    const scaleInput = document.getElementById('adm_logo_scale');
+    if(scaleInput) scaleInput.addEventListener('input', e=>{ adminSettings.logo.scale = parseFloat(e.target.value); applyAdminTheme(); renderStudioTab(); });
+    document.querySelectorAll('[data-logo-pos]').forEach(b=>b.addEventListener('click', ()=>{
+      adminSettings.logo.position = b.dataset.logoPos; applyAdminTheme(); renderStudioTab();
+    }));
+  }
+  if(studioTab==='color'){
+    document.querySelectorAll('[data-color]').forEach(inp=>inp.addEventListener('input', e=>{
+      adminSettings.colors[inp.dataset.color] = e.target.value; applyAdminTheme();
+      const txt = document.querySelector(`[data-color-text="${inp.dataset.color}"]`); if(txt) txt.value = e.target.value;
+    }));
+    document.querySelectorAll('[data-color-text]').forEach(inp=>inp.addEventListener('change', e=>{
+      adminSettings.colors[inp.dataset.colorText] = e.target.value; applyAdminTheme();
+      const c = document.querySelector(`[data-color="${inp.dataset.colorText}"]`); if(c) c.value = e.target.value;
+    }));
+  }
+  if(studioTab==='type'){
+    const famSel = document.getElementById('adm_font_family');
+    if(famSel) famSel.addEventListener('change', e=>{ adminSettings.typography.family = e.target.value; applyAdminTheme(); });
+    const sizeInput = document.getElementById('adm_font_size');
+    if(sizeInput) sizeInput.addEventListener('input', e=>{ adminSettings.typography.baseFontSize = parseInt(e.target.value); applyAdminTheme(); renderStudioTab(); });
+    const lsInput = document.getElementById('adm_letterspacing');
+    if(lsInput) lsInput.addEventListener('input', e=>{ adminSettings.typography.letterSpacing = parseFloat(e.target.value); applyAdminTheme(); renderStudioTab(); });
+    const lhInput = document.getElementById('adm_lineheight');
+    if(lhInput) lhInput.addEventListener('input', e=>{ adminSettings.typography.lineHeight = parseFloat(e.target.value); applyAdminTheme(); renderStudioTab(); });
+  }
+  if(studioTab==='layout'){
+    document.querySelectorAll('[data-header-mode]').forEach(b=>b.addEventListener('click', ()=>{
+      adminSettings.layout.headerMode = b.dataset.headerMode; applyAdminTheme(); renderStudioTab();
+    }));
+    const mw = document.getElementById('adm_maxwidth');
+    if(mw) mw.addEventListener('input', e=>{ adminSettings.layout.maxWidth = parseInt(e.target.value); applyAdminTheme(); renderStudioTab(); });
+    const gp = document.getElementById('adm_gap');
+    if(gp) gp.addEventListener('input', e=>{ adminSettings.layout.gap = parseInt(e.target.value); applyAdminTheme(); renderStudioTab(); });
+    const rd = document.getElementById('adm_radius');
+    if(rd) rd.addEventListener('input', e=>{ adminSettings.layout.radius = parseInt(e.target.value); applyAdminTheme(); renderStudioTab(); });
+  }
+  if(studioTab==='sections'){
+    document.querySelectorAll('[data-move]').forEach(b=>b.addEventListener('click', ()=>{
+      const [idxStr,dirStr] = b.dataset.move.split(':');
+      const idx = parseInt(idxStr), dir = parseInt(dirStr), target = idx+dir;
+      if(target<0 || target>=adminSettings.sections.length) return;
+      const arr = adminSettings.sections;
+      [arr[idx], arr[target]] = [arr[target], arr[idx]];
+      applyAdminTheme(); renderStudioTab();
+    }));
+    document.querySelectorAll('[data-toggle]').forEach(sw=>sw.addEventListener('click', ()=>{
+      const idx = parseInt(sw.dataset.toggle);
+      adminSettings.sections[idx].visible = !adminSettings.sections[idx].visible;
+      applyAdminTheme(); renderStudioTab();
+    }));
+  }
+  if(studioTab==='data'){
+    document.getElementById('adm_export_btn').addEventListener('click', exportAdminJSON);
+    const importBtn = document.getElementById('adm_import_btn');
+    const importFile = document.getElementById('adm_import_file');
+    importBtn.addEventListener('click', ()=>importFile.click());
+    importFile.addEventListener('change', e=>{ if(e.target.files[0]) importAdminJSON(e.target.files[0]); e.target.value=''; });
+    document.getElementById('adm_reset_btn').addEventListener('click', resetAdminSettings);
+  }
+}
+
+/* ============================================================
+   INIT
+============================================================ */
+init();
+
+})();
+</script>
+</body>
+</html>
