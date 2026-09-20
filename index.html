@@ -149,13 +149,34 @@
   /* ---- 유저 맞춤 리포트 인쇄(print) 전용 규칙 ---- */
   @media print{
     @page{ size:A4; margin:14mm; }
-    body *{ visibility:hidden !important; }
-    .print-report, .print-report *{ visibility:visible !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-    .print-report{ position:absolute; left:0; top:0; width:100%; padding:0; color:#000 !important; }
-    .print-report .surface-2, .print-report .tooltip-box{ break-inside:avoid; }
-    .print-report .grid{ break-inside:avoid; }
-    #modalOverlay{ position:static !important; background:none !important; padding:0 !important; }
-    #modalOverlay > div{ position:static !important; max-height:none !important; overflow:visible !important; box-shadow:none !important; border:none !important; width:100% !important; max-width:100% !important; padding:0 !important; }
+    *{ -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
+
+    /* ---- A) 관리자 스튜디오 리포트 모달 인쇄 (body.print-mode-admin 일 때만 적용) ---- */
+    body.print-mode-admin *{ visibility:hidden !important; }
+    body.print-mode-admin .print-report, body.print-mode-admin .print-report *{ visibility:visible !important; }
+    body.print-mode-admin .print-report{ position:absolute; left:0; top:0; width:100%; padding:0; color:#000 !important; }
+    body.print-mode-admin .print-report .surface-2, body.print-mode-admin .print-report .tooltip-box{ break-inside:avoid; }
+    body.print-mode-admin .print-report .grid{ break-inside:avoid; }
+    body.print-mode-admin #modalOverlay{ position:static !important; background:none !important; padding:0 !important; }
+    body.print-mode-admin #modalOverlay > div{ position:static !important; max-height:none !important; overflow:visible !important; box-shadow:none !important; border:none !important; width:100% !important; max-width:100% !important; padding:0 !important; }
+
+    /* ---- B) 유저 결과 페이지 인쇄 (기본값 · print-mode-admin이 아닐 때) ---- */
+    body:not(.print-mode-admin) #sidebarNav,
+    body:not(.print-mode-admin) #topHeader,
+    body:not(.print-mode-admin) #userWidget,
+    body:not(.print-mode-admin) #studioFabBtn,
+    body:not(.print-mode-admin) #studioDrawer,
+    body:not(.print-mode-admin) #studioBackdrop,
+    body:not(.print-mode-admin) #modalRoot,
+    body:not(.print-mode-admin) #formSection,
+    body:not(.print-mode-admin) footer,
+    body:not(.print-mode-admin) #restartBtn,
+    body:not(.print-mode-admin) #savePdfBtn,
+    body:not(.print-mode-admin) #challengeScrollBtn{
+      display:none !important;
+    }
+    body:not(.print-mode-admin) #dashboardSection{ display:block !important; }
+    body:not(.print-mode-admin) .surface, body:not(.print-mode-admin) .surface-2, body:not(.print-mode-admin) .tooltip-box{ break-inside:avoid; }
   }
 
   /* ---- 라운딩(Border-Radius) 모듈: 버튼/칩류는 관리자 라운딩 값을 따르도록 우선순위 확보 ---- */
@@ -1934,7 +1955,13 @@ function openUserReportModal(rec){
       <button id="reportCloseBtn" class="btn-ghost flex-1 rounded-xl py-2.5 text-sm">닫기</button>
     </div>
   `, true);
-  document.getElementById('reportPrintBtn').addEventListener('click', ()=>window.print());
+  document.getElementById('reportPrintBtn').addEventListener('click', ()=>{
+    document.body.classList.add('print-mode-admin');
+    const cleanup = ()=> document.body.classList.remove('print-mode-admin');
+    window.addEventListener('afterprint', cleanup, {once:true});
+    window.print();
+    setTimeout(cleanup, 2000); // afterprint 미지원 환경을 위한 안전장치
+  });
   document.getElementById('reportCloseBtn').addEventListener('click', closeModal);
 }
 
