@@ -345,7 +345,7 @@
         <span class="w-4 h-4 rounded bg-primary flex items-center justify-center shrink-0">
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M6 10c1 0 1.8-1 1.8-2.4S7 5.2 6 5.2 4.2 6.2 4.2 7.6 5 10 6 10Zm12 0c1 0 1.8-1 1.8-2.4S19 5.2 18 5.2s-1.8 1-1.8 2.4S17 10 18 10Zm-4.6-1.3c1.1 0 2-1.2 2-2.7S14.5 3.3 13.4 3.3s-2 1.2-2 2.7 .9 2.7 2 2.7Zm-4.8 0c1.1 0 2-1.2 2-2.7S9.7 3.3 8.6 3.3s-2 1.2-2 2.7 .9 2.7 2 2.7Zm4.4 2.1c-2.6 0-6 1.9-6 4.6 0 1.4 1 2.3 2.3 2.3.9 0 1.4-.3 2.2-.3.9 0 1.3.3 2.2.3.9 0 1.3-.3 2.2-.3.8 0 1.4-.3 2.2-.3 1.3 0 2.3-.9 2.3-2.3 0-2.7-3.4-4.6-7.4-4.6Z" fill="#fff"/></svg>
         </span>
-        <span>© 2026 멍플랜 · DogDiet Plan</span>
+        <span>© 2026 서온 · seon</span>
       </button>
       <p class="text-[10px] text-muted opacity-60">건강한 강아지, 행복한 보호자를 위해 · 수의영양학 기반 맞춤 다이어트 플랫폼</p>
     </div>
@@ -612,7 +612,7 @@ const SECTION_LABELS = {
 };
 
 const DEFAULT_ADMIN = {
-  logo:{mode:"text", text:"멍플랜", imageSrc:null, scale:1, position:"left"},
+  logo:{mode:"text", text:"seon", imageSrc:null, scale:1, position:"left"},
   colors:{primary:"#F97A3D", mint:"#2FBF9F", surfaceLight:"#FBF7F2", surfaceDark:"#181410"},
   typography:{family:"notosans", baseFontSize:16, letterSpacing:0, lineHeight:1.5},
   layout:{headerMode:"fixed", maxWidth:1024, gap:24, radius:20},
@@ -1638,14 +1638,8 @@ function renderLogoHTML(small){
   if(l.mode === 'image' && l.imageSrc){
     return `<img src="${l.imageSrc}" alt="logo" style="height:${28*scaleVal}px; object-fit:contain;">`;
   }
-  return `<div class="flex items-center gap-2.5" style="transform:scale(${scaleVal}); transform-origin:left center;">
-    <div class="w-9 h-9 rounded-2xl bg-primary flex items-center justify-center shrink-0">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 10c1 0 1.8-1 1.8-2.4S7 5.2 6 5.2 4.2 6.2 4.2 7.6 5 10 6 10Zm12 0c1 0 1.8-1 1.8-2.4S19 5.2 18 5.2s-1.8 1-1.8 2.4S17 10 18 10Zm-4.6-1.3c1.1 0 2-1.2 2-2.7S14.5 3.3 13.4 3.3s-2 1.2-2 2.7 .9 2.7 2 2.7Zm-4.8 0c1.1 0 2-1.2 2-2.7S9.7 3.3 8.6 3.3s-2 1.2-2 2.7 .9 2.7 2 2.7Zm4.4 2.1c-2.6 0-6 1.9-6 4.6 0 1.4 1 2.3 2.3 2.3.9 0 1.4-.3 2.2-.3.9 0 1.3.3 2.2.3.9 0 1.3-.3 2.2-.3.8 0 1.4-.3 2.2-.3 1.3 0 2.3-.9 2.3-2.3 0-2.7-3.4-4.6-7.4-4.6Z" fill="#fff"/></svg>
-    </div>
-    <div>
-      <p class="font-display font-bold text-[17px] leading-none">${l.text || '멍플랜'}</p>
-      ${small?'':'<p class="text-[11px] text-muted leading-none mt-0.5">DogDiet Plan</p>'}
-    </div>
+  return `<div class="flex items-center" style="transform:scale(${scaleVal}); transform-origin:left center;">
+    <p class="font-display font-bold text-[17px] leading-none">${l.text || 'seon'}</p>
   </div>`;
 }
 function renderLogo(){
