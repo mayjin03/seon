@@ -1129,7 +1129,7 @@ function buildTransitionSchedule(oldG, newG){
 function runCalculation(){
   const r = computeResults();
 
-  // ---- 유저 진단 제출 데이터 정규화 & 저장 (localStorage 임시 저장 + DB 연동 준비) ----
+  // ---- 유저 진단 제출 데이터 정규화 & 저장 (localStorage 임시 저장 + Supabase DB 저장) ----
   saveUserAnalyticsData({
     dog_name: dog.name,
     breed: dog.breed,
@@ -1138,6 +1138,8 @@ function runCalculation(){
     bcs: dog.bcs,
     plan_type: PLAN_TYPE_LABEL[dog.plan] || dog.plan,
     created_at: new Date().toISOString(),
+  }).catch(err=>{
+    console.error('[seon] saveUserAnalyticsData 실행 중 처리되지 않은 오류가 발생했어요:', err);
   });
 
   document.getElementById('formSection').classList.add('hidden');
@@ -1839,8 +1841,20 @@ function saveAdminSettingsToStorage(){
      supabaseClient가 자동으로 생성되어 이 함수가 그대로 DB 저장까지 수행해요.
 ============================================================ */
 async function saveUserAnalyticsData(record){
+  console.log('[seon] saveUserAnalyticsData() 호출됨 — 제출 데이터:', record);
+
+  // 0) 컬럼 타입에 맞게 정규화 — 숫자형은 parseFloat, 문자형은 String으로 명시 변환
+  const payload = {
+    dog_name: String(record.dog_name ?? ''),
+    breed: String(record.breed ?? ''),
+    weight: parseFloat(record.weight),
+    target_weight: parseFloat(record.target_weight),
+    bcs: String(record.bcs ?? ''),
+    plan_type: String(record.plan_type ?? ''),
+  };
+
   // 1) 로컬(메모리 + localStorage)에 항상 먼저 쌓아요 — DB 연결 여부와 무관하게 안전망 역할
-  analyticsRecords.push(record);
+  analyticsRecords.push({...payload, created_at: record.created_at || new Date().toISOString()});
   try{
     localStorage.setItem(ANALYTICS_STORAGE_KEY, JSON.stringify(analyticsRecords));
   }catch(err){
@@ -1850,23 +1864,23 @@ async function saveUserAnalyticsData(record){
   // 2) Supabase가 연결돼 있으면 실제 DB(user_analytics 테이블)에도 함께 저장해요
   if(supabaseClient){
     try{
-      const { error } = await supabaseClient.from(SUPABASE_TABLE).insert([{
-        dog_name: record.dog_name,
-        breed: record.breed,
-        weight: record.weight,
-        target_weight: record.target_weight,
-        bcs: record.bcs,
-        plan_type: record.plan_type,
-      }]);
-      if(error) console.warn('[seon] Supabase 저장 실패:', error.message);
-      else console.log('[seon] Supabase(user_analytics)에 진단 데이터가 저장됐어요.');
+      const { error } = await supabaseClient.from(SUPABASE_TABLE).insert([payload]);
+      if(error){
+        console.error('[seon] Supabase INSERT 실패 ❌', {
+          message: error.message, details: error.details, hint: error.hint, code: error.code, payload,
+        });
+      } else {
+        console.log('[seon] Supabase(user_analytics)에 진단 데이터가 저장됐어요 ✅', payload);
+        // 3) 저장 성공 시 관리자 대시보드를 실제 DB 기준으로 즉시 재조회 · 갱신
+        await loadAnalyticsFromDB();
+      }
     }catch(err){
-      console.warn('[seon] Supabase 저장 중 오류가 발생했어요:', err);
+      console.error('[seon] Supabase 저장 중 예외가 발생했어요 ❌', err);
     }
+  } else {
+    console.log('[seon] Supabase 미연결 — 로컬 저장만 수행했어요.');
+    refreshAnalyticsIfOpen();
   }
-
-  // 3) 관리자 스튜디오의 데이터 분석 탭이 열려 있다면 즉시 갱신
-  refreshAnalyticsIfOpen();
 }
 
 function computeAnalyticsSummary(){
