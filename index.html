@@ -151,7 +151,7 @@
     @page{ size:A4; margin:14mm; }
     *{ -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
 
-    /* ---- A) 관리자 스튜디오 리포트 모달 인쇄 (body.print-mode-admin 일 때만 적용) ---- */
+    /* ---- A) 관리자 스튜디오 리포트 모달 인쇄 (body.print-mode-admin) ---- */
     body.print-mode-admin *{ visibility:hidden !important; }
     body.print-mode-admin .print-report, body.print-mode-admin .print-report *{ visibility:visible !important; }
     body.print-mode-admin .print-report{ position:absolute; left:0; top:0; width:100%; padding:0; color:#000 !important; }
@@ -160,24 +160,51 @@
     body.print-mode-admin #modalOverlay{ position:static !important; background:none !important; padding:0 !important; }
     body.print-mode-admin #modalOverlay > div{ position:static !important; max-height:none !important; overflow:visible !important; box-shadow:none !important; border:none !important; width:100% !important; max-width:100% !important; padding:0 !important; }
 
-    /* ---- B) 유저 결과 페이지 인쇄 (기본값 · print-mode-admin이 아닐 때) ---- */
-    body:not(.print-mode-admin) #sidebarNav,
-    body:not(.print-mode-admin) #topHeader,
-    body:not(.print-mode-admin) #userWidget,
-    body:not(.print-mode-admin) #studioFabBtn,
-    body:not(.print-mode-admin) #studioDrawer,
-    body:not(.print-mode-admin) #studioBackdrop,
-    body:not(.print-mode-admin) #modalRoot,
-    body:not(.print-mode-admin) #formSection,
-    body:not(.print-mode-admin) footer,
-    body:not(.print-mode-admin) #restartBtn,
-    body:not(.print-mode-admin) #savePdfBtn,
-    body:not(.print-mode-admin) #challengeScrollBtn{
+    /* ---- B) 유료 상세 분석 PDF(8페이지) 인쇄 (body.print-mode-premium) ---- */
+    body.print-mode-premium *{ visibility:hidden !important; }
+    body.print-mode-premium .pdf-report-root, body.print-mode-premium .pdf-report-root *{ visibility:visible !important; }
+    body.print-mode-premium .pdf-report-root{ position:absolute; left:0; top:0; width:100%; color:#000 !important; }
+    body.print-mode-premium .pdf-toolbar{ display:none !important; }
+    body.print-mode-premium .pdf-page{
+      width:auto !important; min-height:0 !important; margin:0 !important; box-shadow:none !important;
+      border:none !important; page-break-after:always; break-after:page;
+    }
+    body.print-mode-premium .pdf-page:last-child{ page-break-after:auto; break-after:auto; }
+    body.print-mode-premium .pdf-page .surface-2, body.print-mode-premium .pdf-page .tooltip-box{ break-inside:avoid; }
+    body.print-mode-premium .pdf-page .grid{ break-inside:avoid; }
+
+    /* ---- C) 유저 결과 페이지(대시보드) 인쇄 — 관리자/프리미엄 모드가 아닐 때 기본값 ---- */
+    body:not(.print-mode-admin):not(.print-mode-premium) #sidebarNav,
+    body:not(.print-mode-admin):not(.print-mode-premium) #topHeader,
+    body:not(.print-mode-admin):not(.print-mode-premium) #userWidget,
+    body:not(.print-mode-admin):not(.print-mode-premium) #studioFabBtn,
+    body:not(.print-mode-admin):not(.print-mode-premium) #studioDrawer,
+    body:not(.print-mode-admin):not(.print-mode-premium) #studioBackdrop,
+    body:not(.print-mode-admin):not(.print-mode-premium) #modalRoot,
+    body:not(.print-mode-admin):not(.print-mode-premium) #formSection,
+    body:not(.print-mode-admin):not(.print-mode-premium) footer,
+    body:not(.print-mode-admin):not(.print-mode-premium) #restartBtn,
+    body:not(.print-mode-admin):not(.print-mode-premium) #savePdfBtn,
+    body:not(.print-mode-admin):not(.print-mode-premium) #challengeScrollBtn{
       display:none !important;
     }
-    body:not(.print-mode-admin) #dashboardSection{ display:block !important; }
-    body:not(.print-mode-admin) .surface, body:not(.print-mode-admin) .surface-2, body:not(.print-mode-admin) .tooltip-box{ break-inside:avoid; }
+    body:not(.print-mode-admin):not(.print-mode-premium) #dashboardSection{ display:block !important; }
+    body:not(.print-mode-admin):not(.print-mode-premium) .surface, body:not(.print-mode-admin):not(.print-mode-premium) .surface-2, body:not(.print-mode-admin):not(.print-mode-premium) .tooltip-box{ break-inside:avoid; }
   }
+
+  /* ---- 프리미엄 PDF 미리보기 (화면상 A4 매거진 스타일) ---- */
+  .pdf-report-overlay{ position:fixed; inset:0; z-index:70; background:rgba(20,16,12,.65); overflow-y:auto; }
+  .pdf-toolbar{ position:sticky; top:0; z-index:2; }
+  .pdf-page{
+    width:210mm; min-height:297mm; margin:20px auto; padding:16mm;
+    background:#fff; color:#1d1d1f; box-shadow:0 10px 40px rgba(0,0,0,.35);
+    position:relative;
+  }
+  .pdf-page .pdf-page-num{ position:absolute; bottom:10mm; right:16mm; font-size:10px; color:#9a9a9a; }
+  .pdf-kicker{ font-size:11px; font-weight:800; letter-spacing:.08em; color:var(--c-primary); text-transform:uppercase; }
+  @media (max-width:860px){ .pdf-page{ width:100%; min-height:auto; padding:8mm; } }
+
+
 
   /* ---- 라운딩(Border-Radius) 모듈: 버튼/칩류는 관리자 라운딩 값을 따르도록 우선순위 확보 ---- */
   .btn-primary.rounded-xl, .btn-ghost.rounded-xl, .chip.rounded-xl, .chip.rounded-full,
@@ -505,6 +532,11 @@ const SUPABASE_TABLE = "user_analytics"; // 진단 데이터를 저장/조회할
      food_kcal_per_100g   numeric,   -- 선택한 사료의 100g당 kcal
      feed_freq_current    numeric,   -- 현재 하루 급여 횟수 (비교용)
      feed_amount_current_g numeric,  -- 현재 1회당 급여량 g (비교용)
+     age_year             numeric,   -- 나이(년)
+     age_month            numeric,   -- 나이(개월)
+     neutered             text,      -- 중성화 여부 ('true'/'false')
+     conditions           text,      -- 보유 질환 목록 (JSON 문자열)
+     paid                 boolean default false, -- 유료 상세 분석 PDF 결제 상태
      created_at           timestamptz default now()
    );
 
@@ -531,6 +563,11 @@ const SUPABASE_TABLE = "user_analytics"; // 진단 데이터를 저장/조회할
    alter table public.user_analytics add column if not exists food_kcal_per_100g numeric;
    alter table public.user_analytics add column if not exists feed_freq_current numeric;
    alter table public.user_analytics add column if not exists feed_amount_current_g numeric;
+   alter table public.user_analytics add column if not exists age_year numeric;
+   alter table public.user_analytics add column if not exists age_month numeric;
+   alter table public.user_analytics add column if not exists neutered text;
+   alter table public.user_analytics add column if not exists conditions text;
+   alter table public.user_analytics add column if not exists paid boolean default false;
 
    -- 3) RLS를 사용 중이라면 anon 역할에 INSERT/SELECT 정책이 있는지 꼭 확인하세요.
    -- alter table public.user_analytics enable row level security;
@@ -564,6 +601,7 @@ const dog = {
 let currentStep = 1;
 const totalSteps = 4;
 let challengeDays = Array(28).fill(false);
+let lastComputedResult = null; // 유료 상세 분석 PDF 생성 시 사용
 let charts = {};
 
 const BREEDS = ["말티즈","토이/미니어처 푸들","포메라니안","치와와","시츄","비숑프리제","요크셔테리어","닥스훈트","웰시코기","골든리트리버","래브라도리트리버","시베리안허스키","진돗개","프렌치불독","잭러셀테리어","코카스파니엘","사모예드","보더콜리","비글","믹스견","직접입력"];
@@ -857,6 +895,11 @@ const FONT_SCALE_STEPS = [0.9, 1.0, 1.1, 1.2, 1.3];
 
 /* ---- 관리자 스튜디오 접근 제어 ---- */
 const ADMIN_PASSWORD = "ejin2021";
+
+/* ---- MVP 결제 안내 모달용 외부 링크 (정식 PG 연동 전까지 임시 URL) ----
+   실제 운영 시 아래 두 URL을 카카오페이 송금 링크 / 실제 오픈채팅방 URL로 교체하세요. */
+const KAKAOPAY_LINK_URL = "https://open.kakao.com/o/sExamplePay";   // 카카오페이 · 계좌이체 신청
+const OPENCHAT_LINK_URL = "https://open.kakao.com/o/sExampleChat";  // 1:1 오픈카톡 리포트 신청
 let isAdminAuthenticated = false;
 
 /* ---- 유저 진단 제출 데이터 (분석 대시보드 / 추후 DB 연동용) ---- */
@@ -1005,16 +1048,34 @@ function init(){
   document.getElementById('studioBackdrop').addEventListener('click', closeStudio);
   buildStudioTabs();
 
-  // ---- 데이터 분석 탭의 '리포트 보기' 버튼: studioBody에 위임 바인딩 (재렌더링과 무관하게 항상 동작) ----
+  // ---- 데이터 분석 탭의 '리포트 보기 / 유료 PDF / 결제상태 토글' 버튼: studioBody에 위임 바인딩 (재렌더링과 무관하게 항상 동작) ----
   document.getElementById('studioBody').addEventListener('click', e=>{
-    const btn = e.target.closest('.report-view-btn');
-    if(!btn) return;
-    try{
-      const rec = JSON.parse(decodeURIComponent(btn.dataset.record));
-      openUserReportModal(rec);
-    }catch(err){
-      console.error('[seon] 리포트 데이터를 여는 중 오류가 발생했어요:', err);
-      alert('리포트를 여는 중 오류가 발생했어요.');
+    const reportBtn = e.target.closest('.report-view-btn');
+    if(reportBtn){
+      try{
+        const rec = JSON.parse(decodeURIComponent(reportBtn.dataset.record));
+        openUserReportModal(rec);
+      }catch(err){
+        console.error('[seon] 리포트 데이터를 여는 중 오류가 발생했어요:', err);
+        alert('리포트를 여는 중 오류가 발생했어요.');
+      }
+      return;
+    }
+    const pdfBtn = e.target.closest('.pdf-view-btn');
+    if(pdfBtn){
+      try{
+        const rec = JSON.parse(decodeURIComponent(pdfBtn.dataset.record));
+        openPremiumPdfReport(buildCtxFromRecord(rec));
+      }catch(err){
+        console.error('[seon] 유료 PDF를 여는 중 오류가 발생했어요:', err);
+        alert('유료 PDF를 여는 중 오류가 발생했어요.');
+      }
+      return;
+    }
+    const paidBtn = e.target.closest('.paid-toggle-btn');
+    if(paidBtn){
+      togglePaidStatus(parseInt(paidBtn.dataset.idx));
+      return;
     }
   });
 
@@ -1539,6 +1600,7 @@ function buildTransitionSchedule(oldG, newG){
 ============================================================ */
 function runCalculation(){
   const r = computeResults();
+  lastComputedResult = r;
 
   // ---- 유저 진단 제출 데이터 정규화 & 저장 (기본 정보 + 수의영양학 계산 결과 전체) ----
   const proteinMinG = r.extra.type==='kidney' ? r.extra.proteinLow : r.proteinMin;
@@ -1573,6 +1635,9 @@ function runCalculation(){
     ratio_snack: Math.round(r.allocation.snackRatio*100),
     food_texture: dog.foodTexture || '',
     food_kcal_per_100g: dog.foodKcal,
+    age_year: dog.ageYear, age_month: dog.ageMonth,
+    neutered: String(!!dog.neutered), conditions: JSON.stringify(dog.conditions),
+    paid: false,
     feed_freq_current: dog.feedFreqCurrent,
     feed_amount_current_g: dog.feedAmountCurrent,
   }).catch(err=>{
@@ -1942,6 +2007,87 @@ const EXERCISE_PLAN = {
   senior: {types:"짧은 평지 산책 / 가벼운 스트레칭성 활동", duration:"1회 10~15분", weekly:"하루 2회, 무리하지 않는 선에서",
     caution:"미끄러운 바닥과 급격한 방향 전환은 낙상 위험이 있어 주의해주세요."},
 };
+
+/* ============================================================
+   유료 상세 분석 PDF (프리미엄 8페이지 리포트) 전용 데이터
+============================================================ */
+
+/* 사료/영양제 브랜드 건물(DM) 기준 영양 성분 예시 프로파일 — 실제 제품 라벨과 함께 참고용 */
+const BRAND_DM_PROFILE = {
+  royalcanin: {protein:28, fat:16, fiber:3.5, moisture:9, ash:7},
+  hills:      {protein:27, fat:15, fiber:3.0, moisture:10, ash:6.5},
+  now:        {protein:30, fat:17, fiber:4.0, moisture:9, ash:7.5},
+  orijen:     {protein:38, fat:20, fiber:3.5, moisture:10, ash:8},
+  acana:      {protein:33, fat:18, fiber:4.5, moisture:10, ash:7},
+  custom:     {protein:26, fat:15, fiber:4.0, moisture:10, ash:7},
+};
+
+/* SECTION 5(프리미엄): 레시피 3종 — 기존 대표 레시피 + 변형 2종 */
+const RECIPES_EXTRA = {
+  diet: [
+    {name:"저칼로리 대구살 야채볼", kcal:140, ingredients:["대구살 70g","애호박 30g","당근 20g","브로콜리 20g"],
+      note:"모든 재료를 쪄서 동글게 뭉쳐 급여해요. 기름 없이 담백하게 조리해요."},
+    {name:"닭가슴살 곤약 샐러드", kcal:110, ingredients:["닭가슴살 60g","곤약 40g","오이 20g"],
+      note:"저칼로리·고포만감 조합으로 간식 대용으로도 좋아요."},
+  ],
+  joint: [
+    {name:"초록입홍합 닭죽", kcal:190, ingredients:["닭다리살(껍질제거) 70g","초록입홍합 분말 2g","흰쌀 30g","물 200ml"],
+      note:"초록입홍합은 천연 글루코사민 공급원이에요. 죽 형태로 소화 부담을 줄여요."},
+    {name:"연어 아마씨 오일 토핑밥", kcal:210, ingredients:["연어살 60g","흰쌀밥 40g","아마씨오일 3ml"],
+      note:"오메가-3가 풍부해 관절 염증 관리에 도움을 줄 수 있어요."},
+  ],
+  pancreas: [
+    {name:"저지방 닭가슴살 죽", kcal:100, ingredients:["닭가슴살(기름기 제거) 60g","흰쌀 30g","물 200ml"],
+      note:"지방 함량을 최소화한 담백한 죽이에요. 기름은 절대 넣지 않아요."},
+    {name:"단호박 두부 스프", kcal:95, ingredients:["단호박 50g","연두부 40g","물 150ml"],
+      note:"식이섬유가 풍부해 소화가 편하고 지방 함량이 매우 낮아요."},
+  ],
+  kidney: [
+    {name:"저인 감자 닭안심죽", kcal:140, ingredients:["닭안심(저염 삶음) 50g","감자 40g","흰쌀 20g","물 200ml"],
+      note:"인·나트륨 함량이 낮은 재료 위주로 구성했어요."},
+    {name:"두부 호박죽", kcal:110, ingredients:["연두부 50g","호박 40g","물 180ml"],
+      note:"식물성 단백질 위주로 신장 부담을 낮춘 레시피예요."},
+  ],
+  senior: [
+    {name:"부드러운 연어 죽", kcal:150, ingredients:["연어살 60g","흰쌀 30g","연두부 20g","물 220ml"],
+      note:"치아가 약해도 편하게 먹을 수 있도록 푹 끓여요."},
+    {name:"고구마 닭죽", kcal:170, ingredients:["닭가슴살 60g","고구마 30g","흰쌀 20g","물 220ml"],
+      note:"소화가 쉬운 재료로 기력 보충에 도움을 줘요."},
+  ],
+};
+
+/* 프리미엄 마사지 가이드 */
+const MASSAGE_GUIDE = {
+  diet:     ["가벼운 전신 쓰다듬기로 순환을 도와주세요 (5분)", "산책 후 다리 마사지로 근육 이완을 도와주세요"],
+  joint:    ["무릎 주변을 원을 그리듯 부드럽게 마사지해주세요 (1일 2회, 3~5분)", "고관절 주변 근육을 지긋이 눌러 이완시켜주세요"],
+  pancreas: ["복부는 직접 마사지하지 말고, 등과 목 주변만 가볍게 쓰다듬어주세요", "식사 직후 마사지는 피해주세요"],
+  kidney:   ["등과 옆구리를 부드럽게 쓰다듬어 스트레스를 줄여주세요", "복부 강한 압박은 피하고 가볍게만 접촉해주세요"],
+  senior:   ["관절 부위를 따뜻한 손으로 천천히 원을 그리며 마사지해주세요", "귀 주변과 목덜미를 부드럽게 마사지해 긴장을 풀어주세요"],
+};
+/* 프리미엄 주거환경 개선 체크리스트 */
+const HOME_ENV_TIPS = {
+  diet:     ["간식 보관함을 눈에 띄지 않는 곳으로 이동", "식사 시간을 규칙적으로 고정"],
+  joint:    ["미끄럼 방지 매트를 주요 이동 동선에 설치", "높은 곳 점프 방지용 계단/경사로 설치", "발바닥 털 정리로 미끄러짐 방지"],
+  pancreas: ["기름진 음식 접근 차단(식탁 밑 출입 제한)", "쓰레기통 잠금장치로 음식물 접근 차단"],
+  kidney:   ["물그릇을 집안 여러 곳에 배치", "신선한 물을 하루 2회 이상 교체"],
+  senior:   ["미끄럼 방지 매트 전체 배치", "야간 조명 설치로 시야 확보", "식기 높이를 목 높이에 맞게 조정"],
+};
+
+/* 12주 / 1년 장기 케어 타임라인 예측 (안전 속도 유지 후 목표 도달 시 유지 구간) */
+function buildLongTermProjection(currentWeight, targetWeight, goalType){
+  const weeks12 = [];
+  let w = currentWeight;
+  const rate = goalType==='loss' ? -0.0125 : goalType==='gain' ? 0.01 : 0;
+  for(let week=0; week<=12; week++){
+    if(week>0){
+      w = w * (1+rate);
+      if((goalType==='loss' && w<=targetWeight) || (goalType==='gain' && w>=targetWeight)) w = targetWeight;
+    }
+    weeks12.push({week, weight: +w.toFixed(2)});
+  }
+  const months12 = [0,3,6,9,12].map(m=>({month:m, weight: +targetWeight.toFixed(2)}));
+  return {weeks12, months12};
+}
 
 /* ---- SECTION 3: 오늘 간식/훈련용 간식을 더 준 날의 대체 시나리오 ---- */
 function buildAlternateScenarioHtml(dailyFoodG, foodKcalPer100, snacks){
@@ -2429,17 +2575,17 @@ function openMockBuyModal(item){
 }
 
 function openPremiumModal(type){
-  const title = type==='pdf' ? '상세 영양소 분석 PDF' : '수의 영양 전문가 1:1 서면 상담';
-  const desc = type==='pdf'
-    ? `${dog.name}의 전체 데이터를 기반으로 영양소별(단백질/지방/섬유질/비타민) 상세 분석 리포트를 PDF로 제작해드려요.`
-    : `수의영양학 전공 상담사가 ${dog.name}의 식단표를 검토하고 서면으로 맞춤 피드백을 드려요.`;
+  if(type === 'pdf'){ openPremiumPaymentGuideModal(); return; }
+
+  const title = '수의 영양 전문가 1:1 서면 상담';
+  const desc = `수의영양학 전공 상담사가 ${dog.name}의 식단표를 검토하고 서면으로 맞춤 피드백을 드려요.`;
   mountModal(`
     <p class="text-xs font-bold text-primary-dark mb-1">PREMIUM</p>
     <h3 class="font-display text-xl font-bold mb-2">${title}</h3>
     <p class="text-sm text-muted mb-5">${desc}</p>
     <div class="surface-2 rounded-xl p-4 mb-5">
-      <div class="flex items-center justify-between text-sm mb-1"><span>이용 방식</span><span class="font-semibold">${type==='pdf'?'즉시 발급':'영업일 기준 2일 이내 회신'}</span></div>
-      <div class="flex items-center justify-between text-sm"><span>가격</span><span class="font-semibold text-primary-dark">${type==='pdf'?'9,900원':'29,000원'}</span></div>
+      <div class="flex items-center justify-between text-sm mb-1"><span>이용 방식</span><span class="font-semibold">영업일 기준 2일 이내 회신</span></div>
+      <div class="flex items-center justify-between text-sm"><span>가격</span><span class="font-semibold text-primary-dark">29,000원</span></div>
     </div>
     <form id="premiumForm" class="space-y-3">
       <input required type="text" placeholder="보호자 성함" class="w-full rounded-xl px-4 py-2.5 text-sm">
@@ -2458,6 +2604,321 @@ function openPremiumModal(type){
         <p class="text-sm text-muted">입력하신 이메일로 곧 안내를 보내드릴게요.</p>
       </div>`;
     document.getElementById('modalCloseBtn2').addEventListener('click', closeModal);
+  });
+}
+
+/* ---- MVP 결제 안내 모달: PG 미연동 상태에서 유저를 외부 채널(카카오페이/오픈카톡)로 안내 ---- */
+function openPremiumPaymentGuideModal(){
+  mountModal(`
+    <p class="text-xs font-bold text-primary-dark mb-1">PREMIUM · MVP</p>
+    <h3 class="font-display text-xl font-bold mb-2">프리미엄 1:1 수의영양학 정밀 분석 PDF</h3>
+    <p class="text-sm text-muted mb-4">${dog.name}만을 위한 8페이지 정밀 리포트를 받아보세요.</p>
+
+    <div class="surface-2 rounded-xl p-4 mb-4 space-y-1.5">
+      <p class="text-xs text-muted flex gap-1.5"><span class="text-primary shrink-0">📊</span>사료·영양제 브랜드 DM 성분 1:1 정밀 분석표</p>
+      <p class="text-xs text-muted flex gap-1.5"><span class="text-primary shrink-0">📈</span>12주 · 1년 장기 케어 타임라인 & 예측 곡선</p>
+      <p class="text-xs text-muted flex gap-1.5"><span class="text-primary shrink-0">🍳</span>플랜 맞춤 홈메이드 특식 레시피 3종</p>
+      <p class="text-xs text-muted flex gap-1.5"><span class="text-primary shrink-0">🏃</span>맞춤 운동·마사지·주거환경 개선 가이드</p>
+      <p class="text-xs text-muted flex gap-1.5"><span class="text-primary shrink-0">🏥</span>동물병원 제출용 정식 메디컬 서머리</p>
+    </div>
+
+    <div class="rounded-xl p-4 mb-5 flex items-center justify-between bg-primary-light">
+      <div>
+        <p class="text-[11px] text-muted line-through">정가 19,900원</p>
+        <p class="font-display font-bold text-2xl text-primary-dark">9,900원</p>
+      </div>
+      <span class="text-[11px] font-bold text-white bg-primary rounded-full px-2.5 py-1 whitespace-nowrap">런칭 프로모션</span>
+    </div>
+
+    <div class="space-y-2">
+      <button id="kakaopayBtn" class="btn-primary w-full rounded-xl py-3 text-sm flex items-center justify-center gap-2">💰 카카오페이 / 계좌이체로 신청하기</button>
+      <button id="openchatBtn" class="btn-ghost w-full rounded-xl py-3 text-sm flex items-center justify-center gap-2">💬 1:1 오픈카톡으로 리포트 신청</button>
+    </div>
+    <p id="paymentGuideNote" class="text-[11px] text-muted mt-3 text-center min-h-[16px]"></p>
+    <p class="text-[10px] text-muted mt-1">* 아직 정식 결제 시스템(PG) 연동 전이라, 신청 시 외부 채널로 연결돼요. 안내에 따라 입금 후 리포트를 받아보실 수 있어요.</p>
+  `);
+  const note = document.getElementById('paymentGuideNote');
+  document.getElementById('kakaopayBtn').addEventListener('click', ()=>{
+    window.open(KAKAOPAY_LINK_URL, '_blank', 'noopener');
+    note.textContent = '새 창에서 카카오페이/계좌이체 안내가 열렸어요. 안내에 따라 신청을 완료해주세요.';
+  });
+  document.getElementById('openchatBtn').addEventListener('click', ()=>{
+    window.open(OPENCHAT_LINK_URL, '_blank', 'noopener');
+    note.textContent = '새 창에서 1:1 오픈카톡이 열렸어요. 채팅으로 리포트를 신청해주세요.';
+  });
+}
+
+/* ============================================================
+   유료 상세 분석 PDF (8페이지 프리미엄 리포트)
+============================================================ */
+/* ---- ctx 빌더: 라이브(유저 진행 중) / 관리자(DB 레코드) 양쪽에서 동일한 프리미엄 빌더를 재사용하기 위한 정규화 ---- */
+function buildCtxFromLive(){
+  const r = lastComputedResult;
+  if(!r) return null;
+  const proteinMinG = r.extra.type==='kidney' ? r.extra.proteinLow : r.proteinMin;
+  const proteinMaxG = r.extra.type==='kidney' ? r.extra.proteinHigh : r.proteinRec;
+  return {
+    name: dog.name, breed: dog.breed, ageYear: dog.ageYear, ageMonth: dog.ageMonth,
+    weight: dog.weight, target: dog.target, bcs: dog.bcs, neutered: dog.neutered, conditions: dog.conditions,
+    planId: dog.plan, planCfg: r.planCfg, foodBrandLabel: dog.foodBrandLabel, foodKcal: dog.foodKcal,
+    RER: r.RER, IBW: r.IBW, MER: r.MER, factor: r.factor, goalType: r.goalType,
+    dailyFoodG: r.dailyFoodG, snackKcalLimit: r.snackKcalLimit, waterMl: r.waterMl,
+    proteinMinG, proteinMaxG, approximated: false,
+    adminLabel: null,
+  };
+}
+function buildCtxFromRecord(rec){
+  const planId = Object.keys(PLAN_TYPE_LABEL).find(k=>PLAN_TYPE_LABEL[k]===rec.plan_type) || 'diet';
+  const planCfg = PLANS.find(p=>p.id===planId) || PLANS[0];
+  let conditions = []; try{ conditions = JSON.parse(rec.conditions||'[]'); }catch(e){}
+  const n = getReportNutritionData(rec);
+  const weight = parseFloat(rec.weight), target = parseFloat(rec.target_weight);
+  let goalType = 'maintain';
+  if(Number.isFinite(target)){
+    if(target < weight*0.98) goalType = 'loss'; else if(target > weight*1.02) goalType = 'gain';
+  }
+  return {
+    name: rec.dog_name, breed: rec.breed, ageYear: rec.age_year ?? '-', ageMonth: rec.age_month ?? '-',
+    weight, target, bcs: rec.bcs, neutered: rec.neutered==='true', conditions,
+    planId, planCfg, foodBrandLabel: rec.food_brand, foodKcal: rec.food_kcal_per_100g,
+    RER: n?n.rer:null, IBW: n?n.ibw:null, MER: n?n.mer:null,
+    factor: (n && n.rer) ? n.mer/n.rer : null, goalType,
+    dailyFoodG: n?n.dailyFeedG:null, snackKcalLimit: n?n.treatLimitKcal:null, waterMl: n?n.waterMl:null,
+    proteinMinG: n?n.proteinMinG:null, proteinMaxG: n?n.proteinMaxG:null, approximated: n?n.approximated:true,
+    adminLabel: `관리자 보기 · ${rec.dog_name}`,
+  };
+}
+
+function buildBrandDmTableHtml(ctx){
+  const preset = FOOD_PRESETS.find(f=>f.label===ctx.foodBrandLabel);
+  const brandId = preset ? preset.id : 'custom';
+  const profile = BRAND_DM_PROFILE[brandId] || BRAND_DM_PROFILE.custom;
+  const rows = [
+    ['조단백(Protein)', profile.protein+'%', ctx.planCfg.macro.protein+'%'],
+    ['조지방(Fat)', profile.fat+'%', ctx.planCfg.macro.fat+'%'],
+    ['조섬유(Fiber)', profile.fiber+'%', '—'],
+    ['수분(Moisture)', profile.moisture+'%', '—'],
+    ['조회분(Ash)', profile.ash+'%', '—'],
+  ];
+  return `
+    <p class="text-xs text-muted mb-3">${ctx.foodBrandLabel || '선택 사료'}의 건물(DM) 기준 대표 영양 성분과, ${ctx.name}의 케어플랜 권장 비율을 1:1로 비교했어요.</p>
+    <table class="w-full text-xs mb-4" style="border-collapse:collapse;">
+      <thead><tr style="border-bottom:2px solid #1d1d1f;">
+        <th class="text-left py-2">성분</th><th class="text-right py-2">${ctx.foodBrandLabel || '선택 사료'}</th><th class="text-right py-2">플랜 권장</th>
+      </tr></thead>
+      <tbody>
+        ${rows.map(([label,val,plan])=>`
+          <tr style="border-bottom:1px solid #e5e5e5;">
+            <td class="py-1.5">${label}</td>
+            <td class="text-right py-1.5 font-bold">${val}</td>
+            <td class="text-right py-1.5 text-muted">${plan}</td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+    <p class="text-[10px] text-muted">* 위 성분표는 일반적인 제품 구성을 바탕으로 한 예시 데이터이며, 실제 구매 전 반드시 제품 라벨의 최신 영양 정보를 확인해주세요.</p>`;
+}
+
+function buildPremiumTimelineHtml(ctx, canvasId){
+  const lt = buildLongTermProjection(ctx.weight, ctx.target, ctx.goalType);
+  return `
+    <div class="relative mb-4" style="height:220px;"><canvas id="${canvasId}"></canvas></div>
+    <div class="grid grid-cols-5 gap-2 text-center">
+      ${lt.months12.map(m=>`
+        <div class="surface-2 rounded-lg p-2">
+          <p class="text-[10px] text-muted">${m.month===0?'현재':m.month+'개월'}</p>
+          <p class="font-display font-bold text-sm">${m.weight}kg</p>
+        </div>`).join('')}
+    </div>
+    <p class="text-[10px] text-muted mt-2">* 12주까지는 안전 감량/증량 속도(주당 1.0~1.5%) 기준 시뮬레이션이며, 목표 도달 이후에는 유지 체중을 가정했어요.</p>
+  `;
+}
+let premiumChartInstance = null;
+function drawPremiumTimelineChart(ctx, canvasId){
+  const canvas = document.getElementById(canvasId);
+  if(!canvas || typeof Chart === 'undefined') return;
+  const lt = buildLongTermProjection(ctx.weight, ctx.target, ctx.goalType);
+  if(premiumChartInstance){ premiumChartInstance.destroy(); premiumChartInstance = null; }
+  premiumChartInstance = new Chart(canvas, {
+    type:'line',
+    data:{
+      labels: lt.weeks12.map(p=>p.week===0?'현재':`${p.week}주`),
+      datasets:[{ label:'예상 체중(kg)', data: lt.weeks12.map(p=>p.weight), borderColor:'#F97A3D', backgroundColor:'#F97A3D22', fill:true, tension:.3, pointRadius:2 }]
+    },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{ticks:{font:{size:9}}}, y:{ticks:{font:{size:9}}} } }
+  });
+}
+
+function buildPremiumRecipesHtml(ctx){
+  const main = RECIPES[ctx.planId] || RECIPES.diet;
+  const extra = RECIPES_EXTRA[ctx.planId] || RECIPES_EXTRA.diet;
+  const all = [main, ...extra];
+  return all.map((rc,i)=>`
+    <div class="surface-2 rounded-xl p-4 mb-3">
+      <div class="flex items-center justify-between mb-1.5">
+        <p class="font-bold text-sm">${i+1}. ${rc.name}</p>
+        <span class="text-xs font-bold" style="color:var(--c-primary-dark);">약 ${rc.kcal}kcal</span>
+      </div>
+      <p class="text-xs text-muted mb-1"><b>재료:</b> ${rc.ingredients.join(', ')}</p>
+      <p class="text-xs text-muted">${rc.note}</p>
+    </div>`).join('');
+}
+
+function buildPremiumExerciseHomeHtml(ctx){
+  const ex = EXERCISE_PLAN[ctx.planId] || EXERCISE_PLAN.diet;
+  const massage = MASSAGE_GUIDE[ctx.planId] || MASSAGE_GUIDE.diet;
+  const home = HOME_ENV_TIPS[ctx.planId] || HOME_ENV_TIPS.diet;
+  return `
+    <div class="grid sm:grid-cols-3 gap-3">
+      <div class="surface-2 rounded-xl p-3">
+        <p class="text-xs font-bold mb-2">🏃 운동 루틴</p>
+        <p class="text-xs text-muted mb-1">${ex.types}</p>
+        <p class="text-xs text-muted mb-1">${ex.duration} · ${ex.weekly}</p>
+        <p class="text-[11px]" style="color:var(--c-fat);">⚠️ ${ex.caution}</p>
+      </div>
+      <div class="surface-2 rounded-xl p-3">
+        <p class="text-xs font-bold mb-2">💆 5분 마사지 가이드</p>
+        ${massage.map((m,i)=>`<p class="text-xs text-muted mb-1">${i+1}. ${m}</p>`).join('')}
+      </div>
+      <div class="surface-2 rounded-xl p-3">
+        <p class="text-xs font-bold mb-2">🏠 주거환경 체크리스트</p>
+        ${home.map(h=>`<p class="text-xs text-muted mb-1">☑ ${h}</p>`).join('')}
+      </div>
+    </div>`;
+}
+
+function buildClinicalSummaryHtml(ctx){
+  const hasNums = ctx.RER!=null && ctx.MER!=null && ctx.IBW!=null;
+  return `
+    <table class="w-full text-xs" style="border-collapse:collapse;">
+      <tbody>
+        <tr style="border-bottom:1px solid #e5e5e5;"><td class="py-2 font-semibold w-1/3">환자(Signalment)</td><td class="py-2">${ctx.name} · ${ctx.breed} · ${ctx.ageYear}세 ${ctx.ageMonth}개월 · ${ctx.neutered?'중성화 완료':'미중성화'}</td></tr>
+        <tr style="border-bottom:1px solid #e5e5e5;"><td class="py-2 font-semibold">주호소(Presenting Concern)</td><td class="py-2">${ctx.planCfg.title} 관련 영양 관리 상담</td></tr>
+        <tr style="border-bottom:1px solid #e5e5e5;"><td class="py-2 font-semibold">체중 / BCS</td><td class="py-2">현재 ${ctx.weight}kg → 목표 ${ctx.target}kg · BCS ${ctx.bcs}/9 ${hasNums?`· 과학적 이상체중(IBW) ${ctx.IBW.toFixed(2)}kg`:''}</td></tr>
+        <tr style="border-bottom:1px solid #e5e5e5;"><td class="py-2 font-semibold">보유 질환</td><td class="py-2">${ctx.conditions.length ? ctx.conditions.map(c=>CONDITION_GUIDE[c]?.title||c).join(', ') : '해당 없음'}</td></tr>
+        <tr style="border-bottom:1px solid #e5e5e5;"><td class="py-2 font-semibold">에너지 요구량</td><td class="py-2">${hasNums ? `RER ${Math.round(ctx.RER)}kcal · MER ${Math.round(ctx.MER)}kcal ${ctx.factor?`(계수 ${ctx.factor.toFixed(2)})`:''}` : '데이터 부족으로 산출 불가'}</td></tr>
+        <tr style="border-bottom:1px solid #e5e5e5;"><td class="py-2 font-semibold">영양 처방</td><td class="py-2">${ctx.dailyFoodG!=null ? `1일 사료 급여량 ${Math.round(ctx.dailyFoodG)}g · 단백질 ${Math.round(ctx.proteinMinG)}~${Math.round(ctx.proteinMaxG)}g/일 · 음수량 ${Math.round(ctx.waterMl)}ml/일` : '데이터 부족으로 산출 불가'}</td></tr>
+        <tr><td class="py-2 font-semibold">모니터링 권고</td><td class="py-2">2~4주 간격 체중 재측정, BCS 재평가 및 ${ctx.planId==='kidney'?'BUN/SDMA/Cr 정기 혈액검사':ctx.planId==='pancreas'?'리파아제 수치 및 임상 증상':'체중 변화 추이'} 관찰 권장</td></tr>
+      </tbody>
+    </table>
+    ${ctx.approximated ? `<p class="text-[10px] text-muted mt-2">⚠️ 상세 계산 데이터가 저장되기 전 기록으로, 일부 수치는 체중·BCS 기준 근사치예요.</p>` : ''}
+    <p class="text-[10px] text-muted mt-3">본 서머리는 보호자가 입력한 정보를 바탕으로 한 참고 자료이며, 정식 진단이나 처방을 대체하지 않습니다. 담당 수의사의 임상적 판단을 우선해주세요.</p>`;
+}
+
+function renderPremiumReportHtml(ctx, canvasId){
+  const today = new Date().toLocaleDateString('ko-KR');
+  const hasNums = ctx.RER!=null && ctx.MER!=null;
+  return `
+  <div class="pdf-report-root">
+    ${ctx.adminLabel ? `<p class="text-center text-[10px] text-muted mb-1">${ctx.adminLabel} (관리자 열람용)</p>` : ''}
+    <div class="pdf-page">
+      <div class="h-full flex flex-col items-center justify-center text-center" style="min-height:250mm;">
+        <p class="font-display font-bold text-2xl mb-2" style="color:var(--c-primary);">seon</p>
+        <p class="pdf-kicker mb-6">PREMIUM NUTRITION REPORT</p>
+        <h1 class="font-display font-bold text-3xl mb-3">${ctx.name}의 상세 영양 분석 리포트</h1>
+        <p class="text-sm text-muted mb-1">${ctx.planCfg.title}</p>
+        <p class="text-xs text-muted">발행일 ${today}</p>
+      </div>
+      <span class="pdf-page-num">1 / 8</span>
+    </div>
+
+    <div class="pdf-page">
+      <p class="pdf-kicker mb-1">PAGE 2</p>
+      <h2 class="font-display font-bold text-xl mb-4">진단 요약 &amp; 핵심 지표</h2>
+      <div class="grid grid-cols-2 gap-3 mb-4">
+        <div class="surface-2 rounded-xl p-3"><p class="text-[10px] text-muted">이름</p><p class="font-semibold">${ctx.name}</p></div>
+        <div class="surface-2 rounded-xl p-3"><p class="text-[10px] text-muted">견종</p><p class="font-semibold">${ctx.breed}</p></div>
+        <div class="surface-2 rounded-xl p-3"><p class="text-[10px] text-muted">현재→목표 체중</p><p class="font-semibold">${ctx.weight}kg → ${ctx.target}kg</p></div>
+        <div class="surface-2 rounded-xl p-3"><p class="text-[10px] text-muted">BCS</p><p class="font-semibold">${ctx.bcs} / 9</p></div>
+      </div>
+      ${hasNums ? `
+        <div class="grid grid-cols-4 gap-2 mb-4">
+          ${metricCard('일일 급여량', Math.round(ctx.dailyFoodG)+'g', '하루 총량', 'bone')}
+          ${metricCard('MER', Math.round(ctx.MER)+'kcal', '일일 권장 칼로리', 'flame')}
+          ${metricCard('간식 한도', Math.round(ctx.snackKcalLimit)+'kcal', 'MER 10% 이내', 'cookie')}
+          ${metricCard('음수량', Math.round(ctx.waterMl)+'ml', 'RER 1:1', 'droplet')}
+        </div>` : `<div class="tooltip-box p-3 text-xs text-muted mb-4">계산 데이터가 부족해 핵심 지표를 표시할 수 없어요.</div>`}
+      ${renderMacroBar(ctx.planCfg.macro)}
+      <span class="pdf-page-num">2 / 8</span>
+    </div>
+
+    <div class="pdf-page">
+      <p class="pdf-kicker mb-1">PAGE 3</p>
+      <h2 class="font-display font-bold text-xl mb-4">사료·영양제 브랜드 DM 성분 1:1 정밀 분석표</h2>
+      ${buildBrandDmTableHtml(ctx)}
+      <span class="pdf-page-num">3 / 8</span>
+    </div>
+
+    <div class="pdf-page">
+      <p class="pdf-kicker mb-1">PAGE 4</p>
+      <h2 class="font-display font-bold text-xl mb-4">12주 · 1년 장기 케어 타임라인</h2>
+      ${buildPremiumTimelineHtml(ctx, canvasId)}
+      <span class="pdf-page-num">4 / 8</span>
+    </div>
+
+    <div class="pdf-page">
+      <p class="pdf-kicker mb-1">PAGE 5</p>
+      <h2 class="font-display font-bold text-xl mb-4">플랜 맞춤 홈메이드 특식 레시피 3종</h2>
+      ${buildPremiumRecipesHtml(ctx)}
+      <span class="pdf-page-num">5 / 8</span>
+    </div>
+
+    <div class="pdf-page">
+      <p class="pdf-kicker mb-1">PAGE 6</p>
+      <h2 class="font-display font-bold text-xl mb-4">맞춤 운동·마사지·주거환경 개선 가이드</h2>
+      ${buildPremiumExerciseHomeHtml(ctx)}
+      <span class="pdf-page-num">6 / 8</span>
+    </div>
+
+    <div class="pdf-page">
+      <p class="pdf-kicker mb-1">PAGE 7 · FOR VETERINARY USE</p>
+      <h2 class="font-display font-bold text-xl mb-4">동물병원 제출용 수의영양학 메디컬 서머리</h2>
+      ${buildClinicalSummaryHtml(ctx)}
+      <span class="pdf-page-num">7 / 8</span>
+    </div>
+
+    <div class="pdf-page">
+      <p class="pdf-kicker mb-1">PAGE 8</p>
+      <h2 class="font-display font-bold text-xl mb-4">안내 사항</h2>
+      <div class="tooltip-box p-4 mb-4">
+        <p class="text-xs text-muted">본 리포트는 보호자가 입력한 정보를 바탕으로 생성된 참고 자료이며, 수의사의 진단·처방을 대체하지 않습니다. 건강 이상 징후가 있다면 반드시 가까운 동물병원에 방문해주세요.</p>
+      </div>
+      <div class="text-center mt-10">
+        <p class="font-display font-bold text-lg" style="color:var(--c-primary);">seon</p>
+        <p class="text-xs text-muted mt-1">© ${new Date().getFullYear()} 서온 · seon</p>
+      </div>
+      <span class="pdf-page-num">8 / 8</span>
+    </div>
+  </div>`;
+}
+
+function openPremiumPdfReport(ctxArg){
+  const ctx = ctxArg || buildCtxFromLive();
+  if(!ctx){ alert('먼저 Step4에서 진단을 완료해주세요.'); return; }
+  const canvasId = ctx.adminLabel ? 'premiumTimelineChartAdmin' : 'premiumTimelineChart';
+  const existing = document.getElementById('pdfReportOverlay');
+  if(existing) existing.remove();
+  const overlay = document.createElement('div');
+  overlay.id = 'pdfReportOverlay';
+  overlay.className = 'pdf-report-overlay';
+  overlay.innerHTML = `
+    <div class="pdf-toolbar surface flex items-center justify-between px-4 py-3 mb-2">
+      <p class="text-sm font-bold">${ctx.adminLabel ? '⭐' : '📄'} ${ctx.name}의 프리미엄 분석 리포트 (8p)</p>
+      <div class="flex gap-2">
+        <button id="pdfPrintBtn" class="btn-primary rounded-xl px-4 py-2 text-xs">📥 PDF 다운로드 / 인쇄</button>
+        <button id="pdfCloseBtn" class="btn-ghost rounded-xl px-4 py-2 text-xs">닫기</button>
+      </div>
+    </div>
+    ${renderPremiumReportHtml(ctx, canvasId)}
+  `;
+  document.body.appendChild(overlay);
+  requestAnimationFrame(()=>drawPremiumTimelineChart(ctx, canvasId));
+  document.getElementById('pdfCloseBtn').addEventListener('click', ()=>overlay.remove());
+  document.getElementById('pdfPrintBtn').addEventListener('click', ()=>{
+    document.body.classList.add('print-mode-premium');
+    const cleanup = ()=> document.body.classList.remove('print-mode-premium');
+    window.addEventListener('afterprint', cleanup, {once:true});
+    window.print();
+    setTimeout(cleanup, 2000);
   });
 }
 
@@ -2870,6 +3331,10 @@ async function saveUserAnalyticsData(record){
     food_kcal_per_100g: numOrNull(record.food_kcal_per_100g),
     feed_freq_current: numOrNull(record.feed_freq_current),
     feed_amount_current_g: numOrNull(record.feed_amount_current_g),
+    age_year: numOrNull(record.age_year), age_month: numOrNull(record.age_month),
+    neutered: String(record.neutered ?? 'false'),
+    conditions: typeof record.conditions==='string' ? record.conditions : JSON.stringify(record.conditions ?? []),
+    paid: !!record.paid,
   };
 
   // 1) 로컬(메모리 + localStorage)에 항상 먼저 쌓아요 — DB 연결 여부와 무관하게 안전망 역할
@@ -2914,6 +3379,7 @@ function exportAnalyticsCSV(){
     ['food_brand','사료브랜드'], ['food_texture','사료제형'], ['food_kcal_per_100g','사료kcal(100g)'], ['ratio_food','사료배분(%)'], ['ratio_supplement','영양제배분(%)'], ['ratio_snack','간식배분(%)'],
     ['feed_freq_current','현재급여횟수'], ['feed_amount_current_g','현재1회급여량(g)'],
     ['dynamic_answers','맞춤질문답변(JSON)'], ['supplements','영양제목록(JSON)'], ['snacks','간식목록(JSON)'],
+    ['paid','결제상태'],
     ['created_at','제출일시'],
   ];
   const escapeCell = (v)=>{
@@ -2929,6 +3395,27 @@ function exportAnalyticsCSV(){
   const a = document.createElement('a');
   a.href = url; a.download = `seon-user-analytics-${new Date().toISOString().slice(0,10)}.csv`; a.click();
   URL.revokeObjectURL(url);
+}
+
+async function togglePaidStatus(idx){
+  const rec = analyticsRecords[idx];
+  if(!rec) return;
+  rec.paid = !rec.paid;
+  renderStudioBody(); // 배지/스위치 즉시 갱신
+
+  try{ localStorage.setItem(ANALYTICS_STORAGE_KEY, JSON.stringify(analyticsRecords)); }catch(e){}
+
+  if(supabaseClient && rec.id!=null){
+    try{
+      const { error } = await supabaseClient.from(SUPABASE_TABLE).update({paid: rec.paid}).eq('id', rec.id);
+      if(error) console.error('[seon] 결제 상태 DB 반영 실패:', error.message);
+      else console.log('[seon] 결제 상태가 DB에도 반영됐어요 ✅', rec.dog_name, rec.paid);
+    }catch(err){
+      console.error('[seon] 결제 상태 업데이트 중 오류:', err);
+    }
+  } else {
+    console.log('[seon] 로컬 전용 반영 (DB id가 없거나 Supabase 미연결) — CSV로만 확인 가능해요.');
+  }
 }
 
 function computeAnalyticsSummary(){
@@ -3014,6 +3501,8 @@ async function loadAnalyticsFromDB(){
         supplements: row.supplements || '[]', snacks: row.snacks || '{}',
         ratio_food: numOrNull(row.ratio_food), ratio_supplement: numOrNull(row.ratio_supplement), ratio_snack: numOrNull(row.ratio_snack),
         food_texture: row.food_texture || '', food_kcal_per_100g: numOrNull(row.food_kcal_per_100g),
+        id: row.id, age_year: numOrNull(row.age_year), age_month: numOrNull(row.age_month),
+        neutered: row.neutered ?? 'false', conditions: row.conditions || '[]', paid: !!row.paid,
         feed_freq_current: numOrNull(row.feed_freq_current), feed_amount_current_g: numOrNull(row.feed_amount_current_g),
       }));
       try{ localStorage.setItem(ANALYTICS_STORAGE_KEY, JSON.stringify(analyticsRecords)); }catch(e){}
@@ -3282,36 +3771,30 @@ const STUDIO_TAB_HTML = {
           <p class="text-xs font-semibold text-muted">고객 데이터 (최근 10건 표시 · CSV는 전체 내보내기)</p>
           <button id="adm_csv_btn" class="btn-ghost rounded-lg px-2.5 py-1.5 text-[10px] flex items-center gap-1 whitespace-nowrap">📥 CSV 다운로드</button>
         </div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-[11px]" style="table-layout:fixed;">
-            <colgroup>
-              <col style="width:20%;"><col style="width:18%;"><col style="width:22%;">
-              <col style="width:10%;"><col style="width:14%;"><col style="width:16%;">
-            </colgroup>
-            <thead><tr class="text-left text-muted border-b border-token">
-              <th class="py-1.5 pr-1 font-semibold truncate">이름</th>
-              <th class="py-1.5 pr-1 font-semibold truncate">견종</th>
-              <th class="py-1.5 pr-1 font-semibold truncate">체중→목표</th>
-              <th class="py-1.5 pr-1 font-semibold truncate">BCS</th>
-              <th class="py-1.5 pr-1 font-semibold truncate">플랜</th>
-              <th class="py-1.5 font-semibold text-right">리포트</th>
-            </tr></thead>
-            <tbody>
-              ${rows.length ? rows.map(rec=>`
-                <tr class="border-b border-token last:border-0">
-                  <td class="py-1.5 pr-1 truncate" title="${rec.dog_name}">${rec.dog_name}</td>
-                  <td class="py-1.5 pr-1 truncate" title="${rec.breed}">${rec.breed}</td>
-                  <td class="py-1.5 pr-1 font-mono truncate">${rec.weight}→${rec.target_weight}kg</td>
-                  <td class="py-1.5 pr-1 truncate">${rec.bcs}</td>
-                  <td class="py-1.5 pr-1 truncate" title="${rec.plan_type}">${rec.plan_type}</td>
-                  <td class="py-1.5 text-right">
-                    <button type="button" class="report-view-btn btn-ghost rounded-lg px-2 py-1 text-[10px] whitespace-nowrap" data-record='${encodeURIComponent(JSON.stringify(rec))}'>📄 리포트</button>
-                  </td>
-                </tr>`).join('') : `<tr><td colspan="6" class="py-6 text-center text-muted">${dbStatus==='error' ? 'DB 조회에 실패해 데이터를 표시할 수 없어요. 위 오류 메시지를 확인해주세요.' : dbStatus==='loading' ? '데이터를 불러오는 중이에요...' : '아직 수집된 진단 데이터가 없어요. 방문자가 Step 4에서 계산을 완료하면 여기에 표시돼요.'}</td></tr>`}
-            </tbody>
-          </table>
+        <div class="space-y-2">
+          ${rows.length ? rows.map((rec,pos)=>{
+            const realIdx = analyticsRecords.length - 1 - pos;
+            const encoded = encodeURIComponent(JSON.stringify(rec));
+            return `
+            <div class="surface-2 rounded-xl p-3">
+              <div class="flex items-center justify-between gap-2 mb-2 flex-wrap">
+                <p class="text-xs font-semibold truncate">${rec.dog_name} <span class="text-muted font-normal">· ${rec.breed}</span></p>
+                <span class="text-[10px] text-muted whitespace-nowrap">${rec.weight}→${rec.target_weight}kg · BCS ${rec.bcs} · ${rec.plan_type}</span>
+              </div>
+              <div class="flex items-center justify-between gap-2 flex-wrap">
+                <button type="button" class="paid-toggle-btn flex items-center gap-1.5" data-idx="${realIdx}">
+                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${rec.paid ? 'bg-mint-light text-mint' : 'surface text-muted border border-token'}">${rec.paid ? '✅ 결제완료' : '⏳ 미결제'}</span>
+                  <span class="u-switch ${rec.paid?'on':''}" style="width:30px;height:17px;"><span class="knob" style="width:13px;height:13px;"></span></span>
+                </button>
+                <div class="flex gap-1.5">
+                  <button type="button" class="report-view-btn btn-ghost rounded-lg px-2 py-1 text-[10px] whitespace-nowrap" data-record='${encoded}'>📄 기본 리포트</button>
+                  <button type="button" class="pdf-view-btn btn-primary rounded-lg px-2 py-1 text-[10px] whitespace-nowrap" data-record='${encoded}'>⭐ 유료 상세 PDF</button>
+                </div>
+              </div>
+            </div>`;
+          }).join('') : `<div class="py-6 text-center text-muted text-xs">${dbStatus==='error' ? 'DB 조회에 실패해 데이터를 표시할 수 없어요. 위 오류 메시지를 확인해주세요.' : dbStatus==='loading' ? '데이터를 불러오는 중이에요...' : '아직 수집된 진단 데이터가 없어요. 방문자가 Step 4에서 계산을 완료하면 여기에 표시돼요.'}</div>`}
         </div>
-        <p class="text-[10px] text-muted mt-1.5">제출 일시는 리포트 상세 화면에서 확인할 수 있어요.</p>
+        <p class="text-[10px] text-muted mt-1.5">제출 일시는 각 리포트 상세 화면에서 확인할 수 있어요.</p>
       </div>
 
       <div class="tooltip-box p-3 text-xs text-muted">
