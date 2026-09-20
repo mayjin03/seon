@@ -146,6 +146,15 @@
 
   @media (max-width:640px){ .container-px{padding-left:16px;padding-right:16px;} }
 
+  /* ---- 유저 맞춤 리포트 인쇄(print) 전용 규칙 ---- */
+  @media print{
+    body *{ visibility:hidden !important; }
+    .print-report, .print-report *{ visibility:visible !important; }
+    .print-report{ position:absolute; left:0; top:0; width:100%; padding:24px; color:#000 !important; }
+    #modalOverlay{ position:static !important; background:none !important; padding:0 !important; }
+    #modalOverlay > div{ position:static !important; max-height:none !important; overflow:visible !important; box-shadow:none !important; border:none !important; width:100% !important; max-width:100% !important; }
+  }
+
   /* ---- 라운딩(Border-Radius) 모듈: 버튼/칩류는 관리자 라운딩 값을 따르도록 우선순위 확보 ---- */
   .btn-primary.rounded-xl, .btn-ghost.rounded-xl, .chip.rounded-xl, .chip.rounded-full,
   .btn-primary.rounded-lg, .btn-ghost.rounded-lg, .day-cell.rounded-lg, .plan-card.rounded-xl{
@@ -1706,6 +1715,62 @@ function openCouponModal(){
   document.getElementById('couponOkBtn').addEventListener('click', closeModal);
 }
 
+/* ---- 관리자 스튜디오: 유저 맞춤 영양 리포트 조회/인쇄 모달 ---- */
+function openUserReportModal(rec){
+  const weight = parseFloat(rec.weight);
+  const target = parseFloat(rec.target_weight);
+  const diff = weight - target;
+  const diffLabel = Math.abs(diff) < 0.05
+    ? '체중 유지 상태'
+    : diff > 0 ? `${diff.toFixed(1)}kg 감량 필요` : `${Math.abs(diff).toFixed(1)}kg 증량 필요`;
+  const createdLabel = rec.created_at ? new Date(rec.created_at).toLocaleString('ko-KR') : '기록 없음';
+
+  mountModal(`
+    <div class="print-report">
+      <div class="flex items-center justify-between mb-5 pb-4 border-b border-token">
+        <div class="flex items-baseline gap-2">
+          <span class="font-display font-bold text-lg" style="color:var(--c-primary)">seon</span>
+          <span class="text-sm font-semibold">맞춤 영양 리포트</span>
+        </div>
+        <span class="text-[11px] text-muted whitespace-nowrap">생성일시: ${createdLabel}</span>
+      </div>
+
+      <p class="text-xs font-bold text-primary-dark mb-2">반려견 프로필</p>
+      <div class="grid grid-cols-2 gap-2.5 mb-5">
+        <div class="surface-2 rounded-xl p-3"><p class="text-[10px] text-muted mb-0.5">이름</p><p class="font-semibold text-sm">${rec.dog_name || '-'}</p></div>
+        <div class="surface-2 rounded-xl p-3"><p class="text-[10px] text-muted mb-0.5">견종</p><p class="font-semibold text-sm">${rec.breed || '-'}</p></div>
+        <div class="surface-2 rounded-xl p-3"><p class="text-[10px] text-muted mb-0.5">현재 체중</p><p class="font-semibold text-sm">${isNaN(weight)?'-':weight}kg</p></div>
+        <div class="surface-2 rounded-xl p-3"><p class="text-[10px] text-muted mb-0.5">목표 체중</p><p class="font-semibold text-sm">${isNaN(target)?'-':target}kg</p></div>
+        <div class="surface-2 rounded-xl p-3"><p class="text-[10px] text-muted mb-0.5">BCS (비만도)</p><p class="font-semibold text-sm">${rec.bcs || '-'}</p></div>
+        <div class="surface-2 rounded-xl p-3"><p class="text-[10px] text-muted mb-0.5">맞춤 케어 플랜</p><p class="font-semibold text-sm">${rec.plan_type || '-'}</p></div>
+      </div>
+
+      <p class="text-xs font-bold text-primary-dark mb-2">영양 계산 분석</p>
+      <div class="tooltip-box p-4 mb-5">
+        <div class="flex items-center justify-between text-sm mb-2">
+          <span class="text-muted">감량/증량 필요 체중</span>
+          <span class="font-display font-bold text-primary-dark">${diffLabel}</span>
+        </div>
+        <div class="flex items-center justify-between text-sm">
+          <span class="text-muted">적용된 케어 플랜 유형</span>
+          <span class="font-semibold">${rec.plan_type || '-'}</span>
+        </div>
+      </div>
+
+      <p class="text-xs font-bold text-primary-dark mb-2">관리자 메모 (내부용)</p>
+      <textarea id="reportAdminNote" rows="3" placeholder="상담 시 참고할 메모를 남겨보세요. 인쇄물에도 함께 포함돼요." class="w-full rounded-xl border border-token px-3 py-2 text-sm mb-1" style="background:var(--surface); color:var(--text);"></textarea>
+      <p class="text-[10px] text-muted mb-5">* 메모는 저장되지 않으며 이 창을 닫으면 사라져요.</p>
+    </div>
+
+    <div class="flex gap-2">
+      <button id="reportPrintBtn" class="btn-primary flex-1 rounded-xl py-2.5 text-sm">🖨️ PDF/프린트 인쇄</button>
+      <button id="reportCloseBtn" class="btn-ghost flex-1 rounded-xl py-2.5 text-sm">닫기</button>
+    </div>
+  `);
+  document.getElementById('reportPrintBtn').addEventListener('click', ()=>window.print());
+  document.getElementById('reportCloseBtn').addEventListener('click', closeModal);
+}
+
 /* ============================================================
    9. ADMIN STUDIO — 브랜드 / 컬러 / 타이포 / 레이아웃 / 섹션 / 데이터
 ============================================================ */
@@ -2229,7 +2294,8 @@ const STUDIO_TAB_HTML = {
               <th class="py-1.5 pr-2 font-semibold">체중→목표</th>
               <th class="py-1.5 pr-2 font-semibold">BCS</th>
               <th class="py-1.5 pr-2 font-semibold">플랜</th>
-              <th class="py-1.5 font-semibold">제출 일시</th>
+              <th class="py-1.5 pr-2 font-semibold">제출 일시</th>
+              <th class="py-1.5 font-semibold text-right">리포트</th>
             </tr></thead>
             <tbody>
               ${rows.length ? rows.map(rec=>`
@@ -2239,8 +2305,11 @@ const STUDIO_TAB_HTML = {
                   <td class="py-1.5 pr-2 font-mono">${rec.weight}→${rec.target_weight}kg</td>
                   <td class="py-1.5 pr-2">${rec.bcs}</td>
                   <td class="py-1.5 pr-2">${rec.plan_type}</td>
-                  <td class="py-1.5 whitespace-nowrap">${new Date(rec.created_at).toLocaleString('ko-KR')}</td>
-                </tr>`).join('') : `<tr><td colspan="6" class="py-6 text-center text-muted">${dbStatus==='error' ? 'DB 조회에 실패해 데이터를 표시할 수 없어요. 위 오류 메시지를 확인해주세요.' : dbStatus==='loading' ? '데이터를 불러오는 중이에요...' : '아직 수집된 진단 데이터가 없어요. 방문자가 Step 4에서 계산을 완료하면 여기에 표시돼요.'}</td></tr>`}
+                  <td class="py-1.5 pr-2 whitespace-nowrap">${new Date(rec.created_at).toLocaleString('ko-KR')}</td>
+                  <td class="py-1.5 text-right">
+                    <button class="report-view-btn btn-ghost rounded-lg px-2 py-1 text-[10px] whitespace-nowrap" data-record='${encodeURIComponent(JSON.stringify(rec))}'>📄 리포트 보기</button>
+                  </td>
+                </tr>`).join('') : `<tr><td colspan="7" class="py-6 text-center text-muted">${dbStatus==='error' ? 'DB 조회에 실패해 데이터를 표시할 수 없어요. 위 오류 메시지를 확인해주세요.' : dbStatus==='loading' ? '데이터를 불러오는 중이에요...' : '아직 수집된 진단 데이터가 없어요. 방문자가 Step 4에서 계산을 완료하면 여기에 표시돼요.'}</td></tr>`}
             </tbody>
           </table>
         </div>
@@ -2269,6 +2338,19 @@ const STUDIO_TAB_HTML = {
 };
 
 function bindStudioTabEvents(){
+  if(studioTab==='analytics'){
+    document.querySelectorAll('.report-view-btn').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        try{
+          const rec = JSON.parse(decodeURIComponent(b.dataset.record));
+          openUserReportModal(rec);
+        }catch(err){
+          console.error('[seon] 리포트 데이터를 여는 중 오류가 발생했어요:', err);
+          alert('리포트를 여는 중 오류가 발생했어요.');
+        }
+      });
+    });
+  }
   if(studioTab==='brand'){
     document.querySelectorAll('[data-logo-mode]').forEach(b=>b.addEventListener('click', ()=>{
       adminSettings.logo.mode = b.dataset.logoMode; applyAdminTheme(); renderStudioTab();
