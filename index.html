@@ -787,6 +787,19 @@ function init(){
   document.getElementById('studioBackdrop').addEventListener('click', closeStudio);
   buildStudioTabs();
 
+  // ---- 데이터 분석 탭의 '리포트 보기' 버튼: studioBody에 위임 바인딩 (재렌더링과 무관하게 항상 동작) ----
+  document.getElementById('studioBody').addEventListener('click', e=>{
+    const btn = e.target.closest('.report-view-btn');
+    if(!btn) return;
+    try{
+      const rec = JSON.parse(decodeURIComponent(btn.dataset.record));
+      openUserReportModal(rec);
+    }catch(err){
+      console.error('[seon] 리포트 데이터를 여는 중 오류가 발생했어요:', err);
+      alert('리포트를 여는 중 오류가 발생했어요.');
+    }
+  });
+
   // ---- 관리자 진입 트리거: 푸터 카피라이트 클릭 & 단축키(Ctrl/Cmd+Shift+A) ----
   document.getElementById('footerAdminTrigger').addEventListener('click', requestAdminAccess);
   document.addEventListener('keydown', e=>{
@@ -2287,32 +2300,35 @@ const STUDIO_TAB_HTML = {
       <div>
         <p class="text-xs font-semibold text-muted mb-2">고객 데이터 (최근 10건)</p>
         <div class="overflow-x-auto">
-          <table class="w-full text-[11px] min-w-[480px]">
+          <table class="w-full text-[11px]" style="table-layout:fixed;">
+            <colgroup>
+              <col style="width:20%;"><col style="width:18%;"><col style="width:22%;">
+              <col style="width:10%;"><col style="width:14%;"><col style="width:16%;">
+            </colgroup>
             <thead><tr class="text-left text-muted border-b border-token">
-              <th class="py-1.5 pr-2 font-semibold">이름</th>
-              <th class="py-1.5 pr-2 font-semibold">견종</th>
-              <th class="py-1.5 pr-2 font-semibold">체중→목표</th>
-              <th class="py-1.5 pr-2 font-semibold">BCS</th>
-              <th class="py-1.5 pr-2 font-semibold">플랜</th>
-              <th class="py-1.5 pr-2 font-semibold">제출 일시</th>
+              <th class="py-1.5 pr-1 font-semibold truncate">이름</th>
+              <th class="py-1.5 pr-1 font-semibold truncate">견종</th>
+              <th class="py-1.5 pr-1 font-semibold truncate">체중→목표</th>
+              <th class="py-1.5 pr-1 font-semibold truncate">BCS</th>
+              <th class="py-1.5 pr-1 font-semibold truncate">플랜</th>
               <th class="py-1.5 font-semibold text-right">리포트</th>
             </tr></thead>
             <tbody>
               ${rows.length ? rows.map(rec=>`
                 <tr class="border-b border-token last:border-0">
-                  <td class="py-1.5 pr-2">${rec.dog_name}</td>
-                  <td class="py-1.5 pr-2">${rec.breed}</td>
-                  <td class="py-1.5 pr-2 font-mono">${rec.weight}→${rec.target_weight}kg</td>
-                  <td class="py-1.5 pr-2">${rec.bcs}</td>
-                  <td class="py-1.5 pr-2">${rec.plan_type}</td>
-                  <td class="py-1.5 pr-2 whitespace-nowrap">${new Date(rec.created_at).toLocaleString('ko-KR')}</td>
+                  <td class="py-1.5 pr-1 truncate" title="${rec.dog_name}">${rec.dog_name}</td>
+                  <td class="py-1.5 pr-1 truncate" title="${rec.breed}">${rec.breed}</td>
+                  <td class="py-1.5 pr-1 font-mono truncate">${rec.weight}→${rec.target_weight}kg</td>
+                  <td class="py-1.5 pr-1 truncate">${rec.bcs}</td>
+                  <td class="py-1.5 pr-1 truncate" title="${rec.plan_type}">${rec.plan_type}</td>
                   <td class="py-1.5 text-right">
-                    <button class="report-view-btn btn-ghost rounded-lg px-2 py-1 text-[10px] whitespace-nowrap" data-record='${encodeURIComponent(JSON.stringify(rec))}'>📄 리포트 보기</button>
+                    <button type="button" class="report-view-btn btn-ghost rounded-lg px-2 py-1 text-[10px] whitespace-nowrap" data-record='${encodeURIComponent(JSON.stringify(rec))}'>📄 리포트</button>
                   </td>
-                </tr>`).join('') : `<tr><td colspan="7" class="py-6 text-center text-muted">${dbStatus==='error' ? 'DB 조회에 실패해 데이터를 표시할 수 없어요. 위 오류 메시지를 확인해주세요.' : dbStatus==='loading' ? '데이터를 불러오는 중이에요...' : '아직 수집된 진단 데이터가 없어요. 방문자가 Step 4에서 계산을 완료하면 여기에 표시돼요.'}</td></tr>`}
+                </tr>`).join('') : `<tr><td colspan="6" class="py-6 text-center text-muted">${dbStatus==='error' ? 'DB 조회에 실패해 데이터를 표시할 수 없어요. 위 오류 메시지를 확인해주세요.' : dbStatus==='loading' ? '데이터를 불러오는 중이에요...' : '아직 수집된 진단 데이터가 없어요. 방문자가 Step 4에서 계산을 완료하면 여기에 표시돼요.'}</td></tr>`}
             </tbody>
           </table>
         </div>
+        <p class="text-[10px] text-muted mt-1.5">제출 일시는 리포트 상세 화면에서 확인할 수 있어요.</p>
       </div>
 
       <div class="tooltip-box p-3 text-xs text-muted">
@@ -2338,19 +2354,6 @@ const STUDIO_TAB_HTML = {
 };
 
 function bindStudioTabEvents(){
-  if(studioTab==='analytics'){
-    document.querySelectorAll('.report-view-btn').forEach(b=>{
-      b.addEventListener('click', ()=>{
-        try{
-          const rec = JSON.parse(decodeURIComponent(b.dataset.record));
-          openUserReportModal(rec);
-        }catch(err){
-          console.error('[seon] 리포트 데이터를 여는 중 오류가 발생했어요:', err);
-          alert('리포트를 여는 중 오류가 발생했어요.');
-        }
-      });
-    });
-  }
   if(studioTab==='brand'){
     document.querySelectorAll('[data-logo-mode]').forEach(b=>b.addEventListener('click', ()=>{
       adminSettings.logo.mode = b.dataset.logoMode; applyAdminTheme(); renderStudioTab();
