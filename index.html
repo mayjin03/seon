@@ -268,11 +268,11 @@
           <div id="planGrid" class="grid gap-3"></div>
         </div>
 
-        <!-- STEP 2: 아이 정보 -->
+        <!-- STEP 2: 기본 프로필 & 신체 지표 -->
         <div id="step2" class="fade-in hidden">
           <p class="text-xs font-bold text-primary-dark tracking-wide mb-1">STEP 2</p>
-          <h2 class="font-display text-2xl font-bold mb-1">우리 아이를 소개해주세요</h2>
-          <p class="text-sm text-muted mb-6">기본 정보를 입력하면 맞춤 계산이 시작돼요.</p>
+          <h2 class="font-display text-2xl font-bold mb-1">우리 아이 프로필 &amp; 신체 지표</h2>
+          <p class="text-sm text-muted mb-6">기본 정보와 체형을 한 번에 입력해주세요.</p>
 
           <label class="block text-sm font-semibold mb-1.5">이름</label>
           <input id="in_name" type="text" placeholder="예: 초코" class="w-full rounded-xl px-4 py-3 mb-5 text-sm">
@@ -282,7 +282,7 @@
           <input id="in_breed_custom" type="text" placeholder="견종을 직접 입력해주세요" class="w-full rounded-xl px-4 py-3 mb-5 text-sm hidden">
 
           <label class="block text-sm font-semibold mb-1.5">나이</label>
-          <div class="grid grid-cols-2 gap-3 mb-2">
+          <div class="grid grid-cols-2 gap-3 mb-6">
             <div class="relative">
               <input id="in_age_year" type="number" min="0" max="25" placeholder="0" class="w-full rounded-xl px-4 py-3 text-sm">
               <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-muted">년</span>
@@ -292,13 +292,6 @@
               <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-muted">개월</span>
             </div>
           </div>
-        </div>
-
-        <!-- STEP 3: 신체 조건 & 상태 -->
-        <div id="step3" class="fade-in hidden">
-          <p class="text-xs font-bold text-primary-dark tracking-wide mb-1">STEP 3</p>
-          <h2 class="font-display text-2xl font-bold mb-1">신체 조건 &amp; 건강 상태</h2>
-          <p class="text-sm text-muted mb-6">체중과 체형을 정확히 입력할수록 계산이 정밀해져요.</p>
 
           <div class="grid grid-cols-2 gap-3 mb-5">
             <div>
@@ -329,8 +322,14 @@
 
           <label class="block text-sm font-semibold mb-2">보유 질환 (중복 선택 가능)</label>
           <div id="conditionGroup" class="grid grid-cols-2 sm:grid-cols-3 gap-2"></div>
+        </div>
 
-          <div id="dynamicQuestions" class="mt-7 pt-6 border-t border-token"></div>
+        <!-- STEP 3: 플랜별 정밀 증상/질환 질문 -->
+        <div id="step3" class="fade-in hidden">
+          <p class="text-xs font-bold text-primary-dark tracking-wide mb-1">STEP 3</p>
+          <h2 class="font-display text-2xl font-bold mb-1">플랜별 정밀 진단 질문</h2>
+          <p class="text-sm text-muted mb-6">선택하신 케어플랜에 꼭 필요한 질문만 모았어요.</p>
+          <div id="dynamicQuestions"></div>
         </div>
 
         <!-- STEP 4: 활동량 & 급여 정보 -->
@@ -352,13 +351,29 @@
             <button data-val="high" class="chip rounded-xl py-3 text-sm">고활동</button>
           </div>
 
+          <label class="block text-sm font-semibold mb-2">주식 제형</label>
+          <div class="grid grid-cols-3 gap-2 mb-6" id="textureGroup"></div>
+
           <label class="block text-sm font-semibold mb-2">주식 사료 선택</label>
           <div class="grid grid-cols-2 gap-2 mb-3" id="foodPresetGroup"></div>
-          <div class="relative">
+          <div class="relative mb-3">
             <input id="in_food_kcal" type="number" min="150" max="600" placeholder="예: 350" class="w-full rounded-xl px-4 py-3 text-sm">
             <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-muted">kcal / 100g</span>
           </div>
-          <p class="text-xs text-muted mt-1.5 mb-2">사료 포장지 뒷면의 "대사에너지(ME)"를 확인하면 더 정확해요.</p>
+          <p class="text-xs text-muted mt-1.5 mb-4">사료 포장지 뒷면의 "대사에너지(ME)"를 확인하면 더 정확해요.</p>
+
+          <label class="block text-sm font-semibold mb-2">현재 급여 방식 <span class="text-muted font-normal text-xs">(선택 입력 · 비교용)</span></label>
+          <div class="grid grid-cols-2 gap-3 mb-2">
+            <div class="relative">
+              <input id="in_feed_freq" type="number" min="0" max="10" placeholder="2" class="w-full rounded-xl px-4 py-3 text-sm">
+              <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-muted">회 / 일</span>
+            </div>
+            <div class="relative">
+              <input id="in_feed_amount" type="number" min="0" max="1000" placeholder="80" class="w-full rounded-xl px-4 py-3 text-sm">
+              <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-muted">g / 회</span>
+            </div>
+          </div>
+          <p class="text-xs text-muted mt-1 mb-2">현재 얼마나 급여 중인지 알려주시면 권장량과 비교해드려요.</p>
 
           <div class="mt-6 pt-6 border-t border-token">
             <label class="block text-sm font-semibold mb-0.5">복용 중인 영양제 <span class="text-muted font-normal">(중복 선택 가능)</span></label>
@@ -486,6 +501,10 @@ const SUPABASE_TABLE = "user_analytics"; // 진단 데이터를 저장/조회할
      ratio_food           numeric,   -- 하루 칼로리 중 주식 사료 배분 비율 (%)
      ratio_supplement     numeric,   -- 하루 칼로리 중 영양제 배분 비율 (%)
      ratio_snack          numeric,   -- 하루 칼로리 중 간식 배분 비율 (%)
+     food_texture         text,      -- 주식 제형 (건식/습식/화식/동결건조/생식)
+     food_kcal_per_100g   numeric,   -- 선택한 사료의 100g당 kcal
+     feed_freq_current    numeric,   -- 현재 하루 급여 횟수 (비교용)
+     feed_amount_current_g numeric,  -- 현재 1회당 급여량 g (비교용)
      created_at           timestamptz default now()
    );
 
@@ -508,6 +527,10 @@ const SUPABASE_TABLE = "user_analytics"; // 진단 데이터를 저장/조회할
    alter table public.user_analytics add column if not exists ratio_food numeric;
    alter table public.user_analytics add column if not exists ratio_supplement numeric;
    alter table public.user_analytics add column if not exists ratio_snack numeric;
+   alter table public.user_analytics add column if not exists food_texture text;
+   alter table public.user_analytics add column if not exists food_kcal_per_100g numeric;
+   alter table public.user_analytics add column if not exists feed_freq_current numeric;
+   alter table public.user_analytics add column if not exists feed_amount_current_g numeric;
 
    -- 3) RLS를 사용 중이라면 anon 역할에 INSERT/SELECT 정책이 있는지 꼭 확인하세요.
    -- alter table public.user_analytics enable row level security;
@@ -534,7 +557,8 @@ const dog = {
   plan:null,
   name:"", breed:"", ageYear:"", ageMonth:"",
   weight:null, target:null, neutered:null, bcs:null, conditions:[],
-  walk:null, activity:null, foodKcal:null, foodBrandLabel:"",
+  walk:null, activity:null, foodKcal:null, foodBrandLabel:"", foodTexture:null,
+  feedFreqCurrent:null, feedAmountCurrent:null,
   dynamic:{}, supplements:[], snacks:{}
 };
 let currentStep = 1;
@@ -591,47 +615,54 @@ const FOOD_PRESETS = [
 /* ---- Step3: 케어플랜별 3초 맞춤 질문 (각 3문항) ---- */
 const DYNAMIC_QUESTIONS = {
   diet: [
-    {id:"feedMethod", label:"사료 급여 방식", type:"single", options:[
-      {v:"freefeed", l:"자율 급여"}, {v:"measured", l:"정량 제한 급여"}]},
-    {id:"treatFreq", label:"하루 간식 제공 빈도", type:"single", options:[
-      {v:"rare", l:"거의 안 줌"}, {v:"normal", l:"하루 1~2회"}, {v:"often", l:"자주 줌"}]},
-    {id:"walkAmount", label:"산책 및 활동량", type:"single", options:[
-      {v:"low", l:"30분 미만"}, {v:"mid", l:"30분~1시간"}, {v:"high", l:"1시간 이상"}]},
+    {id:"pastFailureReason", label:"과거 다이어트 실패 원인", type:"single", options:[
+      {v:"yoyo", l:"요요(다시 쪘어요)"}, {v:"treatfail", l:"간식 조절 실패"}, {v:"noexercise", l:"운동 부족"}, {v:"none", l:"실패 경험 없음"}]},
+    {id:"weightGainSpeed", label:"최근 체중 증가 속도", type:"single", options:[
+      {v:"slow", l:"서서히"}, {v:"fast", l:"최근 급격히"}, {v:"stable", l:"변화 없음"}]},
+    {id:"appetiteType", label:"식탐/식습관 유형", type:"single", options:[
+      {v:"fast", l:"빨리 먹음(식탐 많음)"}, {v:"normal", l:"보통"}, {v:"picky", l:"깨작거림"}]},
   ],
   joint: [
-    {id:"jointSymptom", label:"현재 관절 증상", type:"single", options:[
-      {v:"sound", l:"소리 남"}, {v:"limp", l:"절뚝거림"}, {v:"luxation", l:"탈구 진단"}, {v:"postop", l:"수술 후 회복"}]},
+    {id:"limpStage", label:"파행(절뚝거림) 증상 단계", type:"single", options:[
+      {v:"none", l:"없음"}, {v:"sometimes", l:"가끔 절뚝임"}, {v:"often", l:"자주 절뚝임"}, {v:"severe", l:"거의 못 걸음"}]},
+    {id:"painResponse", label:"통증 반응", type:"single", options:[
+      {v:"none", l:"무반응"}, {v:"touch", l:"만지면 아파함"}, {v:"freeze", l:"스스로 안 움직임"}]},
     {id:"homeFloor", label:"주거 환경", type:"single", options:[
       {v:"mat", l:"매트 설치"}, {v:"bare", l:"맨 바닥"}, {v:"stairs", l:"계단 이용 많음"}]},
     {id:"wantWeightLoss", label:"체중 감량 병행 필요", type:"toggle"},
   ],
   pancreas: [
-    {id:"pancreasHistory", label:"췌장염 병력", type:"single", options:[
-      {v:"past", l:"과거 병력"}, {v:"treating", l:"현재 치료 중"}, {v:"prevent", l:"예방 목적"}]},
-    {id:"stoolState", label:"변 상태", type:"single", options:[
-      {v:"normal", l:"정상변"}, {v:"soft", l:"무른변"}, {v:"fatty", l:"지방변"}]},
-    {id:"treatPref", label:"평소 선호 간식", type:"single", options:[
-      {v:"meat", l:"고지방 고기류"}, {v:"veggie", l:"야채류"}, {v:"foodonly", l:"사료만"}]},
+    {id:"historyCount", label:"과거 병력 및 재발 횟수", type:"single", options:[
+      {v:"none", l:"없음"}, {v:"once", l:"1회"}, {v:"multiple", l:"2회 이상"}]},
+    {id:"stoolState", label:"현재 변 상태", type:"single", options:[
+      {v:"normal", l:"정상변"}, {v:"soft", l:"무른변/설사"}, {v:"fatty", l:"지방변"}]},
+    {id:"fatSensitivity", label:"기름진 음식 민감도", type:"single", options:[
+      {v:"sensitive", l:"민감(바로 탈남)"}, {v:"normal", l:"보통"}, {v:"tolerant", l:"둔감"}]},
   ],
   kidney: [
-    {id:"kidneyStage", label:"신장 단계", type:"single", options:[
-      {v:"unknown", l:"모름·예방"}, {v:"early", l:"1~2기 초기"}, {v:"severe", l:"3~4기 중증"}]},
-    {id:"waterIntake", label:"하루 음수량", type:"single", options:[
+    {id:"irisStage", label:"IRIS 신장 단계", type:"single", options:[
+      {v:"unknown", l:"모름/1기"}, {v:"stage2", l:"2기"}, {v:"stage3", l:"3기"}, {v:"stage4", l:"4기"}]},
+    {id:"bloodTest", label:"최근 혈액검사 수치 (알면 입력)", type:"bloodtest"},
+    {id:"waterIntake", label:"하루 음수량 & 다뇨 상태", type:"single", options:[
       {v:"low", l:"적음"}, {v:"normal", l:"보통"}, {v:"high", l:"다뇨"}]},
     {id:"appetite", label:"식욕 상태", type:"single", options:[
       {v:"good", l:"잘 먹음"}, {v:"picky", l:"입맛 까다로움"}, {v:"refuse", l:"거부"}]},
   ],
   senior: [
-    {id:"agingSign", label:"노화 징후", type:"single", options:[
-      {v:"eyes", l:"눈 혼탁"}, {v:"digest", l:"소화력 저하"}, {v:"sleep", l:"수면 증가"}, {v:"teeth", l:"치아 약함"}]},
-    {id:"foodTexture", label:"주식 선호 제형", type:"single", options:[
-      {v:"dry", l:"건식 사료"}, {v:"soaked", l:"불린 사료"}, {v:"wet", l:"습식·화식"}]},
-    {id:"digestion", label:"소화 기능", type:"single", options:[
-      {v:"trouble", l:"자주 구토·설사"}, {v:"ok", l:"소화 양호"}]},
+    {id:"agingSign", label:"대표 노화 징후", type:"single", options:[
+      {v:"eyes", l:"눈 혼탁"}, {v:"teeth", l:"치아 상태 약함"}, {v:"energy", l:"기력 저하"}]},
+    {id:"digestion", label:"구토/소화 문제 빈도", type:"single", options:[
+      {v:"rare", l:"거의 없음"}, {v:"sometimes", l:"가끔(주1~2회)"}, {v:"often", l:"자주(주3회+)"}]},
+    {id:"sleepPattern", label:"수면 패턴", type:"single", options:[
+      {v:"normal", l:"정상"}, {v:"more", l:"수면 증가"}, {v:"restless", l:"수면 감소/불안정"}]},
   ],
 };
 
-/* ---- Step4 공통: 영양제 다중 선택 + 제형, 간식 유형 + 급여 횟수 ---- */
+/* ---- Step4 공통: 사료 제형, 영양제 다중 선택 + 제형, 간식 유형 + 급여 횟수 ---- */
+const FOOD_TEXTURES = [
+  {id:"dry", label:"건식"}, {id:"wet", label:"습식"}, {id:"homemade", label:"화식"},
+  {id:"freezedried", label:"동결건조"}, {id:"raw", label:"생식"},
+];
 const SUPPLEMENT_CATEGORIES = [
   {id:"joint", label:"관절/슬개골"},
   {id:"respiratory", label:"기관지/호흡기"},
@@ -644,9 +675,13 @@ const FORM_TYPES = [
   {id:"powder", label:"가루/알약형", kcalPerServing:2},
 ];
 const SNACK_TYPES = [
-  {id:"veggiefruit", label:"야채/과일", kcalPerServing:8},
+  {id:"veggie_low", label:"저칼로리 야채", kcalPerServing:8},
+  {id:"fruit_high", label:"고당도 과일/구황작물", kcalPerServing:35},
+  {id:"jerky", label:"저키/육포", kcalPerServing:45},
   {id:"bone", label:"뼈간식", kcalPerServing:25},
-  {id:"commercial", label:"시판 트릿", kcalPerServing:15},
+  {id:"chewable_treat", label:"츄어블 트릿", kcalPerServing:15},
+  {id:"churu", label:"츄르", kcalPerServing:20},
+  {id:"freezedried_treat", label:"동결건조 간식", kcalPerServing:30},
 ];
 
 const VEGGIES = [
@@ -798,7 +833,7 @@ function ensureGoogleFont(fontId){
 }
 
 const SECTION_LABELS = {
-  nutritionReport:"맞춤 영양 리포트 (4단계)",
+  nutritionReport:"맞춤 영양 리포트 (6단계)",
   metrics:"핵심 지표", calcBasis:"계산 근거", macro:"영양소 비율", proteinWater:"단백질·음수량",
   chart:"체중 예측 차트", transition:"사료 전환 스케줄", guide:"플랜·질환 가이드",
   veggie:"야채 간식 환산기", affiliate:"제휴 큐레이션", premium:"프리미엄 안내", challenge:"28일 챌린지",
@@ -905,6 +940,21 @@ function init(){
       document.querySelectorAll('#activityGroup button').forEach(b=>b.classList.remove('active'));
       btn.classList.add('active');
     });
+  });
+
+  // 사료 제형
+  const textureGroup = document.getElementById('textureGroup');
+  FOOD_TEXTURES.forEach(t=>{
+    const btn = document.createElement('button');
+    btn.className = 'chip rounded-xl py-2.5 text-xs';
+    btn.textContent = t.label;
+    btn.dataset.id = t.id;
+    btn.addEventListener('click', ()=>{
+      dog.foodTexture = t.id;
+      textureGroup.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+    textureGroup.appendChild(btn);
   });
 
   // food presets
@@ -1027,6 +1077,12 @@ function renderDynamicQuestions(){
           <label class="block text-xs font-semibold text-muted mb-1.5">${q.label}</label>
           ${q.type==='toggle' ? `
             <button type="button" data-qid="${q.id}" class="dq-toggle-btn u-switch ${dog.dynamic[q.id] ? 'on':''}"><span class="knob"></span></button>
+          ` : q.type==='bloodtest' ? `
+            <div class="grid grid-cols-3 gap-2">
+              <div class="relative"><input type="number" step="0.1" placeholder="BUN" data-blood="bun" class="dq-blood-input w-full rounded-lg border border-token px-2 py-2 text-xs text-center" value="${dog.dynamic.bloodTest?.bun ?? ''}"><span class="block text-center text-[10px] text-muted mt-0.5">BUN</span></div>
+              <div class="relative"><input type="number" step="0.1" placeholder="SDMA" data-blood="sdma" class="dq-blood-input w-full rounded-lg border border-token px-2 py-2 text-xs text-center" value="${dog.dynamic.bloodTest?.sdma ?? ''}"><span class="block text-center text-[10px] text-muted mt-0.5">SDMA</span></div>
+              <div class="relative"><input type="number" step="0.1" placeholder="Cr" data-blood="cr" class="dq-blood-input w-full rounded-lg border border-token px-2 py-2 text-xs text-center" value="${dog.dynamic.bloodTest?.cr ?? ''}"><span class="block text-center text-[10px] text-muted mt-0.5">Cr</span></div>
+            </div>
           ` : `
             <div class="grid gap-1.5" style="grid-template-columns:repeat(${q.options.length},1fr);">
               ${q.options.map(o=>`<button type="button" data-qid="${q.id}" data-val="${o.v}" class="dq-option-btn chip rounded-lg py-2 text-xs ${dog.dynamic[q.id]===o.v?'active':''}">${o.l}</button>`).join('')}
@@ -1047,6 +1103,12 @@ function renderDynamicQuestions(){
     b.addEventListener('click', ()=>{
       dog.dynamic[b.dataset.qid] = !dog.dynamic[b.dataset.qid];
       b.classList.toggle('on', !!dog.dynamic[b.dataset.qid]);
+    });
+  });
+  wrap.querySelectorAll('.dq-blood-input').forEach(inp=>{
+    inp.addEventListener('input', ()=>{
+      dog.dynamic.bloodTest = dog.dynamic.bloodTest || {};
+      dog.dynamic.bloodTest[inp.dataset.blood] = inp.value ? parseFloat(inp.value) : null;
     });
   });
 }
@@ -1259,9 +1321,6 @@ function validateStep(step){
     dog.ageYear = parseInt(document.getElementById('in_age_year').value)||0;
     dog.ageMonth = parseInt(document.getElementById('in_age_month').value)||0;
     if(!breedSel){ alert('견종을 선택해주세요.'); return false; }
-    return true;
-  }
-  if(step===3){
     dog.weight = parseFloat(document.getElementById('in_weight').value);
     dog.target = parseFloat(document.getElementById('in_target').value);
     if(!dog.weight || dog.weight<=0){ alert('현재 체중을 입력해주세요.'); return false; }
@@ -1271,11 +1330,17 @@ function validateStep(step){
     if(dog.conditions.length===0){ alert('보유 질환을 선택해주세요. (없다면 "해당 없음")'); return false; }
     return true;
   }
+  if(step===3){
+    return true; // 플랜별 정밀 질문은 3초 답변용으로 필수 입력은 아니에요
+  }
   if(step===4){
     dog.walk = parseFloat(document.getElementById('in_walk').value)||0;
     dog.foodKcal = parseFloat(document.getElementById('in_food_kcal').value);
     if(!dog.activity){ alert('활동 강도를 선택해주세요.'); return false; }
+    if(!dog.foodTexture){ alert('사료 제형을 선택해주세요.'); return false; }
     if(!dog.foodKcal || dog.foodKcal<=0){ alert('사료의 100g당 칼로리를 입력해주세요.'); return false; }
+    dog.feedFreqCurrent = parseFloat(document.getElementById('in_feed_freq').value)||null;
+    dog.feedAmountCurrent = parseFloat(document.getElementById('in_feed_amount').value)||null;
     return true;
   }
   return true;
@@ -1289,7 +1354,8 @@ function resetDiagnosisForm(){
   dog.plan = null;
   dog.name = ""; dog.breed = ""; dog.ageYear = ""; dog.ageMonth = "";
   dog.weight = null; dog.target = null; dog.neutered = null; dog.bcs = null; dog.conditions = [];
-  dog.walk = null; dog.activity = null; dog.foodKcal = null; dog.foodBrandLabel = "";
+  dog.walk = null; dog.activity = null; dog.foodKcal = null; dog.foodBrandLabel = ""; dog.foodTexture = null;
+  dog.feedFreqCurrent = null; dog.feedAmountCurrent = null;
   dog.dynamic = {}; dog.supplements = []; dog.snacks = {};
 
   const setIfExists = (id, val)=>{ const el = document.getElementById(id); if(el) el.value = val; };
@@ -1300,6 +1366,7 @@ function resetDiagnosisForm(){
   setIfExists('in_age_year', ''); setIfExists('in_age_month', '');
   setIfExists('in_weight', ''); setIfExists('in_target', '');
   setIfExists('in_walk', '');
+  setIfExists('in_feed_freq', ''); setIfExists('in_feed_amount', '');
   const foodKcalInput = document.getElementById('in_food_kcal');
   if(foodKcalInput){ foodKcalInput.value = ''; foodKcalInput.disabled = false; }
 
@@ -1310,6 +1377,7 @@ function resetDiagnosisForm(){
   if(bcsDesc){ bcsDesc.textContent = '체형에 가까운 번호를 선택해주세요'; bcsDesc.style.color = ''; }
   document.querySelectorAll('#conditionGroup button').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('#activityGroup button').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('#textureGroup button').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('#foodPresetGroup button').forEach(b=>b.classList.remove('active'));
   document.getElementById('dynamicQuestions').innerHTML = '';
   buildSupplementGroup();
@@ -1357,16 +1425,25 @@ function computeResults(){
   }
   const MER = RER * factor;
 
-  // ---- 영양제/간식 칼로리 선차감 배분 엔진 ----
-  // 영양제: 선택 개수·오일형 여부에 따라 MER의 5~10% 예산으로 반영 (개별 제품 실측 대신 표준 근사치 사용)
+  // ---- 영양제/간식 칼로리 선차감 배분 엔진 (실제 선택 종류·제형·횟수 기반 정밀 계산) ----
+  // 영양제: 선택한 제형별 1회 제공 kcal을 실제로 합산 (오일형이 가장 칼로리가 높음)
   const supplementCount = dog.supplements.length;
   const oilCount = dog.supplements.filter(s=>s.form==='oil').length;
+  const supplementKcalRaw = dog.supplements.reduce((sum,s)=>{
+    const f = FORM_TYPES.find(ft=>ft.id===s.form);
+    return sum + (f ? f.kcalPerServing : 0);
+  }, 0);
+  // 가이드라인상 영양제는 MER의 5~10% 선을 넘지 않도록 상한을 두되, 실제 kcal 합산값을 우선 반영
   const supplementRatio = supplementCount>0
-    ? Math.min(0.10, 0.05 + 0.015*(supplementCount-1) + 0.01*oilCount)
+    ? Math.min(0.10, Math.max(0.05, supplementKcalRaw / MER))
     : 0;
-  // 간식: 선택한 유형들의 하루 총 급여 횟수에 따라 MER의 0~10% 예산 반영 (최대 10% 상한)
+  // 간식: 선택한 유형별 kcalPerServing × 하루 급여 횟수를 실제로 합산 (최대 10% 상한)
   const snackFreqTotal = Object.values(dog.snacks).reduce((a,b)=>a+(b||0), 0);
-  const snackRatio = snackFreqTotal<=0 ? 0 : snackFreqTotal<=2 ? 0.05 : 0.10;
+  const snackKcalRaw = Object.entries(dog.snacks).reduce((sum,[id,freq])=>{
+    const s = SNACK_TYPES.find(st=>st.id===id);
+    return sum + (s ? s.kcalPerServing * (freq||0) : 0);
+  }, 0);
+  const snackRatio = snackFreqTotal>0 ? Math.min(0.10, snackKcalRaw / MER) : 0;
   // 사료 몫: 남은 칼로리 (최소 50%는 항상 사료 몫으로 보장)
   const foodRatio = Math.max(0.5, 1 - supplementRatio - snackRatio);
   const supplementKcal = MER * supplementRatio;
@@ -1375,7 +1452,7 @@ function computeResults(){
 
   const dailyFoodG = (foodKcalBudget / dog.foodKcal) * 100;
   const snackKcalLimit = snackKcalBudget || MER * 0.10; // 간식을 아직 선택하지 않았다면 기본 10% 가이드 표시
-  const allocation = { supplementRatio, snackRatio, foodRatio, supplementKcal, snackKcalBudget, foodKcalBudget, supplementCount, snackFreqTotal };
+  const allocation = { supplementRatio, snackRatio, foodRatio, supplementKcal, snackKcalBudget, foodKcalBudget, supplementCount, snackFreqTotal, supplementKcalRaw, snackKcalRaw };
   const waterMl = RER * 1;
 
   const proteinMin = IBW * 2.5;
@@ -1494,6 +1571,10 @@ function runCalculation(){
     ratio_food: Math.round(r.allocation.foodRatio*100),
     ratio_supplement: Math.round(r.allocation.supplementRatio*100),
     ratio_snack: Math.round(r.allocation.snackRatio*100),
+    food_texture: dog.foodTexture || '',
+    food_kcal_per_100g: dog.foodKcal,
+    feed_freq_current: dog.feedFreqCurrent,
+    feed_amount_current_g: dog.feedAmountCurrent,
   }).catch(err=>{
     console.error('[seon] saveUserAnalyticsData 실행 중 처리되지 않은 오류가 발생했어요:', err);
   });
@@ -1789,7 +1870,101 @@ const SUPPLEMENT_INFO = {
   gut:         {timing:"식후 즉시",           tags:["유산균","프리바이오틱스"]},
 };
 
-function buildSupplementGuideHtml(supplements){
+/* ---- 플랜별 영양제 상충(부작용) 경고 ---- */
+function getSupplementDiseaseCautions(planId, supplements){
+  const cautions = [];
+  const hasOil = supplements.some(s=>s.form==='oil');
+  if(planId==='pancreas' && hasOil){
+    cautions.push("췌장염 케어 중에는 오일형 영양제(지용성)가 지방 섭취를 늘려 췌장에 부담을 줄 수 있어요. 오일형보다 가루/알약형으로 바꾸는 것을 고려해보세요.");
+  }
+  if(planId==='kidney' && supplements.length){
+    cautions.push("신장 케어 중에는 영양제의 나트륨·인 함량도 함께 확인해주세요. 특히 관절 영양제 중 일부는 인 함량이 높을 수 있어요.");
+  }
+  if(supplements.some(s=>s.category==='joint') && supplements.some(s=>s.category==='skin')){
+    cautions.push("관절·피부 영양제 모두 지용성 비타민(A/D/E)을 포함하는 경우가 많아, 두 종류를 함께 급여하면 지용성 비타민 과다 섭취 위험이 있어요. 각 제품 라벨의 비타민 함량을 꼭 확인해주세요.");
+  }
+  return cautions;
+}
+
+/* ---- SECTION 4: 플랜별 절대 금지 간식/영양제 블랙리스트 ---- */
+const BLACKLIST_ITEMS = {
+  diet: [
+    {item:"고구마·말린과일 등 고당도 간식", reason:"당분·칼로리 밀도가 높아 소량에도 하루 간식 한도를 쉽게 초과해요."},
+    {item:"사람이 먹는 튀김류·과자", reason:"고지방·고나트륨으로 체중 감량을 방해하고 비만을 악화시켜요."},
+  ],
+  joint: [
+    {item:"딱딱한 생뼈·사슴뿔", reason:"씹는 과정에서 턱관절과 치아에 무리가 가고, 체중 부하 시 관절 통증을 유발할 수 있어요."},
+    {item:"과도한 점프·계단 반복 운동", reason:"관절·슬개골에 직접적인 충격을 반복적으로 가해 손상을 악화시켜요."},
+  ],
+  pancreas: [
+    {item:"고지방 육포·치즈·버터·오일류", reason:"지방 섭취가 급증하면 췌장염이 급성으로 재발할 위험이 커요."},
+    {item:"기름진 사람 음식(삼겹살, 튀김 등)", reason:"고지방 자극으로 구토·복통 등 급성 췌장염 증상을 유발할 수 있어요."},
+  ],
+  kidney: [
+    {item:"고단백·고인 간식(치즈, 육포, 뼈간식)", reason:"인·단백질 부하가 커져 신장 여과 부담을 가중시킬 수 있어요."},
+    {item:"나트륨 표시 없는 가공 간식", reason:"과도한 나트륨은 혈압 상승과 신장 부담으로 이어질 수 있어요."},
+  ],
+  senior: [
+    {item:"딱딱한 뼈간식·마른 저키", reason:"약해진 치아·잇몸에 손상을 줄 수 있고 소화 부담도 커요."},
+    {item:"한 번에 많은 양의 급여(과식)", reason:"노령견은 소화 기능이 저하돼 있어 과식 시 구토·설사 위험이 높아요."},
+  ],
+};
+
+/* ---- SECTION 5: 플랜 맞춤 홈메이드 레시피 ---- */
+const RECIPES = {
+  diet: {name:"닭가슴살 우엉 야채 스튜", kcal:180,
+    ingredients:["닭가슴살 100g","우엉 30g","당근 20g","브로콜리 20g","물 200ml"],
+    note:"모든 재료를 삶아 잘게 다진 뒤 뭉근히 끓여 스튜 형태로 급여해요. 기름·간은 넣지 않아요."},
+  joint: {name:"연어 브로콜리 관절 스튜", kcal:200,
+    ingredients:["연어 살 80g(뼈 제거)","브로콜리 30g","당근 20g","아마씨오일 소량"],
+    note:"연어와 야채를 쪄서 으깬 뒤 마지막에 아마씨오일을 소량 더해 오메가-3를 보충해요."},
+  pancreas: {name:"초저지방 대구살 단호박 미음", kcal:120,
+    ingredients:["대구살 80g(껍질·기름 제거)","단호박 50g","물 250ml"],
+    note:"대구살과 단호박을 완전히 익혀 곱게 갈아 미음 형태로 급여해요. 기름은 절대 넣지 않아요."},
+  kidney: {name:"저인·저나트륨 계란흰자 죽", kcal:150,
+    ingredients:["계란흰자 2개","흰쌀밥 50g","물 200ml"],
+    note:"흰자와 흰쌀밥을 함께 끓여 죽 형태로 급여해요. 노른자·소금은 제외해 인·나트륨 부담을 낮춰요."},
+  senior: {name:"소화가 편한 닭죽 (연두부 토핑)", kcal:160,
+    ingredients:["닭가슴살 60g","흰쌀 40g","연두부 30g","물 250ml"],
+    note:"부드럽게 푹 끓인 닭죽 위에 으깬 연두부를 토핑해 소화 부담을 줄이고 기호성을 높여요."},
+};
+
+/* ---- SECTION 6: 플랜 맞춤 운동 루틴 ---- */
+const EXERCISE_PLAN = {
+  diet: {types:"빠른 걷기 / 가벼운 조깅", duration:"1회 20~30분", weekly:"주 5회 이상, 점진적으로 시간 늘리기",
+    caution:"공복 상태 격렬한 운동은 피하고, 산책 후 충분한 물을 챙겨주세요."},
+  joint: {types:"평지 산책(경사로 이용) / 수중 운동(하이드로테라피)", duration:"1회 15~20분", weekly:"평지 산책 매일 + 수중 운동 주 2회",
+    caution:"계단 오르내리기와 반복적인 점프는 절대 금지예요. 미끄러운 바닥도 피해주세요."},
+  pancreas: {types:"가벼운 평지 산책", duration:"1회 15~20분", weekly:"주 5회, 무리 없는 강도로",
+    caution:"식후 바로 격렬한 운동은 소화·췌장에 부담을 줄 수 있어 피해주세요."},
+  kidney: {types:"짧고 잦은 저강도 산책", duration:"1회 10~15분", weekly:"하루 2회 나눠서 진행",
+    caution:"장시간·고강도 운동은 탈수 위험이 있어 피하고, 운동 전후 충분한 음수를 챙겨주세요."},
+  senior: {types:"짧은 평지 산책 / 가벼운 스트레칭성 활동", duration:"1회 10~15분", weekly:"하루 2회, 무리하지 않는 선에서",
+    caution:"미끄러운 바닥과 급격한 방향 전환은 낙상 위험이 있어 주의해주세요."},
+};
+
+/* ---- SECTION 3: 오늘 간식/훈련용 간식을 더 준 날의 대체 시나리오 ---- */
+function buildAlternateScenarioHtml(dailyFoodG, foodKcalPer100, snacks){
+  const foodKcalPer100Safe = foodKcalPer100 || 350;
+  const entries = Object.entries(snacks || {}).filter(([,f])=>f>0);
+  let exampleSnackId = entries.length ? entries[0][0] : 'jerky';
+  let exampleFreq = entries.length ? entries[0][1] : 1;
+  const snackDef = SNACK_TYPES.find(s=>s.id===exampleSnackId) || SNACK_TYPES.find(s=>s.id==='jerky');
+  const extraKcal = snackDef.kcalPerServing;
+  const gramsToReduce = Math.round(extraKcal / foodKcalPer100Safe * 100 * 10) / 10;
+
+  return `
+    <div class="tooltip-box p-4">
+      <p class="font-bold text-xs mb-2">🔄 대체 시나리오 (Alternate Scenario)</p>
+      <p class="text-xs text-muted mb-2">
+        오늘 <b>${snackDef.label}</b> 1회(약 ${extraKcal}kcal)를 평소보다 더 주셨다면
+        ➔ <b>저녁 사료에서 약 ${gramsToReduce}g</b>을 줄여 전체 칼로리 균형을 맞춰주세요.
+      </p>
+      <p class="text-xs text-muted">훈련용 보상 간식을 평소보다 많이 주신 날에도 같은 방식으로, 늘어난 간식 kcal만큼 다음 끼니 사료량을 줄여 하루 총 칼로리를 MER 이내로 유지해주세요.</p>
+    </div>`;
+}
+
+function buildSupplementGuideHtml(supplements, planId){
   if(!supplements || !supplements.length){
     return `<div class="tooltip-box p-4 text-xs text-muted">복용 중인 영양제가 없어요. Step4에서 추가하면 급여 타이밍과 성분 중복 체크를 볼 수 있어요.</div>`;
   }
@@ -1802,6 +1977,7 @@ function buildSupplementGuideHtml(supplements){
     (SUPPLEMENT_INFO[s.category]?.tags || []).forEach(tag=>{ tagCount[tag] = (tagCount[tag]||0)+1; });
   });
   const overlapTags = Object.entries(tagCount).filter(([,c])=>c>=2).map(([t])=>t);
+  const diseaseCautions = getSupplementDiseaseCautions(planId, supplements);
 
   return `
     <div class="space-y-2 mb-3">
@@ -1815,11 +1991,12 @@ function buildSupplementGuideHtml(supplements){
       `).join('')}
     </div>
     ${overlapTags.length ? `
-      <div class="tooltip-box p-3 text-xs" style="border-color:var(--c-fat);">
+      <div class="tooltip-box p-3 text-xs mb-2" style="border-color:var(--c-fat);">
         <p class="font-bold mb-1" style="color:var(--c-fat);">⚠️ 성분 중복 주의</p>
         <p class="text-muted"><b>${overlapTags.join(', ')}</b> 성분이 선택하신 영양제 간에 중복으로 포함될 수 있어요. 각 제품의 일일 함량을 합산해 과다 섭취가 되지 않는지 확인하고, 필요하면 수의사와 상의해주세요.</p>
       </div>
-    ` : `<div class="tooltip-box p-3 text-xs text-muted">현재 선택하신 영양제 간에는 뚜렷한 성분 중복이 감지되지 않았어요.</div>`}
+    ` : `<div class="tooltip-box p-3 text-xs text-muted mb-2">현재 선택하신 영양제 간에는 뚜렷한 성분 중복이 감지되지 않았어요.</div>`}
+    ${diseaseCautions.map(c=>`<div class="tooltip-box p-3 text-xs mb-2" style="border-color:var(--c-fat);"><p class="text-muted">⚠️ ${c}</p></div>`).join('')}
   `;
 }
 
@@ -1886,13 +2063,28 @@ function buildSnackCurationHtml(planId, snackKcalLimit){
   </div>`;
 }
 
+function buildMealTimeline(planId, totalG){
+  const isFourMeals = planId === 'pancreas';
+  const slots = isFourMeals
+    ? [{label:"1회·아침", time:"07:00"}, {label:"2회·점심", time:"12:00"}, {label:"3회·저녁", time:"17:00"}, {label:"4회·야식", time:"21:00"}]
+    : [{label:"아침", time:"08:00"}, {label:"점심", time:"13:00"}, {label:"저녁", time:"19:00"}];
+  const perMealG = totalG / slots.length;
+  return slots.map(s=>({...s, grams: Math.round(perMealG)}));
+}
+
 function nutritionReportHtml(r){
   const alloc = r.allocation;
-  const mealTimes = [
-    {label:"아침", time:"08:00"}, {label:"점심", time:"13:00"}, {label:"저녁", time:"19:00"},
-  ];
-  const perMealG = r.dailyFoodG / 3;
+  const mealSlots = buildMealTimeline(dog.plan, r.dailyFoodG);
   const careTips = getDynamicCareTips(dog.plan, dog.dynamic);
+  const blacklist = BLACKLIST_ITEMS[dog.plan] || BLACKLIST_ITEMS.diet;
+  const recipe = RECIPES[dog.plan] || RECIPES.diet;
+  const exercise = EXERCISE_PLAN[dog.plan] || EXERCISE_PLAN.diet;
+
+  const currentVsRecommended = (dog.feedFreqCurrent && dog.feedAmountCurrent) ? `
+    <div class="tooltip-box p-3 text-xs text-muted mb-4">
+      현재 급여: 하루 ${dog.feedFreqCurrent}회 × ${dog.feedAmountCurrent}g = 총 ${Math.round(dog.feedFreqCurrent*dog.feedAmountCurrent)}g
+      → 권장: 총 ${Math.round(r.dailyFoodG)}g ${Math.round(r.dailyFoodG) < Math.round(dog.feedFreqCurrent*dog.feedAmountCurrent) ? '(줄여야 해요)' : Math.round(r.dailyFoodG) > Math.round(dog.feedFreqCurrent*dog.feedAmountCurrent) ? '(늘려야 해요)' : '(적정해요)'}
+    </div>` : '';
 
   return `
   <div style="display:flex;flex-direction:column;gap:var(--section-gap)">
@@ -1904,37 +2096,78 @@ function nutritionReportHtml(r){
       ${renderAllocationBar(alloc)}
     </div>
 
-    <!-- SECTION 2: 급여량 & 3회 분할 타임라인 -->
+    <!-- SECTION 2: 정밀 배식 & 분할 급여 타임라인 -->
     <div class="surface rounded-[var(--radius-card)] p-6">
-      <p class="font-bold mb-1 flex items-center gap-1.5">${icon('bone')} SECTION 2 · 맞춤 급여량 &amp; 분할 급여 타임라인</p>
-      <p class="text-xs text-muted mb-4">공복토·소화 부담을 줄이기 위해 하루 총량을 3회로 나눠 급여해요.</p>
+      <p class="font-bold mb-1 flex items-center gap-1.5">${icon('bone')} SECTION 2 · 정밀 배식 &amp; 분할 급여 타임라인</p>
+      <p class="text-xs text-muted mb-4">공복토·소화 부담을 줄이기 위해 하루 총량을 ${mealSlots.length}회로 나눠 급여해요.</p>
       <div class="text-center mb-4">
         <p class="font-display font-bold text-3xl text-primary-dark">${Math.round(r.dailyFoodG)}g<span class="text-sm font-medium text-muted"> / 일</span></p>
         <p class="text-xs text-muted">${dog.foodBrandLabel || '선택한 사료'} 기준 하루 총 급여량</p>
       </div>
-      <div class="grid grid-cols-3 gap-3">
-        ${mealTimes.map(m=>`
+      ${currentVsRecommended}
+      <div class="grid gap-3" style="grid-template-columns:repeat(${mealSlots.length},1fr);">
+        ${mealSlots.map(m=>`
           <div class="surface-2 rounded-xl p-3 text-center">
             <p class="text-xs font-semibold text-muted mb-1">${m.label} · ${m.time}</p>
-            <p class="font-display font-bold text-lg">${Math.round(perMealG)}g</p>
+            <p class="font-display font-bold text-lg">${m.grams}g</p>
           </div>
         `).join('')}
       </div>
     </div>
 
-    <!-- SECTION 3: 영양제 급여 가이드 & 성분 중복 체크 -->
+    <!-- SECTION 3: 영양제·간식 혼합 급여 & 대체 시나리오 -->
     <div class="surface rounded-[var(--radius-card)] p-6">
-      <p class="font-bold mb-1 flex items-center gap-1.5">${icon('drumstick')} SECTION 3 · 영양제 급여 가이드 &amp; 성분 중복 체크</p>
-      <p class="text-xs text-muted mb-4">선택하신 영양제별 급여 타이밍과 중복 성분 여부를 확인해보세요.</p>
-      ${buildSupplementGuideHtml(dog.supplements)}
+      <p class="font-bold mb-1 flex items-center gap-1.5">${icon('drumstick')} SECTION 3 · 영양제·간식 혼합 급여 &amp; 대체 시나리오</p>
+      <p class="text-xs text-muted mb-4">선택하신 영양제별 급여 타이밍·중복 성분과, 간식을 더 준 날의 대체 급여 가이드예요.</p>
+      ${buildSupplementGuideHtml(dog.supplements, dog.plan)}
+      <div class="mt-3">${buildAlternateScenarioHtml(r.dailyFoodG, dog.foodKcal, dog.snacks)}</div>
     </div>
 
-    <!-- SECTION 4: 안전 간식 큐레이션 & 맞춤 케어 팁 -->
+    <!-- SECTION 4: 절대 금지 간식 & 영양제 블랙리스트 -->
     <div class="surface rounded-[var(--radius-card)] p-6">
-      <p class="font-bold mb-1 flex items-center gap-1.5">${icon('leaf')} SECTION 4 · 플랜 맞춤 안전 간식 &amp; 케어 팁</p>
-      <p class="text-xs text-muted mb-4">${r.planCfg.title}에 맞는 저칼로리 간식과, 입력하신 답변 기반 맞춤 팁이에요.</p>
-      <div class="mb-4">${buildSnackCurationHtml(dog.plan, r.snackKcalLimit)}</div>
-      <div class="space-y-1.5">
+      <p class="font-bold mb-1 flex items-center gap-1.5">⚠️ SECTION 4 · 절대 금지 간식 &amp; 영양제 블랙리스트</p>
+      <p class="text-xs text-muted mb-4">${r.planCfg.title} 특성상 피해야 할 항목과 수의학적 이유예요.</p>
+      <div class="space-y-2">
+        ${blacklist.map(b=>`
+          <div class="tooltip-box p-3" style="border-color:var(--c-fat);">
+            <p class="text-sm font-bold mb-0.5" style="color:var(--c-fat);">🚫 ${b.item}</p>
+            <p class="text-xs text-muted">${b.reason}</p>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <!-- SECTION 5: 플랜 맞춤 홈메이드 레시피 -->
+    <div class="surface rounded-[var(--radius-card)] p-6">
+      <p class="font-bold mb-1 flex items-center gap-1.5">🍳 SECTION 5 · 플랜 맞춤 홈메이드 레시피</p>
+      <p class="text-xs text-muted mb-4">집에서 쉽게 만들어줄 수 있는 ${r.planCfg.title} 특화 레시피예요.</p>
+      <div class="surface-2 rounded-xl p-4">
+        <div class="flex items-center justify-between mb-2">
+          <p class="font-bold text-sm">${recipe.name}</p>
+          <span class="text-xs font-bold text-primary-dark">약 ${recipe.kcal}kcal</span>
+        </div>
+        <p class="text-xs text-muted mb-2"><b>재료:</b> ${recipe.ingredients.join(', ')}</p>
+        <p class="text-xs text-muted">${recipe.note}</p>
+      </div>
+    </div>
+
+    <!-- SECTION 6: 타깃 맞춤 신체 활동 & 운동 루틴 -->
+    <div class="surface rounded-[var(--radius-card)] p-6">
+      <p class="font-bold mb-1 flex items-center gap-1.5">🏃‍♂️ SECTION 6 · 타깃 맞춤 신체 활동 &amp; 운동 루틴</p>
+      <p class="text-xs text-muted mb-4">${r.planCfg.title}에 맞춰 조정한 운동 종류와 강도예요.</p>
+      <div class="grid sm:grid-cols-2 gap-3 mb-3">
+        <div class="surface-2 rounded-xl p-3">
+          <p class="text-[10px] text-muted mb-0.5">추천 활동</p>
+          <p class="text-sm font-semibold">${exercise.types}</p>
+        </div>
+        <div class="surface-2 rounded-xl p-3">
+          <p class="text-[10px] text-muted mb-0.5">1회 적정 시간 · 주간 루틴</p>
+          <p class="text-sm font-semibold">${exercise.duration} · ${exercise.weekly}</p>
+        </div>
+      </div>
+      <div class="tooltip-box p-3" style="border-color:var(--c-fat);">
+        <p class="text-xs text-muted">⚠️ ${exercise.caution}</p>
+      </div>
+      <div class="space-y-1.5 mt-3">
         ${careTips.map(t=>`<div class="tooltip-box p-3 text-xs text-muted flex gap-1.5"><span class="text-primary shrink-0">•</span>${t}</div>`).join('')}
       </div>
     </div>
@@ -2291,7 +2524,7 @@ function openUserReportModal(rec){
   const createdLabel = rec.created_at ? new Date(rec.created_at).toLocaleString('ko-KR') : '기록 없음';
   const n = getReportNutritionData(rec);
 
-  // ---- 4단계 리포트 요약용 데이터 복원 ----
+  // ---- 6단계 리포트 요약용 데이터 복원 ----
   const planId = Object.keys(PLAN_TYPE_LABEL).find(k=>PLAN_TYPE_LABEL[k]===rec.plan_type) || 'diet';
   let recSupplements = []; try{ recSupplements = JSON.parse(rec.supplements||'[]'); }catch(e){}
   let recSnacks = {}; try{ recSnacks = JSON.parse(rec.snacks||'{}'); }catch(e){}
@@ -2301,33 +2534,51 @@ function openUserReportModal(rec){
     foodRatio: parseFloat(rec.ratio_food)/100,
     supplementRatio: parseFloat(rec.ratio_supplement)/100,
   } : null;
-  const perMealG = n && n.dailyFeedG!=null ? n.dailyFeedG/3 : null;
+  const recMealSlots = n && n.dailyFeedG!=null ? buildMealTimeline(planId, n.dailyFeedG) : [];
+  const recBlacklist = BLACKLIST_ITEMS[planId] || BLACKLIST_ITEMS.diet;
+  const recRecipe = RECIPES[planId] || RECIPES.diet;
+  const recExercise = EXERCISE_PLAN[planId] || EXERCISE_PLAN.diet;
 
   const fourSectionSummary = n ? `
-    <p class="text-xs font-bold text-primary-dark mb-2">4단계 맞춤 영양 리포트</p>
+    <p class="text-xs font-bold text-primary-dark mb-2">6단계 맞춤 영양 리포트</p>
     <div class="space-y-4 mb-5">
       <div class="tooltip-box p-4">
         <p class="text-xs font-semibold mb-2">SECTION 1 · 하루 칼로리 배분</p>
         ${allocForModal ? renderAllocationBar(allocForModal) : `<p class="text-xs text-muted">배분 비율 데이터가 없어요 (구버전 기록).</p>`}
       </div>
       <div class="tooltip-box p-4">
-        <p class="text-xs font-semibold mb-2">SECTION 2 · 급여 타임라인 (${rec.food_brand || '선택 사료'} 기준)</p>
-        <div class="grid grid-cols-3 gap-2">
-          ${['아침 08:00','점심 13:00','저녁 19:00'].map(label=>`
+        <p class="text-xs font-semibold mb-2">SECTION 2 · 정밀 배식 &amp; 급여 타임라인 (${rec.food_brand || '선택 사료'}${rec.food_texture ? ' · '+rec.food_texture : ''})</p>
+        <div class="grid gap-2" style="grid-template-columns:repeat(${Math.max(recMealSlots.length,1)},1fr);">
+          ${recMealSlots.length ? recMealSlots.map(m=>`
             <div class="surface-2 rounded-lg p-2 text-center">
-              <p class="text-[10px] text-muted mb-0.5">${label}</p>
-              <p class="font-display font-bold text-sm">${perMealG!=null ? Math.round(perMealG)+'g' : '—'}</p>
-            </div>`).join('')}
+              <p class="text-[10px] text-muted mb-0.5">${m.label} ${m.time}</p>
+              <p class="font-display font-bold text-sm">${m.grams}g</p>
+            </div>`).join('') : `<p class="text-xs text-muted">급여량 데이터가 없어요.</p>`}
         </div>
       </div>
       <div class="tooltip-box p-4">
-        <p class="text-xs font-semibold mb-2">SECTION 3 · 영양제 가이드</p>
-        ${buildSupplementGuideHtml(recSupplements)}
+        <p class="text-xs font-semibold mb-2">SECTION 3 · 영양제·간식 혼합 급여 &amp; 대체 시나리오</p>
+        ${buildSupplementGuideHtml(recSupplements, planId)}
+        <div class="mt-2">${buildAlternateScenarioHtml(n.dailyFeedG || 0, rec.food_kcal_per_100g || 350, recSnacks)}</div>
       </div>
       <div class="tooltip-box p-4">
-        <p class="text-xs font-semibold mb-2">SECTION 4 · 안전 간식 큐레이션</p>
-        ${buildSnackCurationHtml(planId, n.treatLimitKcal)}
-        <div class="space-y-1.5 mt-3">
+        <p class="text-xs font-semibold mb-2">⚠️ SECTION 4 · 절대 금지 간식 &amp; 영양제 블랙리스트</p>
+        <div class="space-y-1.5">
+          ${recBlacklist.map(b=>`<p class="text-xs text-muted">🚫 <b>${b.item}</b> — ${b.reason}</p>`).join('')}
+        </div>
+      </div>
+      <div class="tooltip-box p-4">
+        <p class="text-xs font-semibold mb-2">🍳 SECTION 5 · 홈메이드 레시피</p>
+        <p class="text-sm font-bold mb-1">${recRecipe.name} <span class="text-xs font-normal text-muted">(약 ${recRecipe.kcal}kcal)</span></p>
+        <p class="text-xs text-muted mb-1"><b>재료:</b> ${recRecipe.ingredients.join(', ')}</p>
+        <p class="text-xs text-muted">${recRecipe.note}</p>
+      </div>
+      <div class="tooltip-box p-4">
+        <p class="text-xs font-semibold mb-2">🏃‍♂️ SECTION 6 · 맞춤 운동 루틴</p>
+        <p class="text-xs text-muted mb-1"><b>추천 활동:</b> ${recExercise.types}</p>
+        <p class="text-xs text-muted mb-1"><b>시간·빈도:</b> ${recExercise.duration} · ${recExercise.weekly}</p>
+        <p class="text-xs text-muted">⚠️ ${recExercise.caution}</p>
+        <div class="space-y-1.5 mt-2">
           ${getDynamicCareTips(planId, recDynamic).map(t=>`<p class="text-xs text-muted flex gap-1.5"><span class="text-primary shrink-0">•</span>${t}</p>`).join('')}
         </div>
       </div>
@@ -2615,6 +2866,10 @@ async function saveUserAnalyticsData(record){
     ratio_food: numOrNull(record.ratio_food),
     ratio_supplement: numOrNull(record.ratio_supplement),
     ratio_snack: numOrNull(record.ratio_snack),
+    food_texture: String(record.food_texture ?? ''),
+    food_kcal_per_100g: numOrNull(record.food_kcal_per_100g),
+    feed_freq_current: numOrNull(record.feed_freq_current),
+    feed_amount_current_g: numOrNull(record.feed_amount_current_g),
   };
 
   // 1) 로컬(메모리 + localStorage)에 항상 먼저 쌓아요 — DB 연결 여부와 무관하게 안전망 역할
@@ -2656,7 +2911,8 @@ function exportAnalyticsCSV(){
     ['daily_feed_g','일일급여량(g)'], ['treat_limit_kcal','간식한도(kcal)'], ['water_recommend_ml','권장음수량(ml)'],
     ['protein_min_g','최소단백질(g)'], ['protein_max_g','최대단백질(g)'],
     ['ratio_protein','단백질비율(%)'], ['ratio_fat','지방비율(%)'], ['ratio_carb','탄수화물비율(%)'],
-    ['food_brand','사료브랜드'], ['ratio_food','사료배분(%)'], ['ratio_supplement','영양제배분(%)'], ['ratio_snack','간식배분(%)'],
+    ['food_brand','사료브랜드'], ['food_texture','사료제형'], ['food_kcal_per_100g','사료kcal(100g)'], ['ratio_food','사료배분(%)'], ['ratio_supplement','영양제배분(%)'], ['ratio_snack','간식배분(%)'],
+    ['feed_freq_current','현재급여횟수'], ['feed_amount_current_g','현재1회급여량(g)'],
     ['dynamic_answers','맞춤질문답변(JSON)'], ['supplements','영양제목록(JSON)'], ['snacks','간식목록(JSON)'],
     ['created_at','제출일시'],
   ];
@@ -2757,6 +3013,8 @@ async function loadAnalyticsFromDB(){
         food_brand: row.food_brand || '', dynamic_answers: row.dynamic_answers || '{}',
         supplements: row.supplements || '[]', snacks: row.snacks || '{}',
         ratio_food: numOrNull(row.ratio_food), ratio_supplement: numOrNull(row.ratio_supplement), ratio_snack: numOrNull(row.ratio_snack),
+        food_texture: row.food_texture || '', food_kcal_per_100g: numOrNull(row.food_kcal_per_100g),
+        feed_freq_current: numOrNull(row.feed_freq_current), feed_amount_current_g: numOrNull(row.feed_amount_current_g),
       }));
       try{ localStorage.setItem(ANALYTICS_STORAGE_KEY, JSON.stringify(analyticsRecords)); }catch(e){}
     }
