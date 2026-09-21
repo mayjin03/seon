@@ -2070,6 +2070,7 @@ function runCalculation(){
   requestAnimationFrame(()=>{
     animateBars();
     drawWeightChart(r.weeklyPlan, dog.target);
+    drawFreeReportRadarChart(computeRadarScores(r));
   });
   bindDashboardEvents(r);
   buildSidebarLinks();
@@ -2793,77 +2794,185 @@ function buildMealTimeline(planId, totalG){
   return slots.map(s=>({...s, grams: Math.round(perMealG)}));
 }
 
+/* ============================================================
+   기본(무료) 리포트 — Visual Overview 헬퍼
+============================================================ */
+function computeHealthScore(r){
+  let score = 100;
+  score -= Math.abs(dog.bcs - 5) * 9; // 이상 체형(BCS 5)에서 멀수록 감점
+  if(dog.conditions.length && !dog.conditions.includes('none')) score -= dog.conditions.length * 6;
+  if(r.allocation.snackRatio > 0.10) score -= 10;
+  if(r.allocation.supplementRatio > 0.10) score -= 5;
+  score = Math.max(15, Math.min(100, Math.round(score)));
+  const light = score>=75 ? 'green' : score>=50 ? 'yellow' : 'red';
+  const verdictMap = {
+    green: '전반적으로 양호한 상태예요',
+    yellow: '몇 가지 관리가 필요해요',
+    red: '적극적인 케어가 필요한 상태예요',
+  };
+  return { score, light, verdict: verdictMap[light] };
+}
+function renderTrafficLight(light){
+  const map = { green:'🟢', yellow:'🟡', red:'🔴' };
+  return ['green','yellow','red'].map(k=>`<span style="opacity:${k===light?'1':'.25'}; font-size:22px;">${map[k]}</span>`).join('');
+}
+function computeRadarScores(r){
+  const weightMgmt = Math.max(10, 100 - Math.abs(dog.bcs-5)*13);
+  const activityMap = {low:55, normal:78, high:95};
+  const activity = activityMap[dog.activity] || 65;
+  const nutriBalance = Math.max(10, 100 - Math.abs(r.allocation.foodRatio-0.85)*300);
+  const snackMgmt = Math.max(10, 100 - Math.max(0, r.allocation.snackRatio-0.10)*500);
+  const routineCare = (dog.vetVisitPurpose || (dog.diagnosedHistory&&dog.diagnosedHistory.length)) ? 82 : 60;
+  return {
+    labels: ['체중관리','활동량','영양균형','간식관리','정기케어'],
+    values: [weightMgmt, activity, nutriBalance, snackMgmt, routineCare].map(v=>Math.round(v)),
+  };
+}
+let freeReportRadarChartInstance = null;
+function drawFreeReportRadarChart(scores){
+  const canvas = document.getElementById('freeReportRadarChart');
+  if(!canvas || typeof Chart === 'undefined') return;
+  if(freeReportRadarChartInstance){ freeReportRadarChartInstance.destroy(); freeReportRadarChartInstance = null; }
+  freeReportRadarChartInstance = new Chart(canvas, {
+    type: 'radar',
+    data: {
+      labels: scores.labels,
+      datasets: [{ data: scores.values, backgroundColor:'#F97A3D33', borderColor:'#F97A3D', pointBackgroundColor:'#F97A3D', borderWidth:2 }],
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false} },
+      scales:{ r:{ min:0, max:100, ticks:{display:false, stepSize:25}, pointLabels:{font:{size:11}}, grid:{color:'#00000014'} } },
+    },
+  });
+}
+/* 연령/BCS/케어플랜 기준 추천 사료 브랜드 2~3종 (경량 큐레이션 — 정밀 분석은 프리미엄에서) */
+function recommendFoodBrands(planId, bcs){
+  const isSenior = (dog.ageYear||0) >= 7;
+  const isHeavy = bcs >= 6;
+  const pool = FOOD_PRESETS.filter(f=>f.id!=='custom');
+  let picks;
+  if(planId==='diet' || isHeavy) picks = ['royalcanin','now','acana'];
+  else if(planId==='joint') picks = ['orijen','acana','royalcanin'];
+  else if(planId==='kidney') picks = ['hills','royalcanin','now'];
+  else if(planId==='pancreas') picks = ['hills','royalcanin','now'];
+  else if(isSenior) picks = ['hills','royalcanin','now'];
+  else picks = ['royalcanin','orijen','now'];
+  const blurbs = {
+    royalcanin: '수의사 처방식 라인업이 탄탄해 케어플랜별 세분화 제품을 찾기 좋아요.',
+    hills: '소화기·신장 등 처방식 연구 데이터가 풍부한 브랜드예요.',
+    now: '합리적인 가격대에 균형 잡힌 일반식 라인업을 제공해요.',
+    orijen: '고단백·생물학적 접근 사료로 활동량이 많은 아이에게 잘 맞아요.',
+    acana: '적당한 단백질·지방 비율로 무난하게 급여하기 좋은 브랜드예요.',
+  };
+  return pool.filter(f=>picks.includes(f.id)).sort((a,b)=>picks.indexOf(a.id)-picks.indexOf(b.id)).slice(0,3)
+    .map(f=>({ label:f.label, blurb: blurbs[f.id] || '' }));
+}
+
+
 function nutritionReportHtml(r){
-  const alloc = r.allocation;
-  const mealSlots = buildMealTimeline(dog.plan, r.dailyFoodG);
-  const careTips = getDynamicCareTips(dog.plan, dog.dynamic);
-  const blacklist = BLACKLIST_ITEMS[dog.plan] || BLACKLIST_ITEMS.diet;
+  const healthScore = computeHealthScore(r);
+  const radar = computeRadarScores(r);
+  const cupSize = 120; // g, 표준 종이컵 환산 기준
+  const dailyG = Math.round(r.dailyFoodG);
+  const cups = Math.round((dailyG/cupSize)*2)/2; // 반컵 단위 반올림
+  const recommendedBrands = recommendFoodBrands(dog.plan, dog.bcs);
   const recipe = RECIPES[dog.plan] || RECIPES.diet;
+  const blacklist = (BLACKLIST_ITEMS[dog.plan] || BLACKLIST_ITEMS.diet).slice(0,3);
   const actionInfo = {planId: dog.plan, dynamic: dog.dynamic, weight: dog.weight, breed: dog.breed};
   const exercise = buildExerciseActionPlan(actionInfo);
-  const massage = buildMassageActionPlan(actionInfo);
-  const home = buildHomeActionPlan(actionInfo);
-
-  const currentVsRecommended = (dog.feedFreqCurrent && dog.feedAmountCurrent) ? `
-    <div class="tooltip-box p-3 text-xs text-muted mb-4">
-      현재 급여: 하루 ${dog.feedFreqCurrent}회 × ${dog.feedAmountCurrent}g = 총 ${Math.round(dog.feedFreqCurrent*dog.feedAmountCurrent)}g
-      → 권장: 총 ${Math.round(r.dailyFoodG)}g ${Math.round(r.dailyFoodG) < Math.round(dog.feedFreqCurrent*dog.feedAmountCurrent) ? '(줄여야 해요)' : Math.round(r.dailyFoodG) > Math.round(dog.feedFreqCurrent*dog.feedAmountCurrent) ? '(늘려야 해요)' : '(적정해요)'}
-    </div>` : '';
+  const weightDiff = Math.abs(dog.weight - dog.target).toFixed(1);
+  const weightDiffLabel = dog.weight > dog.target ? '감량' : dog.weight < dog.target ? '증량' : '유지';
 
   return `
   <div style="display:flex;flex-direction:column;gap:var(--section-gap)">
 
-    <!-- SECTION 1: 하루 칼로리 3단 배분 -->
-    <div class="surface rounded-[var(--radius-card)] p-6">
-      <p class="font-bold mb-1 flex items-center gap-1.5">${icon('scale')} SECTION 1 · 하루 영양 칼로리 배분</p>
-      <p class="text-xs text-muted mb-4">주식 사료·영양제·간식으로 나눈 하루 총 칼로리(MER ${Math.round(r.MER)}kcal) 배분이에요.</p>
-      ${renderAllocationBar(alloc)}
-    </div>
-
-    <!-- SECTION 2: 정밀 배식 & 분할 급여 타임라인 -->
-    <div class="surface rounded-[var(--radius-card)] p-6">
-      <p class="font-bold mb-1 flex items-center gap-1.5">${icon('bone')} SECTION 2 · 정밀 배식 &amp; 분할 급여 타임라인</p>
-      <p class="text-xs text-muted mb-4">공복토·소화 부담을 줄이기 위해 하루 총량을 ${mealSlots.length}회로 나눠 급여해요.</p>
-      <div class="text-center mb-4">
-        <p class="font-display font-bold text-3xl text-primary-dark">${Math.round(r.dailyFoodG)}g<span class="text-sm font-medium text-muted"> / 일</span></p>
-        <p class="text-xs text-muted">${dog.foodBrandLabel || '선택한 사료'} 기준 하루 총 급여량</p>
-      </div>
-      ${currentVsRecommended}
-      <div class="grid gap-3" style="grid-template-columns:repeat(${mealSlots.length},1fr);">
-        ${mealSlots.map(m=>`
-          <div class="surface-2 rounded-xl p-3 text-center">
-            <p class="text-xs font-semibold text-muted mb-1">${m.label} · ${m.time}</p>
-            <p class="font-display font-bold text-lg">${m.grams}g</p>
+    <!-- SECTION 1: 종합 건강 스코어 & 신호등 & 레이더 -->
+    <div class="surface rounded-[var(--radius-card)] p-6 sm:p-8">
+      <p class="font-bold mb-4 flex items-center gap-1.5">${icon('sparkles')} 우리 아이 종합 건강 스코어</p>
+      <div class="grid sm:grid-cols-2 gap-6 items-center">
+        <div class="text-center">
+          <div class="relative inline-flex items-center justify-center" style="width:140px;height:140px;">
+            <svg width="140" height="140" viewBox="0 0 140 140">
+              <circle cx="70" cy="70" r="60" fill="none" stroke="var(--surface-2)" stroke-width="14"/>
+              <circle cx="70" cy="70" r="60" fill="none" stroke="${healthScore.light==='green'?'#2FBF9F':healthScore.light==='yellow'?'#F2C14E':'#E8604C'}"
+                stroke-width="14" stroke-linecap="round" stroke-dasharray="${(2*Math.PI*60).toFixed(1)}"
+                stroke-dashoffset="${(2*Math.PI*60*(1-healthScore.score/100)).toFixed(1)}" transform="rotate(-90 70 70)"/>
+            </svg>
+            <div class="absolute inset-0 flex flex-col items-center justify-center">
+              <p class="font-display font-bold text-3xl">${healthScore.score}</p>
+              <p class="text-[10px] text-muted">/ 100</p>
+            </div>
           </div>
-        `).join('')}
+          <div class="flex justify-center gap-2 mt-3">${renderTrafficLight(healthScore.light)}</div>
+          <p class="text-xs text-muted mt-1.5">${healthScore.verdict}</p>
+        </div>
+        <div class="relative" style="height:190px;"><canvas id="freeReportRadarChart"></canvas></div>
       </div>
     </div>
 
-    <!-- SECTION 3: 영양제·간식 혼합 급여 & 대체 시나리오 -->
+    <!-- SECTION 2: BCS 비주얼 카드 -->
     <div class="surface rounded-[var(--radius-card)] p-6">
-      <p class="font-bold mb-1 flex items-center gap-1.5">${icon('drumstick')} SECTION 3 · 영양제·간식 혼합 급여 &amp; 대체 시나리오</p>
-      <p class="text-xs text-muted mb-4">선택하신 영양제별 급여 타이밍·중복 성분과, 간식을 더 준 날의 대체 급여 가이드예요.</p>
-      ${buildSupplementGuideHtml(dog.supplements, dog.plan)}
-      <div class="mt-3">${buildAlternateScenarioHtml(r.dailyFoodG, dog.foodKcal, dog.snacks)}</div>
+      <p class="font-bold mb-3 flex items-center gap-1.5">${icon('scale')} BCS 체형 카드</p>
+      <div class="flex items-center gap-4">
+        <div class="shrink-0">${bcsSilhouette(dog.bcs, 56)}</div>
+        <div>
+          <p class="font-display font-bold text-2xl">BCS ${dog.bcs}<span class="text-sm font-medium text-muted"> / 9</span></p>
+          <p class="text-xs font-semibold" style="color:${BCS_INFO[dog.bcs-1].tone};">${BCS_INFO[dog.bcs-1].label}</p>
+          <p class="text-xs text-muted mt-1">목표 체중까지 ${weightDiff}kg ${weightDiffLabel}</p>
+        </div>
+      </div>
     </div>
 
-    <!-- SECTION 4: 절대 금지 간식 & 영양제 블랙리스트 -->
+    <!-- SECTION 3: 기초 일일 급여 가이드 -->
     <div class="surface rounded-[var(--radius-card)] p-6">
-      <p class="font-bold mb-1 flex items-center gap-1.5">⚠️ SECTION 4 · 절대 금지 간식 &amp; 영양제 블랙리스트</p>
-      <p class="text-xs text-muted mb-4">${r.planCfg.title} 특성상 피해야 할 항목과 수의학적 이유예요.</p>
-      <div class="space-y-2">
-        ${blacklist.map(b=>`
-          <div class="tooltip-box p-3" style="border-color:var(--c-fat);">
-            <p class="text-sm font-bold mb-0.5" style="color:var(--c-fat);">🚫 ${b.item}</p>
-            <p class="text-xs text-muted">${b.reason}</p>
+      <p class="font-bold mb-1 flex items-center gap-1.5">${icon('bone')} 기초 일일 급여 가이드</p>
+      <p class="text-xs text-muted mb-4">하루 권장 칼로리와 대략적인 사료량이에요.</p>
+      <div class="grid grid-cols-2 gap-3 mb-4">
+        <div class="surface-2 rounded-xl p-4 text-center">
+          <p class="text-[11px] text-muted mb-1">일일 권장 칼로리</p>
+          <p class="font-display font-bold text-2xl">${Math.round(r.MER)}<span class="text-sm font-medium text-muted"> kcal</span></p>
+        </div>
+        <div class="surface-2 rounded-xl p-4 text-center">
+          <p class="text-[11px] text-muted mb-1">대략적인 사료량</p>
+          <p class="font-display font-bold text-2xl">${dailyG}<span class="text-sm font-medium text-muted"> g</span></p>
+          <p class="text-[11px] text-muted">약 ${cups}컵 (종이컵 기준)</p>
+        </div>
+      </div>
+      <p class="text-xs text-muted">하루 2~3회로 나눠 비슷한 양으로 급여해주세요. 1g 단위 정확한 분할 스케줄과 간식 차감액은 프리미엄 리포트에서 확인할 수 있어요.</p>
+    </div>
+
+    <!-- SECTION 4: 맞춤 추천 사료 브랜드 -->
+    <div class="surface rounded-[var(--radius-card)] p-6">
+      <p class="font-bold mb-1 flex items-center gap-1.5">🏷️ 맞춤 추천 사료 브랜드</p>
+      <p class="text-xs text-muted mb-4">${r.planCfg.title} · BCS ${dog.bcs} 기준으로 골라봤어요.</p>
+      <div class="grid sm:grid-cols-3 gap-3">
+        ${recommendedBrands.map(b=>`
+          <div class="surface-2 rounded-xl p-4">
+            <p class="font-bold text-sm mb-1">${b.label}</p>
+            <p class="text-xs text-muted">${b.blurb}</p>
           </div>`).join('')}
       </div>
     </div>
 
-    <!-- SECTION 5: 플랜 맞춤 홈메이드 레시피 -->
+    <!-- SECTION 5: 기초 액션 플랜 -->
     <div class="surface rounded-[var(--radius-card)] p-6">
-      <p class="font-bold mb-1 flex items-center gap-1.5">🍳 SECTION 5 · 플랜 맞춤 홈메이드 레시피</p>
-      <p class="text-xs text-muted mb-4">집에서 쉽게 만들어줄 수 있는 ${r.planCfg.title} 특화 레시피예요.</p>
+      <p class="font-bold mb-1 flex items-center gap-1.5">✅ 기초 액션 플랜</p>
+      <p class="text-xs text-muted mb-4">오늘부터 바로 실천할 수 있는 핵심만 담았어요.</p>
+      <div class="tooltip-box p-3 mb-3">
+        <p class="text-xs font-bold mb-1">🏃 ${exercise.headline}</p>
+        <p class="text-xs text-muted">${exercise.lines[0]}</p>
+      </div>
+      <p class="text-xs font-semibold mb-2">🚫 이런 간식은 피해주세요</p>
+      <div class="flex flex-wrap gap-1.5">
+        ${blacklist.map(b=>`<span class="text-[11px] font-semibold px-2.5 py-1 rounded-full" style="background:#E8604C1A; color:#E8604C;">${b.item}</span>`).join('')}
+      </div>
+    </div>
+
+    <!-- SECTION 6: 기본 수제 토핑 레시피 1종 -->
+    <div class="surface rounded-[var(--radius-card)] p-6">
+      <p class="font-bold mb-1 flex items-center gap-1.5">🍳 기본 수제 토핑 레시피</p>
+      <p class="text-xs text-muted mb-4">집에서 쉽게 만들 수 있는 ${r.planCfg.title} 맞춤 레시피예요.</p>
       <div class="surface-2 rounded-xl p-4">
         <div class="flex items-center justify-between mb-2">
           <p class="font-bold text-sm">${recipe.name}</p>
@@ -2874,28 +2983,17 @@ function nutritionReportHtml(r){
       </div>
     </div>
 
-    <!-- SECTION 6: 타깃 맞춤 활동·마사지·주거환경 Action Plan -->
-    <div class="surface rounded-[var(--radius-card)] p-6">
-      <p class="font-bold mb-1 flex items-center gap-1.5">🏃‍♂️ SECTION 6 · 맞춤 운동·마사지·주거환경 Action Plan</p>
-      <p class="text-xs text-muted mb-4">${r.planCfg.title} 및 입력하신 정보에 맞춰 오늘 바로 실천할 수 있도록 구체적으로 안내해요.</p>
-      <div class="grid sm:grid-cols-3 gap-3 mb-3">
-        <div class="surface-2 rounded-xl p-3">
-          <p class="text-xs font-bold mb-2">🏃 ${exercise.headline}</p>
-          ${exercise.lines.map(l=>`<p class="text-xs text-muted mb-1.5">${l}</p>`).join('')}
-        </div>
-        <div class="surface-2 rounded-xl p-3">
-          <p class="text-xs font-bold mb-2">💆 ${massage.headline}</p>
-          <p class="text-xs text-muted mb-1.5"><i>${massage.timing}</i></p>
-          ${massage.steps.map((s,i)=>`<p class="text-xs text-muted mb-1.5">${i+1}. ${s}</p>`).join('')}
-        </div>
-        <div class="surface-2 rounded-xl p-3">
-          <p class="text-xs font-bold mb-2">🏠 주거환경 개선 체크리스트</p>
-          ${home.map(h=>`<p class="text-xs text-muted mb-1.5">☑ ${h}</p>`).join('')}
-        </div>
+    <!-- SECTION 7: 프리미엄 리포트 티저 CTA -->
+    <div class="rounded-[var(--radius-card)] p-6 sm:p-8 text-center" style="background:linear-gradient(135deg, #2B241F, #4A3F38);">
+      <p class="text-xs font-bold mb-2" style="color:#F97A3D;">🔒 PREMIUM REPORT</p>
+      <p class="font-display font-bold text-lg mb-3" style="color:#fff;">더 정밀한 1:1 분석이 기다리고 있어요</p>
+      <div class="grid sm:grid-cols-3 gap-2 mb-5 text-left">
+        <div class="rounded-xl p-3" style="background:rgba(255,255,255,.08);"><p class="text-xs" style="color:#fff;">📊 현재 먹이는 사료 적합도 분석</p></div>
+        <div class="rounded-xl p-3" style="background:rgba(255,255,255,.08);"><p class="text-xs" style="color:#fff;">⚖️ 정확한 1g 단위 맞춤 급여표</p></div>
+        <div class="rounded-xl p-3" style="background:rgba(255,255,255,.08);"><p class="text-xs" style="color:#fff;">🩺 임상 징후별 1:1 정밀 레시피</p></div>
       </div>
-      <div class="space-y-1.5 mt-3">
-        ${careTips.map(t=>`<div class="tooltip-box p-3 text-xs text-muted flex gap-1.5"><span class="text-primary shrink-0">•</span>${t}</div>`).join('')}
-      </div>
+      <button type="button" id="freeReportPremiumCtaBtn" class="btn-primary rounded-xl px-6 py-3 text-sm font-bold">⭐ 프리미엄 리포트 보기</button>
+      <p class="text-[11px] mt-3" style="color:rgba(255,255,255,.5);">런칭 프로모션 ${PDF_PROMO_PRICE} (정가 ${PDF_ORIGINAL_PRICE})</p>
     </div>
 
   </div>`;
@@ -3040,6 +3138,7 @@ function refreshChartsTheme(){
     if(document.getElementById('weightChart')){
       const r = computeResults();
       drawWeightChart(r.weeklyPlan, dog.target);
+      drawFreeReportRadarChart(computeRadarScores(r));
     }
   }, 260);
 }
@@ -3059,6 +3158,7 @@ function bindDashboardEvents(r){
   });
   document.getElementById('savePdfBtn')?.addEventListener('click', ()=>window.print());
   document.getElementById('openPremiumPdf')?.addEventListener('click', ()=>openPremiumModal('pdf'));
+  document.getElementById('freeReportPremiumCtaBtn')?.addEventListener('click', ()=>openPremiumModal('pdf'));
   document.getElementById('openPremiumConsult')?.addEventListener('click', ()=>openPremiumModal('consult'));
 
   const items = AFFILIATE_MAP[dog.plan] || AFFILIATE_MAP.diet;
@@ -3333,7 +3433,7 @@ function buildCtxFromLive(){
     name: dog.name, breed: dog.breed, ageYear: dog.ageYear, ageMonth: dog.ageMonth,
     weight: dog.weight, target: dog.target, bcs: dog.bcs, neutered: dog.neutered, conditions: dog.conditions,
     planId: dog.plan, planCfg: r.planCfg, foodBrandLabel: dog.foodBrandLabel, foodKcal: dog.foodKcal,
-    dynamic: dog.dynamic,
+    dynamic: dog.dynamic, supplements: dog.supplements, snacks: dog.snacks,
     RER: r.RER, IBW: r.IBW, MER: r.MER, factor: r.factor, goalType: r.goalType,
     dailyFoodG: r.dailyFoodG, snackKcalLimit: r.snackKcalLimit, waterMl: r.waterMl,
     proteinMinG, proteinMaxG, approximated: false,
@@ -3345,6 +3445,8 @@ function buildCtxFromRecord(rec){
   const planCfg = PLANS.find(p=>p.id===planId) || PLANS[0];
   let conditions = []; try{ conditions = JSON.parse(rec.conditions||'[]'); }catch(e){}
   let dynamic = {}; try{ dynamic = JSON.parse(rec.dynamic_answers||'{}'); }catch(e){}
+  let supplements = []; try{ supplements = JSON.parse(rec.supplements||'[]'); }catch(e){}
+  let snacks = {}; try{ snacks = JSON.parse(rec.snacks||'{}'); }catch(e){}
   const n = getReportNutritionData(rec);
   const weight = parseFloat(rec.weight), target = parseFloat(rec.target_weight);
   let goalType = 'maintain';
@@ -3355,7 +3457,7 @@ function buildCtxFromRecord(rec){
     name: rec.dog_name, breed: rec.breed, ageYear: rec.age_year ?? '-', ageMonth: rec.age_month ?? '-',
     weight, target, bcs: rec.bcs, neutered: rec.neutered==='true', conditions,
     planId, planCfg, foodBrandLabel: rec.food_brand, foodKcal: rec.food_kcal_per_100g,
-    dynamic,
+    dynamic, supplements, snacks,
     RER: n?n.rer:null, IBW: n?n.ibw:null, MER: n?n.mer:null,
     factor: (n && n.rer) ? n.mer/n.rer : null, goalType,
     dailyFoodG: n?n.dailyFeedG:null, snackKcalLimit: n?n.treatLimitKcal:null, waterMl: n?n.waterMl:null,
@@ -3508,7 +3610,7 @@ function renderPremiumReportHtml(ctx, canvasId){
 
     <div class="pdf-page">
       <p class="pdf-kicker mb-1">PAGE 2</p>
-      <h2 class="font-display font-bold text-xl mb-4">진단 요약 &amp; 핵심 지표</h2>
+      <h2 class="font-display font-bold text-xl mb-4">정밀 에너지 &amp; 1:1 급여 계산서</h2>
       <div class="grid grid-cols-2 gap-3 mb-4">
         <div class="surface-2 rounded-xl p-3"><p class="text-[10px] text-muted">이름</p><p class="font-semibold">${ctx.name}</p></div>
         <div class="surface-2 rounded-xl p-3"><p class="text-[10px] text-muted">견종</p><p class="font-semibold">${ctx.breed}</p></div>
@@ -3517,19 +3619,36 @@ function renderPremiumReportHtml(ctx, canvasId){
       </div>
       ${hasNums ? `
         <div class="grid grid-cols-4 gap-2 mb-4">
-          ${metricCard('일일 급여량', Math.round(ctx.dailyFoodG)+'g', '하루 총량', 'bone')}
+          ${metricCard('RER', Math.round(ctx.RER)+'kcal', '기초대사에너지', 'flame')}
           ${metricCard('MER', Math.round(ctx.MER)+'kcal', '일일 권장 칼로리', 'flame')}
-          ${metricCard('간식 한도', Math.round(ctx.snackKcalLimit)+'kcal', 'MER 10% 이내', 'cookie')}
+          ${metricCard('IBW', ctx.IBW.toFixed(2)+'kg', '과학적 이상체중', 'scale')}
           ${metricCard('음수량', Math.round(ctx.waterMl)+'ml', 'RER 1:1', 'droplet')}
-        </div>` : `<div class="tooltip-box p-3 text-xs text-muted mb-4">계산 데이터가 부족해 핵심 지표를 표시할 수 없어요.</div>`}
+        </div>
+        <div class="surface-2 rounded-xl p-4 mb-3">
+          <p class="text-xs font-bold mb-2">${ctx.foodBrandLabel || '선택 사료'} 기준 1g 단위 정밀 급여량</p>
+          <p class="font-display font-bold text-2xl mb-3">${Math.round(ctx.dailyFoodG)}g<span class="text-sm font-medium text-muted"> / 일</span></p>
+          <div class="grid gap-2" style="grid-template-columns:repeat(${buildMealTimeline(ctx.planId, ctx.dailyFoodG).length},1fr);">
+            ${buildMealTimeline(ctx.planId, ctx.dailyFoodG).map(m=>`
+              <div class="rounded-lg p-2 text-center" style="background:#fff; border:1px solid #e5e5e5;">
+                <p class="text-[10px] text-muted mb-0.5">${m.label} ${m.time}</p>
+                <p class="font-display font-bold text-sm">${m.grams}g</p>
+              </div>`).join('')}
+          </div>
+        </div>
+        <div class="mb-2">${buildAlternateScenarioHtml(ctx.dailyFoodG, ctx.foodKcal, ctx.snacks || {})}</div>
+      ` : `<div class="tooltip-box p-3 text-xs text-muted mb-4">계산 데이터가 부족해 핵심 지표를 표시할 수 없어요.</div>`}
       ${renderMacroBar(ctx.planCfg.macro)}
       <span class="pdf-page-num">2 / 8</span>
     </div>
 
     <div class="pdf-page">
       <p class="pdf-kicker mb-1">PAGE 3</p>
-      <h2 class="font-display font-bold text-xl mb-4">사료·영양제 브랜드 DM 성분 1:1 정밀 분석표</h2>
+      <h2 class="font-display font-bold text-xl mb-4">사료·영양제 성분 심층 교차 분석</h2>
       ${buildBrandDmTableHtml(ctx)}
+      <div class="mt-4">
+        <p class="text-xs font-bold mb-2">복용 중인 영양제 × 임상 징후 적합도 평가</p>
+        ${buildSupplementGuideHtml(ctx.supplements || [], ctx.planId)}
+      </div>
       <span class="pdf-page-num">3 / 8</span>
     </div>
 
@@ -3558,6 +3677,17 @@ function renderPremiumReportHtml(ctx, canvasId){
       <p class="pdf-kicker mb-1">PAGE 7 · FOR VETERINARY USE</p>
       <h2 class="font-display font-bold text-xl mb-4">동물병원 제출용 수의영양학 메디컬 서머리</h2>
       ${buildClinicalSummaryHtml(ctx)}
+      <div class="mt-4">
+        <p class="text-xs font-bold mb-2">28일 케어 모니터링 캘린더</p>
+        <div class="grid grid-cols-7 gap-1">
+          ${Array.from({length:28}, (_,i)=>`
+            <div class="rounded p-1 text-center" style="border:1px solid #e5e5e5;">
+              <p class="text-[9px] font-bold text-primary-dark">D${i+1}</p>
+              <p class="text-[7px] text-muted">체중__kg</p>
+            </div>`).join('')}
+        </div>
+        <p class="text-[10px] text-muted mt-2">매일 체중·급여량을 기록해 다음 진료 시 수의사에게 제시해주세요.</p>
+      </div>
       <span class="pdf-page-num">7 / 8</span>
     </div>
 
@@ -3945,7 +4075,7 @@ function applyAdminTheme(){
   if(!document.getElementById('dashboardSection').classList.contains('hidden')){
     const r = computeResults();
     document.getElementById('dashboardSection').innerHTML = renderDashboard(r);
-    requestAnimationFrame(()=>{ animateBars(); drawWeightChart(r.weeklyPlan, dog.target); });
+    requestAnimationFrame(()=>{ animateBars(); drawWeightChart(r.weeklyPlan, dog.target); drawFreeReportRadarChart(computeRadarScores(r)); });
     bindDashboardEvents(r);
     buildSidebarLinks();
   }
