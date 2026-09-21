@@ -753,78 +753,36 @@ const SUPABASE_TABLE = "user_analytics"; // 진단 데이터를 저장/조회할
 /* ============================================================
    Supabase 테이블 준비 SQL (Supabase 대시보드 → SQL Editor에서 실행)
    ------------------------------------------------------------
+   ⚠️ 2026-09 업데이트: 프론트엔드가 이제 "핵심 컬럼 6개 + extra_data(JSON) 1개"
+   구조로 저장해요. 계산/급여/영양제 등 세부 항목이 늘어나도 더 이상 컬럼을
+   하나씩 ALTER TABLE 할 필요가 없어요 — 전부 extra_data 안에 JSON으로 들어가요.
+   (참고: 프론트엔드는 DB에 없는 컬럼을 만나면 자동으로 감지해 제외하고 재시도하는
+   방어 로직도 갖고 있어서, 아래 SQL을 아직 실행하지 않았어도 저장 자체는
+   core 컬럼만으로 우선 성공해요.)
+
    -- 1) 테이블이 없다면 새로 생성
    create table if not exists public.user_analytics (
-     id                   bigint generated always as identity primary key,
-     dog_name             text,
-     breed                text,
-     weight               numeric,
-     target_weight        numeric,
-     bcs                  text,
-     plan_type            text,
-     rer                  numeric,   -- 기초대사에너지 (kcal)
-     ibw                  numeric,   -- 과학적 이상체중 (kg)
-     mer                  numeric,   -- 일일 권장 칼로리 (kcal)
-     daily_feed_g         numeric,   -- 일일 권장 급여량 (g)
-     treat_limit_kcal     numeric,   -- 간식 한도 칼로리 (kcal)
-     water_recommend_ml   numeric,   -- 권장 음수량 (ml)
-     protein_min_g        numeric,   -- 최소 단백질 요구량 (g)
-     protein_max_g        numeric,   -- 최대(권장) 단백질 요구량 (g)
-     ratio_protein        numeric,   -- 권장 단백질 비율 (%)
-     ratio_fat            numeric,   -- 권장 지방 비율 (%)
-     ratio_carb           numeric,   -- 권장 탄수화물/섬유질 비율 (%)
-     food_brand           text,      -- 선택한 주식 사료 브랜드
-     dynamic_answers      text,      -- Step3 케어플랜별 맞춤 질문 답변 (JSON 문자열)
-     supplements          text,      -- 선택한 영양제 목록 (JSON 문자열)
-     snacks               text,      -- 선택한 간식 유형·급여 횟수 (JSON 문자열)
-     ratio_food           numeric,   -- 하루 칼로리 중 주식 사료 배분 비율 (%)
-     ratio_supplement     numeric,   -- 하루 칼로리 중 영양제 배분 비율 (%)
-     ratio_snack          numeric,   -- 하루 칼로리 중 간식 배분 비율 (%)
-     food_texture         text,      -- 주식 제형 (건식/습식/화식/동결건조/생식)
-     food_kcal_per_100g   numeric,   -- 선택한 사료의 100g당 kcal
-     feed_freq_current    numeric,   -- 현재 하루 급여 횟수 (비교용)
-     feed_amount_current_g numeric,  -- 현재 1회당 급여량 g (비교용)
-     age_year             numeric,   -- 나이(년)
-     age_month            numeric,   -- 나이(개월)
-     neutered             text,      -- 중성화 여부 ('true'/'false')
-     conditions           text,      -- 보유 질환 목록 (JSON 문자열)
-     paid                 boolean default false, -- 유료 상세 분석 PDF 결제 상태
-     created_at           timestamptz default now()
+     id             bigint generated always as identity primary key,
+     dog_name       text,
+     breed          text,
+     weight         numeric,
+     target_weight  numeric,
+     bcs            text,
+     plan_type      text,
+     extra_data     jsonb,     -- 계산 결과/사료·영양제·간식 세부/나이·중성화·질환/결제상태 등 전부 이 안에 JSON으로 저장
+     paid           boolean default false, -- (선택) extra_data.paid와 별개로 별도 컬럼도 필터링·인덱싱용으로 두고 싶다면
+     created_at     timestamptz default now()
    );
 
-   -- 2) 이미 테이블이 있고 기존 필드만 있다면 아래로 컬럼만 추가
-   alter table public.user_analytics add column if not exists rer numeric;
-   alter table public.user_analytics add column if not exists ibw numeric;
-   alter table public.user_analytics add column if not exists mer numeric;
-   alter table public.user_analytics add column if not exists daily_feed_g numeric;
-   alter table public.user_analytics add column if not exists treat_limit_kcal numeric;
-   alter table public.user_analytics add column if not exists water_recommend_ml numeric;
-   alter table public.user_analytics add column if not exists protein_min_g numeric;
-   alter table public.user_analytics add column if not exists protein_max_g numeric;
-   alter table public.user_analytics add column if not exists ratio_protein numeric;
-   alter table public.user_analytics add column if not exists ratio_fat numeric;
-   alter table public.user_analytics add column if not exists ratio_carb numeric;
-   alter table public.user_analytics add column if not exists food_brand text;
-   alter table public.user_analytics add column if not exists dynamic_answers text;
-   alter table public.user_analytics add column if not exists supplements text;
-   alter table public.user_analytics add column if not exists snacks text;
-   alter table public.user_analytics add column if not exists ratio_food numeric;
-   alter table public.user_analytics add column if not exists ratio_supplement numeric;
-   alter table public.user_analytics add column if not exists ratio_snack numeric;
-   alter table public.user_analytics add column if not exists food_texture text;
-   alter table public.user_analytics add column if not exists food_kcal_per_100g numeric;
-   alter table public.user_analytics add column if not exists feed_freq_current numeric;
-   alter table public.user_analytics add column if not exists feed_amount_current_g numeric;
-   alter table public.user_analytics add column if not exists age_year numeric;
-   alter table public.user_analytics add column if not exists age_month numeric;
-   alter table public.user_analytics add column if not exists neutered text;
-   alter table public.user_analytics add column if not exists conditions text;
+   -- 2) 이미 테이블이 있고 예전 방식(평면 컬럼)만 있다면, 아래 2줄만 추가하면 충분해요.
+   alter table public.user_analytics add column if not exists extra_data jsonb;
    alter table public.user_analytics add column if not exists paid boolean default false;
 
-   -- 3) RLS를 사용 중이라면 anon 역할에 INSERT/SELECT 정책이 있는지 꼭 확인하세요.
+   -- 3) RLS를 사용 중이라면 anon 역할에 INSERT/SELECT/UPDATE 정책이 있는지 꼭 확인하세요.
    -- alter table public.user_analytics enable row level security;
    -- create policy "anon insert" on public.user_analytics for insert to anon with check (true);
    -- create policy "anon select" on public.user_analytics for select to anon using (true);
+   -- create policy "anon update" on public.user_analytics for update to anon using (true) with check (true);
 ============================================================ */
 
 let supabaseClient = null;
@@ -3846,6 +3804,68 @@ function numOrNull(v){
   return Number.isFinite(n) ? n : null;
 }
 
+/* ============================================================
+   Payload Sanitization: DB 컬럼 존재 여부에 의존하지 않도록,
+   확실한 핵심 컬럼(CORE)만 최상위로 보내고 나머지는 전부
+   extra_data 하나의 JSON 컬럼에 몰아 저장해요.
+============================================================ */
+const CORE_COLUMNS = ['dog_name', 'breed', 'weight', 'target_weight', 'bcs', 'plan_type'];
+const EXTRA_FIELD_KEYS = [
+  'rer','ibw','mer','daily_feed_g','treat_limit_kcal','water_recommend_ml',
+  'protein_min_g','protein_max_g','ratio_protein','ratio_fat','ratio_carb',
+  'food_brand','dynamic_answers','supplements','snacks',
+  'ratio_food','ratio_supplement','ratio_snack',
+  'food_texture','food_kcal_per_100g','feed_freq_current','feed_amount_current_g',
+  'age_year','age_month','neutered','conditions','paid',
+];
+function extractExtraData(flatObj){
+  const out = {};
+  EXTRA_FIELD_KEYS.forEach(k=>{ out[k] = flatObj[k] ?? null; });
+  return out;
+}
+
+/* PostgREST가 "Could not find the 'X' column of 'Y' in the schema cache" (PGRST204)를 반환하면
+   문제가 된 컬럼만 골라내 payload에서 제거하고 자동으로 재시도해요.
+   DB에 아직 없는 컬럼이 무엇이든, 수동으로 ALTER TABLE 하지 않아도 저장 자체는 항상 성공하도록 만드는
+   프론트엔드 차원의 근본적인 방어 로직이에요. */
+async function insertWithSchemaFallback(table, payload){
+  let attempt = { ...payload };
+  const droppedColumns = [];
+  for(let i=0; i<12; i++){
+    const { error } = await supabaseClient.from(table).insert([attempt]);
+    if(!error) return { error:null, droppedColumns, finalPayload:attempt };
+
+    const match = /Could not find the '([^']+)' column/i.exec(error.message || '');
+    const missingCol = match && match[1];
+    if(missingCol && Object.prototype.hasOwnProperty.call(attempt, missingCol) && Object.keys(attempt).length > 1){
+      console.warn(`[seon] DB에 '${missingCol}' 컬럼이 없어서 이번 저장에서는 제외하고 자동으로 재시도해요.`);
+      delete attempt[missingCol];
+      droppedColumns.push(missingCol);
+      continue;
+    }
+    // 컬럼 누락이 아닌 다른 종류의 오류(RLS 등)이거나, 더 이상 제거할 필드가 없으면 그대로 반환
+    return { error, droppedColumns, finalPayload:attempt };
+  }
+  return { error: { message:'반복적으로 컬럼 누락이 발생해 저장에 실패했습니다.', code:'SCHEMA_FALLBACK_EXCEEDED' }, droppedColumns, finalPayload:attempt };
+}
+
+/* update()에도 동일한 자동 적응 로직을 적용 (예: paid 상태 토글) */
+async function updateWithSchemaFallback(table, fields, matchColumn, matchValue){
+  let attempt = { ...fields };
+  for(let i=0; i<12; i++){
+    const { error } = await supabaseClient.from(table).update(attempt).eq(matchColumn, matchValue);
+    if(!error) return { error:null, finalFields:attempt };
+    const match = /Could not find the '([^']+)' column/i.exec(error.message || '');
+    const missingCol = match && match[1];
+    if(missingCol && Object.prototype.hasOwnProperty.call(attempt, missingCol) && Object.keys(attempt).length > 1){
+      delete attempt[missingCol];
+      continue;
+    }
+    return { error, finalFields:attempt };
+  }
+  return { error: { message:'반복적으로 컬럼 누락이 발생해 업데이트에 실패했습니다.', code:'SCHEMA_FALLBACK_EXCEEDED' }, finalFields:attempt };
+}
+
 /* 네이티브 Error(message/stack이 비열거형이라 JSON.stringify가 '{}'를 반환함)와
    Supabase의 PostgrestError(일반 객체) 양쪽 모두 사람이 읽을 수 있게 안전하게 문자열화해요 */
 function safeStringifyError(e){
@@ -3865,7 +3885,8 @@ async function saveUserAnalyticsData(record){
   console.log('[seon] saveUserAnalyticsData() 호출됨 — 제출 데이터:', record);
 
   // 0) 컬럼 타입에 맞게 정규화 — 숫자형은 parseFloat/Number, 문자형은 String으로 명시 변환
-  const payload = {
+  //    (이 평면(flat) 형태는 앱 내부적으로 계속 그대로 사용돼요 — DB 저장 형태와 무관해요)
+  const flat = {
     dog_name: String(record.dog_name ?? ''),
     breed: String(record.breed ?? ''),
     weight: parseFloat(record.weight),
@@ -3884,7 +3905,7 @@ async function saveUserAnalyticsData(record){
     ratio_protein: numOrNull(record.ratio_protein),
     ratio_fat: numOrNull(record.ratio_fat),
     ratio_carb: numOrNull(record.ratio_carb),
-    // ---- Step3 동적 질문 & Step4 세부 입력 (문자열로 저장, jsonb 컬럼이면 자동 파싱돼요) ----
+    // ---- Step3 동적 질문 & Step4 세부 입력 (문자열로 저장) ----
     food_brand: String(record.food_brand ?? ''),
     dynamic_answers: typeof record.dynamic_answers==='string' ? record.dynamic_answers : JSON.stringify(record.dynamic_answers ?? {}),
     supplements: typeof record.supplements==='string' ? record.supplements : JSON.stringify(record.supplements ?? []),
@@ -3903,7 +3924,7 @@ async function saveUserAnalyticsData(record){
   };
 
   // 1) 로컬(메모리 + localStorage)에 항상 먼저 쌓아요 — DB 연결 여부와 무관하게 안전망 역할
-  analyticsRecords.push({...payload, created_at: record.created_at || new Date().toISOString()});
+  analyticsRecords.push({...flat, created_at: record.created_at || new Date().toISOString()});
   try{
     localStorage.setItem(ANALYTICS_STORAGE_KEY, JSON.stringify(analyticsRecords));
   }catch(err){
@@ -3911,15 +3932,27 @@ async function saveUserAnalyticsData(record){
   }
 
   // 2) Supabase가 연결돼 있으면 실제 DB(user_analytics 테이블)에도 함께 저장해요
+  //    ── Payload Sanitization: 확실한 핵심 컬럼(CORE_COLUMNS)만 최상위로 보내고,
+  //       나머지 확장 필드는 전부 하나의 JSON 컬럼(extra_data)에 담아 보내요.
+  //       그마저도 DB에 없다면 insertWithSchemaFallback이 자동으로 감지해 제외하고 재시도하므로,
+  //       컬럼을 수동으로 하나씩 추가하지 않아도 저장 자체는 항상 성공(혹은 명확한 실패)하게 돼요.
   if(supabaseClient){
-    console.log('payload:', JSON.stringify(payload, null, 2));
+    const dbPayload = {
+      dog_name: flat.dog_name, breed: flat.breed, weight: flat.weight,
+      target_weight: flat.target_weight, bcs: flat.bcs, plan_type: flat.plan_type,
+      extra_data: JSON.stringify(extractExtraData(flat)),
+    };
+    console.log('payload:', JSON.stringify(dbPayload, null, 2));
     try{
-      const { error } = await supabaseClient.from(SUPABASE_TABLE).insert([payload]);
+      const { error, droppedColumns } = await insertWithSchemaFallback(SUPABASE_TABLE, dbPayload);
       if(error){
         console.error('CRITICAL_INSERT_ERROR:', JSON.stringify(error, null, 2));
         alert('데이터 저장 중 오류가 발생했습니다.\n\n' + JSON.stringify(error, null, 2));
       } else {
-        console.log('[seon] Supabase(user_analytics)에 진단 데이터가 저장됐어요 ✅', JSON.stringify(payload, null, 2));
+        if(droppedColumns.length){
+          console.warn('[seon] 다음 컬럼이 DB에 없어 이번 저장에서 자동으로 제외됐어요:', droppedColumns);
+        }
+        console.log('[seon] Supabase(user_analytics)에 진단 데이터가 저장됐어요 ✅', JSON.stringify(dbPayload, null, 2));
         // 3) 저장 성공 시 관리자 대시보드를 실제 DB 기준으로 즉시 재조회 · 갱신
         await loadAnalyticsFromDB();
       }
@@ -3973,11 +4006,16 @@ async function togglePaidStatus(idx){
 
   if(supabaseClient && rec.id!=null){
     try{
-      const { error } = await supabaseClient.from(SUPABASE_TABLE).update({paid: rec.paid}).eq('id', rec.id);
-      if(error) console.error('[seon] 결제 상태 DB 반영 실패:', error.message);
-      else console.log('[seon] 결제 상태가 DB에도 반영됐어요 ✅', rec.dog_name, rec.paid);
+      // extra_data(JSON) 컬럼으로 통째로 갱신 시도 → 그 컬럼조차 없다면 구버전 평면 paid 컬럼으로 자동 폴백
+      const { error, finalFields } = await updateWithSchemaFallback(
+        SUPABASE_TABLE,
+        { extra_data: JSON.stringify(extractExtraData(rec)), paid: rec.paid },
+        'id', rec.id
+      );
+      if(error) console.error('[seon] 결제 상태 DB 반영 실패:', safeStringifyError(error));
+      else console.log('[seon] 결제 상태가 DB에도 반영됐어요 ✅', rec.dog_name, rec.paid, '(반영된 필드:', Object.keys(finalFields), ')');
     }catch(err){
-      console.error('[seon] 결제 상태 업데이트 중 오류:', err);
+      console.error('[seon] 결제 상태 업데이트 중 오류:', safeStringifyError(err));
     }
   } else {
     console.log('[seon] 로컬 전용 반영 (DB id가 없거나 Supabase 미연결) — CSV로만 확인 가능해요.');
@@ -4054,23 +4092,33 @@ async function loadAnalyticsFromDB(){
       console.error('CRITICAL_SELECT_ERROR:', JSON.stringify(error, null, 2));
     } else {
       dbStatus = 'loaded';
-      analyticsRecords = (data || []).slice().reverse().map(row=>({
-        dog_name: row.dog_name, breed: row.breed, weight: row.weight,
-        target_weight: row.target_weight, bcs: row.bcs, plan_type: row.plan_type,
-        created_at: row.created_at || new Date().toISOString(),
-        rer: numOrNull(row.rer), ibw: numOrNull(row.ibw), mer: numOrNull(row.mer),
-        daily_feed_g: numOrNull(row.daily_feed_g), treat_limit_kcal: numOrNull(row.treat_limit_kcal),
-        water_recommend_ml: numOrNull(row.water_recommend_ml),
-        protein_min_g: numOrNull(row.protein_min_g), protein_max_g: numOrNull(row.protein_max_g),
-        ratio_protein: numOrNull(row.ratio_protein), ratio_fat: numOrNull(row.ratio_fat), ratio_carb: numOrNull(row.ratio_carb),
-        food_brand: row.food_brand || '', dynamic_answers: row.dynamic_answers || '{}',
-        supplements: row.supplements || '[]', snacks: row.snacks || '{}',
-        ratio_food: numOrNull(row.ratio_food), ratio_supplement: numOrNull(row.ratio_supplement), ratio_snack: numOrNull(row.ratio_snack),
-        food_texture: row.food_texture || '', food_kcal_per_100g: numOrNull(row.food_kcal_per_100g),
-        id: row.id, age_year: numOrNull(row.age_year), age_month: numOrNull(row.age_month),
-        neutered: row.neutered ?? 'false', conditions: row.conditions || '[]', paid: !!row.paid,
-        feed_freq_current: numOrNull(row.feed_freq_current), feed_amount_current_g: numOrNull(row.feed_amount_current_g),
-      }));
+      analyticsRecords = (data || []).slice().reverse().map(row=>{
+        // extra_data(JSON 컬럼)를 우선 신뢰하고, 혹시 남아있을 수 있는 구버전 평면 컬럼을 보조 폴백으로 사용해요
+        let extra = {};
+        try{
+          extra = row.extra_data ? (typeof row.extra_data === 'string' ? JSON.parse(row.extra_data) : row.extra_data) : {};
+        }catch(e){ extra = {}; }
+        const pick = (key) => (extra[key] !== undefined && extra[key] !== null) ? extra[key] : row[key];
+
+        return {
+          dog_name: row.dog_name, breed: row.breed, weight: row.weight,
+          target_weight: row.target_weight, bcs: row.bcs, plan_type: row.plan_type,
+          created_at: row.created_at || new Date().toISOString(),
+          id: row.id,
+          rer: numOrNull(pick('rer')), ibw: numOrNull(pick('ibw')), mer: numOrNull(pick('mer')),
+          daily_feed_g: numOrNull(pick('daily_feed_g')), treat_limit_kcal: numOrNull(pick('treat_limit_kcal')),
+          water_recommend_ml: numOrNull(pick('water_recommend_ml')),
+          protein_min_g: numOrNull(pick('protein_min_g')), protein_max_g: numOrNull(pick('protein_max_g')),
+          ratio_protein: numOrNull(pick('ratio_protein')), ratio_fat: numOrNull(pick('ratio_fat')), ratio_carb: numOrNull(pick('ratio_carb')),
+          food_brand: pick('food_brand') || '', dynamic_answers: pick('dynamic_answers') || '{}',
+          supplements: pick('supplements') || '[]', snacks: pick('snacks') || '{}',
+          ratio_food: numOrNull(pick('ratio_food')), ratio_supplement: numOrNull(pick('ratio_supplement')), ratio_snack: numOrNull(pick('ratio_snack')),
+          food_texture: pick('food_texture') || '', food_kcal_per_100g: numOrNull(pick('food_kcal_per_100g')),
+          age_year: numOrNull(pick('age_year')), age_month: numOrNull(pick('age_month')),
+          neutered: pick('neutered') ?? 'false', conditions: pick('conditions') || '[]', paid: !!pick('paid'),
+          feed_freq_current: numOrNull(pick('feed_freq_current')), feed_amount_current_g: numOrNull(pick('feed_amount_current_g')),
+        };
+      });
       try{ localStorage.setItem(ANALYTICS_STORAGE_KEY, JSON.stringify(analyticsRecords)); }catch(e){}
     }
   }catch(err){
