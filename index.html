@@ -636,7 +636,6 @@
               <p id="bcsCardMessageText" class="text-center text-xs mb-4"></p>
               <div class="flex items-center justify-center gap-1.5 pt-3" style="border-top:1px dashed rgba(0,0,0,.15);">
                 <span id="bcsCardLogoText" class="font-display font-bold text-sm">seon</span>
-                <span style="color:#7A7069; font-size:10px;">· seon.pet (QR/URL)</span>
               </div>
               <div id="bcsStickerLayer"></div>
             </div>
@@ -4551,9 +4550,14 @@ function renderBcsCard(){
 
   const photoWrap = document.getElementById('bcsCardPhotoWrap');
   if(bcsTest.photoDataUrl){
-    photoWrap.innerHTML = `<img src="${bcsTest.photoDataUrl}" alt="${name}" class="w-full h-full object-cover">`;
-    photoWrap.style.background = '';
+    photoWrap.innerHTML = '';
+    photoWrap.style.background = 'none';
+    photoWrap.style.backgroundImage = `url("${bcsTest.photoDataUrl}")`;
+    photoWrap.style.backgroundSize = 'cover';
+    photoWrap.style.backgroundPosition = 'center';
+    photoWrap.style.backgroundRepeat = 'no-repeat';
   } else {
+    photoWrap.style.backgroundImage = '';
     photoWrap.innerHTML = `<span>🐶</span>`;
     photoWrap.style.background = '#F4EEE6'; // 고정 Hex — html2canvas 파싱 오류 방지
   }
