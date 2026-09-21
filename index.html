@@ -109,9 +109,8 @@
 
   /* ---- 멍생스컷 BCS 카드 프레임 ---- */
   #bcsCard{ transition:background .25s ease, border-color .25s ease; }
-  #bcsCard.frame-normal{ background:linear-gradient(160deg, var(--c-mint-light), var(--c-primary-light)); border:3px solid var(--c-mint); }
-  #bcsCard.frame-care{ background:linear-gradient(160deg, #FFF3D6, var(--c-primary-light)); border:3px dashed #F2C14E; }
-  :root[data-theme="dark"] #bcsCard.frame-care{ background:linear-gradient(160deg, #3a2f12, var(--c-primary-light)); }
+  #bcsCard.frame-normal{ background:linear-gradient(160deg, #DCF6EF, #FFE7D6); border:3px solid #2FBF9F; }
+  #bcsCard.frame-care{ background:linear-gradient(160deg, #FFF3D6, #FFE7D6); border:3px dashed #F2C14E; }
 
   /* ---- 멍생스컷 스티커 꾸미기 ---- */
   #bcsCard{ position:relative; }
@@ -636,8 +635,8 @@
               <p id="bcsCardResultText" class="text-center font-display font-bold text-base mb-1"></p>
               <p id="bcsCardMessageText" class="text-center text-xs mb-4"></p>
               <div class="flex items-center justify-center gap-1.5 pt-3" style="border-top:1px dashed rgba(0,0,0,.15);">
-                <span class="font-display font-bold text-sm" style="color:var(--c-primary);">seon</span>
-                <span class="text-[10px] text-muted">· seon.pet (QR/URL)</span>
+                <span id="bcsCardLogoText" class="font-display font-bold text-sm">seon</span>
+                <span style="color:#7A7069; font-size:10px;">· seon.pet (QR/URL)</span>
               </div>
               <div id="bcsStickerLayer"></div>
             </div>
@@ -668,7 +667,6 @@
 
           <div class="space-y-2 max-w-lg mx-auto">
             <button type="button" id="bcsSaveImgBtn" class="btn-primary w-full rounded-xl py-3 text-sm">💾 멍생스컷 이미지 저장하기</button>
-            <button type="button" id="bcsShareBtn" class="btn-ghost w-full rounded-xl py-3 text-sm">🔗 SNS 공유하기</button>
             <button type="button" id="bcsGoDiagnosisBtn" class="w-full rounded-xl py-3 text-sm font-bold text-white" style="background:var(--c-mint);">🐾 우리 아이 정밀 무료 진단받기</button>
           </div>
         </div>
@@ -4536,6 +4534,15 @@ function updateBcsFramePreview(){
   el.style.color = isNormal ? 'var(--c-mint)' : '#D89A1E';
 }
 
+function getSafeHexColor(varName, fallback){
+  try{
+    const val = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+    // color-mix()/oklch() 등 html2canvas가 파싱하지 못하는 복합 색상 함수는 걸러내고, 순수 hex/rgb만 신뢰해요
+    if(/^#[0-9a-fA-F]{3,8}$/.test(val) || /^rgb/i.test(val)) return val;
+  }catch(err){ /* 무시하고 폴백 사용 */ }
+  return fallback;
+}
+
 function renderBcsCard(){
   const isNormal = bcsTest.result===4 || bcsTest.result===5;
   const name = bcsTest.name || '우리 아이';
@@ -4545,15 +4552,23 @@ function renderBcsCard(){
   const photoWrap = document.getElementById('bcsCardPhotoWrap');
   if(bcsTest.photoDataUrl){
     photoWrap.innerHTML = `<img src="${bcsTest.photoDataUrl}" alt="${name}" class="w-full h-full object-cover">`;
+    photoWrap.style.background = '';
   } else {
     photoWrap.innerHTML = `<span>🐶</span>`;
-    photoWrap.style.background = 'var(--surface-2)';
+    photoWrap.style.background = '#F4EEE6'; // 고정 Hex — html2canvas 파싱 오류 방지
   }
 
-  document.getElementById('bcsCardResultText').textContent = `[${name}]의 BCS 결과: ${bcsTest.result}단계 (${isNormal?'정상':'관리 필요'})`;
-  document.getElementById('bcsCardMessageText').textContent = isNormal
+  const resultEl = document.getElementById('bcsCardResultText');
+  const messageEl = document.getElementById('bcsCardMessageText');
+  resultEl.textContent = `[${name}]의 BCS 결과: ${bcsTest.result}단계 (${isNormal?'정상':'관리 필요'})`;
+  resultEl.style.color = '#2B2420'; // 고정 Hex
+  messageEl.textContent = isNormal
     ? '완벽한 황금 비율 댕댕이! 지금 컨디션을 잘 유지해주세요 🎉'
     : '통통해서 더 귀여워, 지금부터 함께 케어 시작해봐요 💪';
+  messageEl.style.color = '#7A7069'; // 고정 Hex
+
+  // seon 로고 컬러: 관리자 브랜드 컬러(순수 hex/rgb인 경우)를 우선 반영하되, color-mix 등 복합 함수라면 안전한 기본값으로 대체
+  document.getElementById('bcsCardLogoText').style.color = getSafeHexColor('--c-primary', '#F97A3D');
 }
 
 function initBcsTestPage(){
@@ -4595,7 +4610,6 @@ function initBcsTestPage(){
 
   document.getElementById('bcsStickerResetBtn').addEventListener('click', resetStickers);
   document.getElementById('bcsSaveImgBtn').addEventListener('click', saveBcsCardImage);
-  document.getElementById('bcsShareBtn').addEventListener('click', shareBcsCard);
   document.getElementById('bcsGoDiagnosisBtn').addEventListener('click', ()=>{
     switchMainTab('home');
     goToDiagnosisForm();
@@ -4659,8 +4673,8 @@ function renderStickerLayer(){
   layer.innerHTML = bcsTest.stickers.map(s=>`
     <div class="bcs-sticker ${s.kind==='text'?'is-text':''}" data-id="${s.id}" style="left:${s.x}%; top:${s.y}%;">
       <div class="bcs-sticker-content" style="transform:scale(${s.scale});">${s.content}</div>
-      <button type="button" class="bcs-sticker-delete" data-id="${s.id}">×</button>
-      <div class="bcs-sticker-resize" data-id="${s.id}"></div>
+      <button type="button" class="bcs-sticker-delete" data-id="${s.id}" data-html2canvas-ignore="true">×</button>
+      <div class="bcs-sticker-resize" data-id="${s.id}" data-html2canvas-ignore="true"></div>
     </div>
   `).join('');
 }
@@ -4736,42 +4750,29 @@ function startStickerResize(e, id){
   window.addEventListener('pointerup', onUp);
 }
 
-function saveBcsCardImage(){
-  if(typeof html2canvas === 'undefined'){ alert('이미지 저장 기능을 불러오지 못했어요. 잠시 후 다시 시도해주세요.'); return; }
+async function saveBcsCardImage(){
   const card = document.getElementById('bcsCard');
-  card.classList.add('capturing'); // 캡처 중에는 스티커의 삭제(X)/리사이즈 핸들을 숨겨요
-  html2canvas(card, {backgroundColor:null, scale:2}).then(canvas=>{
-    card.classList.remove('capturing');
+  if(!card) return;
+  if(typeof html2canvas === 'undefined'){ alert('이미지 저장 기능을 불러오지 못했어요. 잠시 후 다시 시도해주세요.'); return; }
+  const dogName = bcsTest.name || '멍생스컷';
+
+  card.classList.add('capturing'); // 캡처 중에는 스티커의 삭제(X)/리사이즈 핸들 등 편집용 UI를 숨겨요 (data-html2canvas-ignore와 이중 안전장치)
+  try{
+    const canvas = await html2canvas(card, {
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: null,
+      scale: 2,
+    });
     const link = document.createElement('a');
-    link.download = `멍생스컷-${bcsTest.name||'우리아이'}.png`;
+    link.download = `${dogName}_BCS_결과.png`;
     link.href = canvas.toDataURL('image/png');
     link.click();
-  }).catch(()=>{
+  }catch(err){
+    console.error(err);
+    alert('이미지 저장 중 오류가 발생했습니다. 다시 시도해 주세요.');
+  }finally{
     card.classList.remove('capturing');
-    alert('이미지 저장에 실패했어요. 다시 시도해주세요.');
-  });
-}
-
-function shareBcsCard(){
-  const shareText = `[${bcsTest.name||'우리 아이'}]의 멍생스컷 BCS 결과: ${bcsTest.result}단계! seon에서 우리 아이 맞춤 건강 리포트도 받아보세요.`;
-  if(navigator.share){
-    navigator.share({title:'멍생스컷 BCS 결과', text:shareText}).catch(()=>{});
-    return;
-  }
-  const showCopyGuide = ()=>{
-    mountModal(`
-      <p class="text-xs font-bold text-primary-dark mb-1">SNS 공유하기</p>
-      <h3 class="font-display text-xl font-bold mb-3">공유 문구가 복사됐어요!</h3>
-      <div class="surface-2 rounded-xl p-3 mb-4 text-xs text-muted">${shareText}</div>
-      <p class="text-xs text-muted mb-5">인스타그램 스토리에 공유하려면, 먼저 [💾 이미지 저장하기]로 카드를 저장한 뒤 스토리 업로드 화면에서 사진을 선택해주세요.</p>
-      <button id="bcsShareCloseBtn" class="btn-primary w-full rounded-xl py-3 text-sm">확인</button>
-    `);
-    document.getElementById('bcsShareCloseBtn').addEventListener('click', closeModal);
-  };
-  if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(shareText).then(showCopyGuide).catch(showCopyGuide);
-  } else {
-    fallbackCopy(shareText, showCopyGuide, showCopyGuide);
   }
 }
 
