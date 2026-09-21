@@ -928,15 +928,15 @@ let charts = {};
 const BREEDS = ["말티즈","토이/미니어처 푸들","포메라니안","치와와","시츄","비숑프리제","요크셔테리어","닥스훈트","웰시코기","골든리트리버","래브라도리트리버","시베리안허스키","진돗개","프렌치불독","잭러셀테리어","코카스파니엘","사모예드","보더콜리","비글","믹스견","직접입력"];
 
 const BCS_INFO = [
-  {label:"매우 마름", tone:"#5B9BD5"},
-  {label:"마름", tone:"#6FB1DD"},
-  {label:"약간 마름", tone:"#7FC7C0"},
-  {label:"다소 이상적", tone:"#6FCBA6"},
-  {label:"이상적", tone:"#2FBF9F"},
-  {label:"약간 과체중", tone:"#F2C14E"},
-  {label:"과체중", tone:"#F0A54E"},
-  {label:"비만", tone:"#EF7F4E"},
-  {label:"고도비만", tone:"#E15C4E"},
+  {label:"매우 마름", tone:"#5B9BD5", insight:"갈비뼈·척추·골반이 육안으로도 드러나며 근육량이 매우 부족한 상태예요."},
+  {label:"마름", tone:"#6FB1DD", insight:"갈비뼈가 쉽게 만져지고 위에서 보면 허리가 뚜렷하게 잘록해요."},
+  {label:"약간 마름", tone:"#7FC7C0", insight:"갈비뼈가 얇은 지방층 아래로 쉽게 만져지고 허리 라인이 뚜렷해요."},
+  {label:"다소 이상적", tone:"#6FCBA6", insight:"갈비뼈가 최소한의 지방으로 덮여 있고 위에서 보면 허리가 자연스럽게 들어가요."},
+  {label:"이상적", tone:"#2FBF9F", insight:"갈비뼈가 살짝의 지방 아래로 부드럽게 만져지고 허리 곡선이 균형 잡혀 있어요."},
+  {label:"약간 과체중", tone:"#F2C14E", insight:"갈비뼈가 쉽게 만져지지 않으며 위에서 보았을 때 허리 곡선이 다소 둔화된 상태예요."},
+  {label:"과체중", tone:"#F0A54E", insight:"갈비뼈를 만지려면 힘을 줘야 하고 허리 라인이 거의 보이지 않아요."},
+  {label:"비만", tone:"#EF7F4E", insight:"갈비뼈가 두꺼운 지방층에 덮여 잘 만져지지 않고 배가 처져 있어요."},
+  {label:"고도비만", tone:"#E15C4E", insight:"갈비뼈·척추가 두꺼운 지방으로 덮여 전혀 만져지지 않고 복부가 크게 늘어져 있어요."},
 ];
 
 /* Top-down(위에서 본) 체형 실루엣 기준 폭 데이터 — 갈비뼈/허리/엉덩이 반폭(half-width) */
@@ -2914,12 +2914,31 @@ function nutritionReportHtml(r){
     <!-- SECTION 2: BCS 비주얼 카드 -->
     <div class="surface rounded-[var(--radius-card)] p-6">
       <p class="font-bold mb-3 flex items-center gap-1.5">${icon('scale')} BCS 체형 카드</p>
-      <div class="flex items-center gap-4">
-        <div class="shrink-0">${bcsSilhouette(dog.bcs, 56)}</div>
+      <div class="grid sm:grid-cols-2 gap-5 items-center">
+        <div class="flex items-center gap-4">
+          <div class="shrink-0">${bcsSilhouette(dog.bcs, 56)}</div>
+          <div>
+            <p class="font-display font-bold text-2xl">BCS ${dog.bcs}<span class="text-sm font-medium text-muted"> / 9</span></p>
+            <p class="text-xs font-semibold" style="color:${BCS_INFO[dog.bcs-1].tone};">${BCS_INFO[dog.bcs-1].label}</p>
+            <p class="text-xs text-muted mt-1">목표 체중까지 ${weightDiff}kg ${weightDiffLabel}</p>
+          </div>
+        </div>
         <div>
-          <p class="font-display font-bold text-2xl">BCS ${dog.bcs}<span class="text-sm font-medium text-muted"> / 9</span></p>
-          <p class="text-xs font-semibold" style="color:${BCS_INFO[dog.bcs-1].tone};">${BCS_INFO[dog.bcs-1].label}</p>
-          <p class="text-xs text-muted mt-1">목표 체중까지 ${weightDiff}kg ${weightDiffLabel}</p>
+          <div class="flex items-center gap-1 mb-2">
+            ${Array.from({length:9}, (_,i)=>{
+              const n = i+1;
+              const isActive = n === dog.bcs;
+              const bg = n <= dog.bcs ? BCS_INFO[dog.bcs-1].tone : 'var(--surface-2)';
+              return `
+              <div class="flex-1 text-center">
+                <div style="height:10px; border-radius:5px; background:${bg}; ${isActive ? 'box-shadow:0 0 0 2px '+BCS_INFO[dog.bcs-1].tone+'55;' : ''}"></div>
+                <p class="text-[9px] mt-1 ${isActive ? 'font-bold' : 'text-muted'}" style="${isActive?'color:'+BCS_INFO[dog.bcs-1].tone+';':''}">${n}</p>
+              </div>`;
+            }).join('')}
+          </div>
+          <div class="tooltip-box p-3">
+            <p class="text-xs text-muted leading-relaxed">💡 ${BCS_INFO[dog.bcs-1].insight}</p>
+          </div>
         </div>
       </div>
     </div>
