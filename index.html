@@ -280,8 +280,85 @@
 
   <main class="mx-auto container-px px-4 pb-32 pt-6" style="max-width:var(--max-w-site);">
 
+    <!-- ===================== LANDING SECTION ===================== -->
+    <section id="landingSection">
+
+      <!-- HERO -->
+      <div class="text-center py-10 sm:py-20">
+        <div class="inline-flex items-center gap-1.5 bg-primary-light text-primary-dark text-xs font-bold px-3 py-1.5 rounded-full mb-5">
+          <span>🐾</span><span>수의영양학 기반 맞춤 케어 플랫폼</span>
+        </div>
+        <h1 class="font-display font-bold mb-4" style="font-size:clamp(1.7rem,5vw,3rem); line-height:1.3;">
+          우리 아이 건강 상태,<br class="hidden sm:block">
+          수의영양학 맞춤 데이터로<br class="hidden sm:block">
+          한눈에
+        </h1>
+        <p class="text-muted text-sm sm:text-base max-w-lg mx-auto mb-9 leading-relaxed">
+          사료 성분 분석부터 12주 케어 타임라인까지,<br class="hidden sm:block">
+          3분 만에 받는 반려동물 맞춤 영양 리포트
+        </p>
+        <button type="button" class="landing-cta-btn btn-primary rounded-2xl px-7 py-4 text-sm sm:text-base font-bold inline-flex items-center gap-2">
+          🐾 3분 만에 무료 건강 리포트 받기
+        </button>
+      </div>
+
+      <!-- PREVIEW DEMO -->
+      <div class="mb-16 sm:mb-24">
+        <p class="text-center font-display font-bold text-xl sm:text-2xl mb-2">진단 완료 후 이런 정밀 리포트를 받게 돼요</p>
+        <p class="text-center text-muted text-sm mb-8">카드를 눌러 실제 리포트 예시를 미리 확인해보세요</p>
+        <div class="grid sm:grid-cols-3 gap-4">
+          <button type="button" class="demo-preview-card surface rounded-2xl p-5 text-left transition hover:-translate-y-1" data-demo="basic">
+            <span class="text-3xl mb-3 block">📄</span>
+            <p class="font-bold text-sm mb-1.5">기본 리포트</p>
+            <p class="text-xs text-muted leading-relaxed">하루 적정 급여량(g), 칼로리 계산, 맞춤 간식 가이드</p>
+            <p class="text-[11px] font-semibold text-primary-dark mt-3">미리보기 →</p>
+          </button>
+          <button type="button" class="demo-preview-card surface rounded-2xl p-5 text-left transition hover:-translate-y-1" data-demo="dm">
+            <span class="text-3xl mb-3 block">📊</span>
+            <p class="font-bold text-sm mb-1.5">1:1 DM 영양 분석표</p>
+            <p class="text-xs text-muted leading-relaxed">급여 중인 사료·영양제 수의학적 성분 분해 및 비율 검증</p>
+            <p class="text-[11px] font-semibold text-primary-dark mt-3">미리보기 →</p>
+          </button>
+          <button type="button" class="demo-preview-card surface rounded-2xl p-5 text-left transition hover:-translate-y-1" data-demo="clinical">
+            <span class="text-3xl mb-3 block">🏥</span>
+            <p class="font-bold text-sm mb-1.5">메디컬 서머리</p>
+            <p class="text-xs text-muted leading-relaxed">병원 제출용 1장 종합 소견서 &amp; 12주 예측 곡선</p>
+            <p class="text-[11px] font-semibold text-primary-dark mt-3">미리보기 →</p>
+          </button>
+        </div>
+      </div>
+
+      <!-- WHY SEON -->
+      <div class="mb-16 sm:mb-24">
+        <p class="text-center font-display font-bold text-xl sm:text-2xl mb-8">Why seon?</p>
+        <div class="grid sm:grid-cols-3 gap-4">
+          <div class="surface-2 rounded-2xl p-5">
+            <p class="text-2xl mb-3">🧮</p>
+            <p class="font-bold text-sm mb-1.5">정밀 수의영양학 공식 연산</p>
+            <p class="text-xs text-muted leading-relaxed">단순 계산이 아닌 RER/MER 및 DM(Dry Matter) 기준 정밀 분석으로 계산해요.</p>
+          </div>
+          <div class="surface-2 rounded-2xl p-5">
+            <p class="text-2xl mb-3">🏷️</p>
+            <p class="font-bold text-sm mb-1.5">먹이는 브랜드 1:1 라벨 분석</p>
+            <p class="text-xs text-muted leading-relaxed">사료·영양제 브랜드의 성분 과다·상충을 자동으로 체크해드려요.</p>
+          </div>
+          <div class="surface-2 rounded-2xl p-5">
+            <p class="text-2xl mb-3">🏥</p>
+            <p class="font-bold text-sm mb-1.5">동물병원 연계 서머리</p>
+            <p class="text-xs text-muted leading-relaxed">수의사 상담 시 바로 보여줄 수 있는 메디컬 서머리를 제공해요.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOTTOM CTA -->
+      <div class="rounded-[var(--radius-card)] p-8 sm:p-12 text-center bg-primary-light">
+        <p class="font-display font-bold text-lg sm:text-xl mb-6 leading-relaxed">지금 바로 우리 아이만을 위한<br class="sm:hidden"> 맞춤 케어 플랜을 시작해보세요.</p>
+        <button type="button" class="landing-cta-btn btn-primary rounded-2xl px-7 py-4 text-sm sm:text-base font-bold">무료 맞춤 진단 시작하기</button>
+      </div>
+    </section>
+
     <!-- ===================== FORM SECTION ===================== -->
-    <section id="formSection">
+    <section id="formSection" class="hidden">
 
       <div class="flex items-center justify-center gap-2 mb-7" id="stepDots"></div>
 
@@ -1029,6 +1106,10 @@ function init(){
   document.getElementById('nextBtn').addEventListener('click', onNext);
   updateStepView();
 
+  // ---- 랜딩 페이지: 진단 시작 CTA & 리포트 데모 미리보기 ----
+  document.querySelectorAll('.landing-cta-btn').forEach(b=>b.addEventListener('click', goToDiagnosisForm));
+  document.querySelectorAll('.demo-preview-card').forEach(b=>b.addEventListener('click', ()=>openDemoPreviewModal(b.dataset.demo)));
+
   // ---- 유저 뷰포트 컨트롤 (방문자용) ----
   document.getElementById('fontMinusBtn').addEventListener('click', ()=>stepFontScale(-1));
   document.getElementById('fontPlusBtn').addEventListener('click', ()=>stepFontScale(1));
@@ -1447,6 +1528,14 @@ function resetDiagnosisForm(){
   currentStep = 1;
   updateStepView();
 }
+function goToDiagnosisForm(){
+  document.getElementById('landingSection').classList.add('hidden');
+  document.getElementById('formSection').classList.remove('hidden');
+  currentStep = 1;
+  updateStepView();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
 function goStep(n){
   if(n<1) return;
   currentStep = n;
@@ -2680,6 +2769,66 @@ function mountModal(html, wide){
   document.getElementById('modalRoot').innerHTML = modalShell(html, wide);
   document.getElementById('modalOverlay').addEventListener('click', e=>{ if(e.target.id==='modalOverlay') closeModal(); });
   document.getElementById('modalCloseBtn').addEventListener('click', closeModal);
+}
+
+/* ---- 랜딩 페이지: 리포트 데모 미리보기 (예시 데이터, 실제 계산과 무관) ---- */
+const DEMO_PREVIEW_CONTENT = {
+  basic: () => `
+    <p class="text-xs font-bold text-primary-dark mb-1">DEMO PREVIEW</p>
+    <h3 class="font-display text-xl font-bold mb-4">📄 기본 리포트 예시</h3>
+    <div class="grid grid-cols-2 gap-3 mb-4">
+      ${metricCard('일일 급여량', '92<span class="text-base font-medium"> g</span>', '하루 총량 기준', 'bone')}
+      ${metricCard('일일 권장 칼로리', '320<span class="text-base font-medium"> kcal</span>', 'MER 기준', 'flame')}
+      ${metricCard('간식 한도', '32<span class="text-base font-medium"> kcal</span>', 'MER의 10% 이내', 'cookie')}
+      ${metricCard('권장 음수량', '300<span class="text-base font-medium"> ml</span>', 'RER 1:1 대응', 'droplet')}
+    </div>
+    <p class="text-xs text-muted">* 위 수치는 예시예요. 실제 리포트는 우리 아이의 체중·BCS·케어플랜에 맞춰 정밀하게 계산돼요.</p>
+  `,
+  dm: () => `
+    <p class="text-xs font-bold text-primary-dark mb-1">DEMO PREVIEW</p>
+    <h3 class="font-display text-xl font-bold mb-4">📊 1:1 DM 영양 분석표 예시</h3>
+    <table class="w-full text-xs mb-3" style="border-collapse:collapse;">
+      <thead><tr style="border-bottom:2px solid var(--text);">
+        <th class="text-left py-2">성분</th><th class="text-right py-2">As-Fed</th><th class="text-right py-2">DM</th><th class="text-right py-2">플랜 권장</th>
+      </tr></thead>
+      <tbody>
+        ${[['조단백','25.2%','28%','30%'],['조지방','14.4%','16%','12%'],['조섬유','3.2%','3.5%','3~5%'],['칼슘:인 비율','1.25 : 1','1.25 : 1','1.1~1.4 : 1']].map(([a,b,c,d])=>`
+          <tr class="border-token" style="border-bottom:1px solid var(--border);"><td class="py-1.5">${a}</td><td class="text-right py-1.5">${b}</td><td class="text-right py-1.5 font-bold">${c}</td><td class="text-right py-1.5 text-muted">${d}</td></tr>
+        `).join('')}
+      </tbody>
+    </table>
+    <p class="text-xs text-muted">급여 중인 사료·영양제의 실제 성분을 우리 아이 플랜 권장치와 1:1로 비교해드려요. (위 수치는 예시예요)</p>
+  `,
+  clinical: () => `
+    <p class="text-xs font-bold text-primary-dark mb-1">DEMO PREVIEW</p>
+    <h3 class="font-display text-xl font-bold mb-4">🏥 메디컬 서머리 예시</h3>
+    <table class="w-full text-xs mb-3" style="border-collapse:collapse;">
+      <tbody>
+        <tr style="border-bottom:1px solid var(--border);"><td class="py-2 font-semibold w-1/3">환자(Signalment)</td><td class="py-2">초코 · 말티즈 · 3세 · 중성화 완료</td></tr>
+        <tr style="border-bottom:1px solid var(--border);"><td class="py-2 font-semibold">체중 / BCS</td><td class="py-2">8.5kg → 목표 7.0kg · BCS 7/9</td></tr>
+        <tr style="border-bottom:1px solid var(--border);"><td class="py-2 font-semibold">에너지 요구량</td><td class="py-2">RER 349kcal · MER 296kcal</td></tr>
+        <tr><td class="py-2 font-semibold">모니터링 권고</td><td class="py-2">2~4주 간격 체중 재측정 및 BCS 재평가</td></tr>
+      </tbody>
+    </table>
+    <div class="tooltip-box p-3 mb-3">
+      <p class="text-xs font-semibold mb-2">📈 12주 체중 변화 예측 (예시)</p>
+      <div class="flex items-end gap-1" style="height:50px;">
+        ${[8.5,8.3,8.1,7.9,7.7,7.5,7.3,7.2,7.1,7.05,7.0,7.0,7.0].map(v=>{
+          const h = Math.round((v-6.8)/(8.5-6.8)*100);
+          return `<div style="width:7%; height:${Math.max(h,8)}%; background:var(--c-primary); border-radius:3px 3px 0 0;"></div>`;
+        }).join('')}
+      </div>
+    </div>
+    <p class="text-xs text-muted">동물병원 방문 시 그대로 제출할 수 있는 1장짜리 정식 서머리를 제공해드려요. (위 수치는 예시예요)</p>
+  `,
+};
+function openDemoPreviewModal(type){
+  const builder = DEMO_PREVIEW_CONTENT[type] || DEMO_PREVIEW_CONTENT.basic;
+  mountModal(`
+    ${builder()}
+    <button id="demoPreviewStartBtn" class="btn-primary w-full rounded-xl py-3 text-sm mt-2">🐾 우리 아이 진단 시작하기</button>
+  `, true);
+  document.getElementById('demoPreviewStartBtn').addEventListener('click', ()=>{ closeModal(); goToDiagnosisForm(); });
 }
 
 function openIngredientModal(item){
