@@ -346,15 +346,68 @@
         </button>
       </div>
 
-      <!-- PREVIEW DEMO -->
+      <!-- PREVIEW DEMO: 무료 vs 유료 비교 -->
       <div class="mb-16 sm:mb-24">
-        <p class="text-center font-display font-bold text-xl sm:text-2xl mb-2">진단 완료 후 이런 정밀 리포트를 받게 돼요</p>
-        <p class="text-center text-muted text-sm mb-8">카드를 눌러 실제 리포트 예시를 미리 확인해보세요</p>
+        <p class="text-center font-display font-bold text-xl sm:text-2xl mb-2">무료로 시작해서, 프리미엄으로 완성하세요</p>
+        <p class="text-center text-muted text-sm mb-8">두 리포트의 차이를 미리 확인해보세요</p>
+
+        <div class="grid sm:grid-cols-2 gap-5 mb-8">
+          <!-- FREE CARD -->
+          <div class="surface rounded-2xl p-6 border-2" style="border-color:#2FBF9F3a;">
+            <span class="text-[11px] font-bold text-mint bg-mint-light px-2.5 py-1 rounded-full">🟢 무료</span>
+            <p class="font-display font-bold text-lg mt-3 mb-1 leading-snug">한눈에 파악하는<br>아이의 건강 신호등</p>
+            <p class="text-xs text-muted mb-4">3분 진단으로 바로 받아보는 비주얼 리포트</p>
+            <div class="space-y-2 mb-5">
+              <p class="text-xs text-muted">✨ 100점 만점 시각화 게이지 &amp; 5각 헬스 레이더 차트</p>
+              <p class="text-xs text-muted">🚦 3단계 건강 신호등 지표 (양호 / 주의 / 경고)</p>
+              <p class="text-xs text-muted">🐾 BCS 체형 분석 비주얼 카드 &amp; 한 줄 가이드</p>
+              <p class="text-xs text-muted">🥗 권장 일일 칼로리 및 맞춤 추천 사료 2~3종</p>
+            </div>
+            <button type="button" class="landing-cta-btn btn-primary w-full rounded-xl py-3 text-sm font-bold">무료 진단 시작하고 비주얼 리포트 받기</button>
+          </div>
+
+          <!-- PREMIUM CARD -->
+          <div class="rounded-2xl p-6 border-2 relative" style="border-color:#F97A3D55; background:linear-gradient(160deg,#2B241F,#4A3F38);">
+            <span class="text-[11px] font-bold px-2.5 py-1 rounded-full" style="background:#F97A3D; color:#fff;">🟡 유료</span>
+            <p class="font-display font-bold text-lg mt-3 mb-1 leading-snug" style="color:#fff;">수의학 데이터 기반<br>1:1 정밀 케어 솔루션</p>
+            <p class="text-xs mb-4" style="color:rgba(255,255,255,.55);">8페이지 프리미엄 리포트로 완성하는 맞춤 케어</p>
+            <div class="space-y-2 mb-4">
+              <p class="text-xs" style="color:rgba(255,255,255,.85);">📊 정밀 칼로리·영양소 계산서 (1g 단위 급여 스케줄)</p>
+              <p class="text-xs" style="color:rgba(255,255,255,.85);">🔍 급여 사료·영양제 교차 적합도 평가</p>
+              <p class="text-xs" style="color:rgba(255,255,255,.85);">🍲 임상 징후별 1:1 맞춤 화식·수제식 레시피</p>
+              <p class="text-xs" style="color:rgba(255,255,255,.85);">📋 28일 케어 캘린더 &amp; 수의 진료용 예진 서머리</p>
+            </div>
+
+            <!-- 블러 & 잠금 티저 -->
+            <div class="rounded-xl p-4 mb-4" style="background:rgba(255,255,255,.07);">
+              <p class="text-[10px] mb-2" style="color:rgba(255,255,255,.45);">🔒 정밀 리포트 미리보기</p>
+              <div class="relative">
+                <p class="text-sm font-bold" style="color:#fff; filter:blur(5px); user-select:none;">일일 급여량 62.4g · 간식 한도 18.2kcal · 관절 영양제 적합도 92%</p>
+                <div class="absolute inset-0 flex items-center justify-center text-xl">🔒</div>
+              </div>
+            </div>
+
+            <button type="button" id="premiumSampleBtn" class="w-full rounded-xl py-3 text-sm font-bold" style="background:#F97A3D; color:#fff;">⭐ 프리미엄 1:1 정밀 리포트 샘플 보기</button>
+            <p class="text-[11px] mt-2 text-center" style="color:rgba(255,255,255,.5);">런칭 프로모션 <span id="landingPromoPrice"></span> (정가 <span id="landingOriginalPrice"></span>)</p>
+          </div>
+        </div>
+
+        <!-- 추천 태그 -->
+        <div class="mb-10">
+          <p class="text-center text-xs font-bold text-muted mb-3">이런 분들께 유료 리포트를 추천해요</p>
+          <div class="flex flex-wrap justify-center gap-2">
+            <span class="text-xs font-medium px-3 py-1.5 rounded-full surface-2">사료 급여량을 g 단위로 정확히 계산하고 싶으신 분</span>
+            <span class="text-xs font-medium px-3 py-1.5 rounded-full surface-2">먹이는 영양제와 사료가 아이에게 맞는지 궁금하신 분</span>
+            <span class="text-xs font-medium px-3 py-1.5 rounded-full surface-2">병원 방문 전 예진 자료가 필요하신 분</span>
+          </div>
+        </div>
+
+        <p class="text-center text-xs font-bold text-muted mb-4">더 자세히 미리보기</p>
         <div class="grid sm:grid-cols-3 gap-4">
           <button type="button" class="demo-preview-card surface rounded-2xl p-5 text-left transition hover:-translate-y-1" data-demo="basic">
             <span class="text-3xl mb-3 block">📄</span>
             <p class="font-bold text-sm mb-1.5">기본 리포트</p>
-            <p class="text-xs text-muted leading-relaxed">우리 아이 맞춤 하루 권장 급여량(g), 칼로리, 음수량, 간식 한도 안내</p>
+            <p class="text-xs text-muted leading-relaxed">한눈에 파악하는 100점 만점 건강 스코어 &amp; 5각 케어 차트</p>
             <p class="text-[11px] font-semibold text-primary-dark mt-3">미리보기 →</p>
           </button>
           <button type="button" class="demo-preview-card surface rounded-2xl p-5 text-left transition hover:-translate-y-1" data-demo="premium">
@@ -1193,7 +1246,7 @@ function ensureGoogleFont(fontId){
 
 const SECTION_LABELS = {
   nutritionReport:"맞춤 영양 리포트 (6단계)",
-  metrics:"핵심 지표", calcBasis:"계산 근거", macro:"영양소 비율", proteinWater:"단백질·음수량",
+  metrics:"핵심 지표", calcBasis:"계산 근거 (프리미엄 전용)", macro:"영양소 비율 (프리미엄 전용)", proteinWater:"단백질·음수량",
   chart:"체중 예측 차트", transition:"사료 전환 스케줄", guide:"플랜·질환 가이드",
   veggie:"야채 간식 환산기", affiliate:"제휴 큐레이션", premium:"프리미엄 안내", challenge:"28일 챌린지",
 };
@@ -1203,7 +1256,10 @@ const DEFAULT_ADMIN = {
   colors:{primary:"#F97A3D", mint:"#2FBF9F", surfaceLight:"#FBF7F2", surfaceDark:"#181410"},
   typography:{family:"notosans", baseFontSize:16, letterSpacing:0, lineHeight:1.5},
   layout:{headerMode:"fixed", maxWidth:1024, gap:24, radius:20},
-  sections: Object.keys(SECTION_LABELS).map(id=>({id, label:SECTION_LABELS[id], visible:true})),
+  sections: Object.keys(SECTION_LABELS).map(id=>({
+    id, label:SECTION_LABELS[id],
+    visible: (id==='calcBasis' || id==='macro') ? false : true, // 정밀 계산근거·DM 영양소비율은 프리미엄 전용 → 기본 리포트 기본값 OFF
+  })),
 };
 let adminSettings = JSON.parse(JSON.stringify(DEFAULT_ADMIN));
 const ADMIN_STORAGE_KEY = 'seonAdminStudioSettings';
@@ -1367,6 +1423,11 @@ function init(){
   // ---- 랜딩 페이지: 진단 시작 CTA & 리포트 데모 미리보기 ----
   document.querySelectorAll('.landing-cta-btn').forEach(b=>b.addEventListener('click', goToDiagnosisForm));
   document.querySelectorAll('.demo-preview-card').forEach(b=>b.addEventListener('click', ()=>openDemoPreviewModal(b.dataset.demo)));
+  document.getElementById('premiumSampleBtn')?.addEventListener('click', ()=>openDemoPreviewModal('premium'));
+  const landingPromoEl = document.getElementById('landingPromoPrice');
+  const landingOriginalEl = document.getElementById('landingOriginalPrice');
+  if(landingPromoEl) landingPromoEl.textContent = PDF_PROMO_PRICE;
+  if(landingOriginalEl) landingOriginalEl.textContent = PDF_ORIGINAL_PRICE;
 
   // ---- 유저 뷰포트 컨트롤 (방문자용) ----
   document.getElementById('fontMinusBtn').addEventListener('click', ()=>stepFontScale(-1));
@@ -2828,12 +2889,13 @@ function computeRadarScores(r){
     values: [weightMgmt, activity, nutriBalance, snackMgmt, routineCare].map(v=>Math.round(v)),
   };
 }
-let freeReportRadarChartInstance = null;
-function drawFreeReportRadarChart(scores){
-  const canvas = document.getElementById('freeReportRadarChart');
+const radarChartInstances = {}; // canvasId → Chart 인스턴스 (대시보드/모달 등 여러 곳에서 독립적으로 재사용)
+function drawFreeReportRadarChart(scores, canvasId){
+  const id = canvasId || 'freeReportRadarChart';
+  const canvas = document.getElementById(id);
   if(!canvas || typeof Chart === 'undefined') return;
-  if(freeReportRadarChartInstance){ freeReportRadarChartInstance.destroy(); freeReportRadarChartInstance = null; }
-  freeReportRadarChartInstance = new Chart(canvas, {
+  if(radarChartInstances[id]){ radarChartInstances[id].destroy(); delete radarChartInstances[id]; }
+  radarChartInstances[id] = new Chart(canvas, {
     type: 'radar',
     data: {
       labels: scores.labels,
@@ -3215,13 +3277,31 @@ const DEMO_PREVIEW_CONTENT = {
   basic: () => `
     <p class="text-xs font-bold text-primary-dark mb-1">DEMO PREVIEW</p>
     <h3 class="font-display text-xl font-bold mb-4">📄 기본 리포트 예시</h3>
-    <div class="grid grid-cols-2 gap-3 mb-4">
-      ${metricCard('일일 급여량', '92<span class="text-base font-medium"> g</span>', '하루 총량 기준', 'bone')}
-      ${metricCard('일일 권장 칼로리', '320<span class="text-base font-medium"> kcal</span>', 'MER 기준', 'flame')}
-      ${metricCard('간식 한도', '32<span class="text-base font-medium"> kcal</span>', 'MER의 10% 이내', 'cookie')}
-      ${metricCard('권장 음수량', '300<span class="text-base font-medium"> ml</span>', 'RER 1:1 대응', 'droplet')}
+    <div class="grid sm:grid-cols-2 gap-5 items-center mb-4">
+      <div class="text-center">
+        <div class="relative inline-flex items-center justify-center" style="width:120px;height:120px;">
+          <svg width="120" height="120" viewBox="0 0 140 140">
+            <circle cx="70" cy="70" r="60" fill="none" stroke="var(--surface-2)" stroke-width="14"/>
+            <circle cx="70" cy="70" r="60" fill="none" stroke="#2FBF9F" stroke-width="14" stroke-linecap="round"
+              stroke-dasharray="${(2*Math.PI*60).toFixed(1)}" stroke-dashoffset="${(2*Math.PI*60*(1-85/100)).toFixed(1)}" transform="rotate(-90 70 70)"/>
+          </svg>
+          <div class="absolute inset-0 flex flex-col items-center justify-center">
+            <p class="font-display font-bold text-2xl">85</p>
+            <p class="text-[10px] text-muted">/ 100</p>
+          </div>
+        </div>
+        <p class="text-xs font-semibold mt-2" style="color:#2FBF9F;">🟢 전반적으로 양호한 상태예요</p>
+      </div>
+      <div class="relative" style="height:170px;"><canvas id="demoBasicRadarChart"></canvas></div>
     </div>
-    <p class="text-xs text-muted">* 위 수치는 예시예요. 실제 리포트는 우리 아이의 체중·BCS·케어플랜에 맞춰 정밀하게 계산돼요.</p>
+    <div class="tooltip-box p-3 flex items-center gap-3 mb-4">
+      <div class="shrink-0">${bcsSilhouette(5, 44)}</div>
+      <div>
+        <p class="text-sm font-bold">BCS 5 / 9 <span class="text-xs font-normal" style="color:#2FBF9F;">이상적</span></p>
+        <p class="text-xs text-muted">목표 체중까지 관리가 잘 되고 있어요</p>
+      </div>
+    </div>
+    <p class="text-xs text-muted">* 위는 예시 점수예요. 진단 완료 후 우리 아이 데이터로 정확하게 계산된 스코어를 받아보세요.</p>
   `,
   premium: () => `
     <p class="text-xs font-bold text-primary-dark mb-1">DEMO PREVIEW</p>
@@ -3273,11 +3353,27 @@ const DEMO_PREVIEW_CONTENT = {
 };
 function openDemoPreviewModal(type){
   const builder = DEMO_PREVIEW_CONTENT[type] || DEMO_PREVIEW_CONTENT.basic;
+  const footer = type === 'basic'
+    ? `
+      <div class="space-y-2 mt-2">
+        <button id="demoPreviewStartBtn" class="btn-primary w-full rounded-xl py-3 text-sm">🐾 우리 아이 1분 무료 진단받기</button>
+        <button id="demoPreviewPremiumBtn" class="btn-ghost w-full rounded-xl py-3 text-sm">⭐ 유료 정밀 리포트 살펴보기</button>
+      </div>`
+    : `<button id="demoPreviewStartBtn" class="btn-primary w-full rounded-xl py-3 text-sm mt-2">🐾 우리 아이 진단 시작하기</button>`;
   mountModal(`
     ${builder()}
-    <button id="demoPreviewStartBtn" class="btn-primary w-full rounded-xl py-3 text-sm mt-2">🐾 우리 아이 진단 시작하기</button>
+    ${footer}
   `, true);
   document.getElementById('demoPreviewStartBtn').addEventListener('click', ()=>{ closeModal(); goToDiagnosisForm(); });
+  document.getElementById('demoPreviewPremiumBtn')?.addEventListener('click', ()=>{ openDemoPreviewModal('premium'); });
+  if(type === 'basic'){
+    requestAnimationFrame(()=>{
+      drawFreeReportRadarChart({
+        labels: ['체중관리','활동량','영양균형','간식관리','정기케어'],
+        values: [88, 78, 90, 82, 75],
+      }, 'demoBasicRadarChart');
+    });
+  }
 }
 
 function openIngredientModal(item){
@@ -3643,6 +3739,26 @@ function renderPremiumReportHtml(ctx, canvasId){
           ${metricCard('IBW', ctx.IBW.toFixed(2)+'kg', '과학적 이상체중', 'scale')}
           ${metricCard('음수량', Math.round(ctx.waterMl)+'ml', 'RER 1:1', 'droplet')}
         </div>
+        <div class="tooltip-box p-4 mb-3">
+          <p class="text-xs font-bold mb-2">수의영양학 계산 근거</p>
+          <div class="grid grid-cols-3 gap-3 text-[11px]">
+            <div>
+              <p class="font-semibold mb-0.5 font-display">RER</p>
+              <p class="text-muted mb-0.5">70 × 체중^0.75</p>
+              <p class="font-display font-bold text-primary-dark">${Math.round(ctx.RER)}kcal</p>
+            </div>
+            <div>
+              <p class="font-semibold mb-0.5 font-display">IBW</p>
+              <p class="text-muted mb-0.5">체중÷(1+(BCS−5)×0.1)</p>
+              <p class="font-display font-bold text-primary-dark">${ctx.IBW.toFixed(2)}kg</p>
+            </div>
+            <div>
+              <p class="font-semibold mb-0.5 font-display">MER</p>
+              <p class="text-muted mb-0.5">RER × 계수${ctx.factor?` (${ctx.factor.toFixed(2)})`:''}</p>
+              <p class="font-display font-bold text-primary-dark">${Math.round(ctx.MER)}kcal</p>
+            </div>
+          </div>
+        </div>
         <div class="surface-2 rounded-xl p-4 mb-3">
           <p class="text-xs font-bold mb-2">${ctx.foodBrandLabel || '선택 사료'} 기준 1g 단위 정밀 급여량</p>
           <p class="font-display font-bold text-2xl mb-3">${Math.round(ctx.dailyFoodG)}g<span class="text-sm font-medium text-muted"> / 일</span></p>
@@ -3901,31 +4017,23 @@ function openUserReportModal(rec){
       ${metricCard('권장 음수량', Math.round(n.waterMl) + '<span class="text-sm font-medium"> ml</span>', 'RER 1:1 대응', 'droplet')}
     </div>` : `<div class="tooltip-box p-4 mb-5 text-xs text-muted">체중/BCS 정보가 불완전해 상세 계산을 재구성할 수 없어요.</div>`;
 
-  const calcBasisSection = n ? `
-    <p class="text-xs font-bold text-primary-dark mb-2">수의영양학 계산 근거</p>
-    <div class="tooltip-box p-4 mb-5">
-      <div class="grid grid-cols-3 gap-3 text-[11px]">
-        <div>
-          <p class="font-semibold mb-0.5 font-display">RER</p>
-          <p class="text-muted mb-0.5">70 × 체중^0.75</p>
-          <p class="font-display font-bold text-primary-dark">${Math.round(n.rer)}kcal</p>
+  const precisionTeaserSection = n ? `
+    <div class="rounded-xl p-4 mb-5 relative overflow-hidden" style="background:linear-gradient(160deg,#2B241F,#4A3F38);">
+      <p class="text-xs font-bold mb-3" style="color:#F97A3D;">🔒 PREMIUM 전용 데이터</p>
+      <div class="relative mb-1">
+        <div style="filter:blur(5px); user-select:none;">
+          <div class="grid grid-cols-3 gap-3 text-[11px] mb-3">
+            <div><p class="font-semibold font-display" style="color:#fff;">RER</p><p class="font-display font-bold" style="color:#fff;">${Math.round(n.rer)}kcal</p></div>
+            <div><p class="font-semibold font-display" style="color:#fff;">IBW</p><p class="font-display font-bold" style="color:#fff;">${n.ibw.toFixed(2)}kg</p></div>
+            <div><p class="font-semibold font-display" style="color:#fff;">MER</p><p class="font-display font-bold" style="color:#fff;">${Math.round(n.mer)}kcal</p></div>
+          </div>
+          ${n.ratioProtein!=null ? renderMacroBar({protein:n.ratioProtein, fat:n.ratioFat, carb:n.ratioCarb}) : ''}
         </div>
-        <div>
-          <p class="font-semibold mb-0.5 font-display">IBW</p>
-          <p class="text-muted mb-0.5">체중÷(1+(BCS−5)×0.1)</p>
-          <p class="font-display font-bold text-primary-dark">${n.ibw.toFixed(2)}kg</p>
-        </div>
-        <div>
-          <p class="font-semibold mb-0.5 font-display">MER</p>
-          <p class="text-muted mb-0.5">RER × 계수</p>
-          <p class="font-display font-bold text-primary-dark">${Math.round(n.mer)}kcal</p>
+        <div class="absolute inset-0 flex items-center justify-center">
+          <p class="text-xs font-semibold text-center px-4" style="color:#fff;">🔒 수의영양학 RER/MER 정밀 계산식 및<br>DM 기준 영양소 비율은<br>유료 리포트에서 확인하세요</p>
         </div>
       </div>
     </div>` : '';
-
-  const macroSection = (n && n.ratioProtein!=null) ? `
-    <p class="text-xs font-bold text-primary-dark mb-2">권장 영양소 비율 (DM 기준)</p>
-    <div class="mb-5">${renderMacroBar({protein:n.ratioProtein, fat:n.ratioFat, carb:n.ratioCarb})}</div>` : '';
 
   const proteinWaterSection = n ? `
     <div class="grid sm:grid-cols-2 gap-2.5 mb-5">
@@ -3968,8 +4076,7 @@ function openUserReportModal(rec){
 
       ${approxNote}
       ${kpiSection}
-      ${calcBasisSection}
-      ${macroSection}
+      ${precisionTeaserSection}
       ${proteinWaterSection}
       ${fourSectionSummary}
       ${b2bDataSummary}
