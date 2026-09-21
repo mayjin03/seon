@@ -486,10 +486,16 @@
           <h2 class="font-display text-2xl font-bold mb-1">활동량 &amp; 급여 정보</h2>
           <p class="text-sm text-muted mb-6">에너지 소비량과 사료·영양제·간식 정보를 계산에 반영해요.</p>
 
-          <label class="block text-sm font-semibold mb-1.5">일일 산책 시간</label>
-          <div class="relative mb-5">
-            <input id="in_walk" type="number" min="0" max="300" placeholder="30" class="w-full rounded-xl px-4 py-3 text-sm">
-            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-muted">분 / 일</span>
+          <label class="block text-sm font-semibold mb-1.5">일일 산책 시간 &amp; 주당 산책 횟수</label>
+          <div class="grid grid-cols-2 gap-3 mb-5">
+            <div class="relative">
+              <input id="in_walk" type="number" min="0" max="300" placeholder="30" class="w-full rounded-xl px-4 py-3 text-sm">
+              <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-muted">분 / 일</span>
+            </div>
+            <div class="relative">
+              <input id="in_weekly_walk_freq" type="number" min="0" max="14" placeholder="5" class="w-full rounded-xl px-4 py-3 text-sm">
+              <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-muted">회 / 주</span>
+            </div>
           </div>
 
           <label class="block text-sm font-semibold mb-2">활동 강도</label>
@@ -508,7 +514,8 @@
             <input id="in_food_kcal" type="number" min="150" max="600" placeholder="예: 350" class="w-full rounded-xl px-4 py-3 text-sm">
             <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-muted">kcal / 100g</span>
           </div>
-          <p class="text-xs text-muted mt-1.5 mb-4">사료 포장지 뒷면의 "대사에너지(ME)"를 확인하면 더 정확해요.</p>
+          <p class="text-xs text-muted mt-1.5 mb-3">사료 포장지 뒷면의 "대사에너지(ME)"를 확인하면 더 정확해요.</p>
+          <input id="in_food_product_name" type="text" placeholder="정확한 제품명 (선택 입력, 예: 로얄캐닌 미니 인도어 어덜트)" class="w-full rounded-xl px-4 py-3 mb-4 text-sm">
 
           <label class="block text-sm font-semibold mb-2">현재 급여 방식 <span class="text-muted font-normal text-xs">(선택 입력 · 비교용)</span></label>
           <div class="grid grid-cols-2 gap-3 mb-2">
@@ -533,6 +540,89 @@
             <label class="block text-sm font-semibold mb-0.5">간식 유형 &amp; 하루 급여 횟수</label>
             <p class="text-xs text-muted mb-2.5">선택한 유형만 하루 급여 횟수를 입력해주세요.</p>
             <div id="snackGroup" class="space-y-2"></div>
+          </div>
+        </div>
+
+        <!-- STEP 5: 생활패턴·임상징후 & 병력 & 니즈/예산 (B2B 데이터 가치 강화) -->
+        <div id="step5" class="fade-in hidden">
+          <p class="text-xs font-bold text-primary-dark tracking-wide mb-1">STEP 5</p>
+          <h2 class="font-display text-2xl font-bold mb-1">마지막으로, 조금만 더 알려주세요</h2>
+          <p class="text-sm text-muted mb-6">더 정밀한 리포트와 맞춤 케어를 위한 선택 입력이에요.</p>
+
+          <label class="block text-sm font-semibold mb-2">관절 관련 징후 <span class="text-muted font-normal text-xs">(중복 선택)</span></label>
+          <div class="grid grid-cols-2 gap-2 mb-5" id="jointSignsGroup">
+            <button data-val="crack" class="chip rounded-xl py-2.5 text-xs">파절음(뚝 소리)</button>
+            <button data-val="limp" class="chip rounded-xl py-2.5 text-xs">절뚝거림</button>
+            <button data-val="hesitate" class="chip rounded-xl py-2.5 text-xs">계단/소파 주저함</button>
+            <button data-val="none" class="chip rounded-xl py-2.5 text-xs">이상 없음</button>
+          </div>
+
+          <label class="block text-sm font-semibold mb-2">소화기 관련 징후 <span class="text-muted font-normal text-xs">(중복 선택)</span></label>
+          <div class="grid grid-cols-2 gap-2 mb-5" id="digestiveSignsGroup">
+            <button data-val="vomit_weekly" class="chip rounded-xl py-2.5 text-xs">주 1회 이상 구토</button>
+            <button data-val="empty_vomit" class="chip rounded-xl py-2.5 text-xs">공복토</button>
+            <button data-val="diarrhea" class="chip rounded-xl py-2.5 text-xs">설사/묽은 변</button>
+            <button data-val="none" class="chip rounded-xl py-2.5 text-xs">이상 없음</button>
+          </div>
+
+          <label class="block text-sm font-semibold mb-2">피부/모질 관련 징후 <span class="text-muted font-normal text-xs">(중복 선택)</span></label>
+          <div class="grid grid-cols-2 gap-2 mb-5" id="skinSignsGroup">
+            <button data-val="paw_licking" class="chip rounded-xl py-2.5 text-xs">발사탕(발 핥음)</button>
+            <button data-val="scratching" class="chip rounded-xl py-2.5 text-xs">몸 긁음</button>
+            <button data-val="dandruff" class="chip rounded-xl py-2.5 text-xs">비듬/탈모</button>
+            <button data-val="none" class="chip rounded-xl py-2.5 text-xs">이상 없음</button>
+          </div>
+
+          <label class="block text-sm font-semibold mb-2">음수량 상태</label>
+          <div class="grid grid-cols-3 gap-2 mb-6" id="waterIntakeStatusGroup">
+            <button data-val="low" class="chip rounded-xl py-2.5 text-xs">부족(목마름 자주)</button>
+            <button data-val="normal" class="chip rounded-xl py-2.5 text-xs">적정</button>
+            <button data-val="high" class="chip rounded-xl py-2.5 text-xs">과다</button>
+          </div>
+
+          <div class="pt-5 border-t border-token">
+            <label class="block text-sm font-semibold mb-2">최근 1년 내 동물병원 방문 목적</label>
+            <div class="grid grid-cols-2 gap-2 mb-5" id="vetVisitPurposeGroup">
+              <button data-val="checkup" class="chip rounded-xl py-2.5 text-xs">정기검진/예방접종</button>
+              <button data-val="treatment" class="chip rounded-xl py-2.5 text-xs">질환 치료</button>
+              <button data-val="surgery" class="chip rounded-xl py-2.5 text-xs">수술/입원</button>
+              <button data-val="none" class="chip rounded-xl py-2.5 text-xs">방문 안 함</button>
+            </div>
+
+            <label class="block text-sm font-semibold mb-2">확진받은 기존 질환 이력 <span class="text-muted font-normal text-xs">(중복 선택)</span></label>
+            <div class="grid grid-cols-2 gap-2 mb-5" id="diagnosedHistoryGroup">
+              <button data-val="patella" class="chip rounded-xl py-2.5 text-xs">슬개골 탈구</button>
+              <button data-val="allergy" class="chip rounded-xl py-2.5 text-xs">식이 알러지</button>
+              <button data-val="ear_skin" class="chip rounded-xl py-2.5 text-xs">귓병/피부염</button>
+              <button data-val="heart" class="chip rounded-xl py-2.5 text-xs">심장질환</button>
+              <button data-val="etc" class="chip rounded-xl py-2.5 text-xs">기타</button>
+              <button data-val="none" class="chip rounded-xl py-2.5 text-xs">없음</button>
+            </div>
+
+            <label class="block text-sm font-semibold mb-2">현재 처방약 복용 여부</label>
+            <div class="flex gap-2 mb-6" id="onMedicationGroup">
+              <button data-val="true" class="chip flex-1 rounded-xl py-2.5 text-sm">예</button>
+              <button data-val="false" class="chip flex-1 rounded-xl py-2.5 text-sm">아니오</button>
+            </div>
+          </div>
+
+          <div class="pt-5 border-t border-token">
+            <label class="block text-sm font-semibold mb-2">가장 우려되는 건강 관리 1순위</label>
+            <div class="grid grid-cols-2 gap-2 mb-5" id="topConcernGroup">
+              <button data-val="diet" class="chip rounded-xl py-2.5 text-xs">체중/다이어트</button>
+              <button data-val="joint" class="chip rounded-xl py-2.5 text-xs">관절/슬개골</button>
+              <button data-val="skin" class="chip rounded-xl py-2.5 text-xs">피부/알러지</button>
+              <button data-val="digestive" class="chip rounded-xl py-2.5 text-xs">장/소화기</button>
+              <button data-val="senior" class="chip rounded-xl py-2.5 text-xs">노령견 케어</button>
+            </div>
+
+            <label class="block text-sm font-semibold mb-2">월평균 펫케어 지출 예산</label>
+            <div class="grid grid-cols-2 gap-2" id="monthlyBudgetGroup">
+              <button data-val="under10" class="chip rounded-xl py-2.5 text-xs">10만 원 미만</button>
+              <button data-val="10to20" class="chip rounded-xl py-2.5 text-xs">10만~20만 원</button>
+              <button data-val="20to30" class="chip rounded-xl py-2.5 text-xs">20만~30만 원</button>
+              <button data-val="over30" class="chip rounded-xl py-2.5 text-xs">30만 원 이상</button>
+            </div>
           </div>
         </div>
 
@@ -822,12 +912,16 @@ const dog = {
   plan:null,
   name:"", breed:"", ageYear:"", ageMonth:"",
   weight:null, target:null, neutered:null, bcs:null, conditions:[],
-  walk:null, activity:null, foodKcal:null, foodBrandLabel:"", foodTexture:null,
+  walk:null, weeklyWalkFreq:null, activity:null, foodKcal:null, foodBrandLabel:"", foodProductName:"", foodTexture:null,
   feedFreqCurrent:null, feedAmountCurrent:null,
-  dynamic:{}, supplements:[], snacks:{}
+  dynamic:{}, supplements:[], snacks:{},
+  // ---- B2B 데이터 가치 강화 (Step5: 생활패턴·임상징후·병력·니즈/예산) ----
+  jointSigns:[], digestiveSigns:[], skinSigns:[], waterIntakeStatus:null,
+  vetVisitPurpose:null, diagnosedHistory:[], onMedication:null,
+  topConcern:null, monthlyBudget:null,
 };
 let currentStep = 1;
-const totalSteps = 4;
+const totalSteps = 5;
 let lastComputedResult = null; // 유료 상세 분석 PDF 생성 시 사용
 let charts = {};
 
@@ -1252,6 +1346,19 @@ function init(){
   // snacks (유형 + 급여 횟수)
   buildSnackGroup();
 
+  // ---- Step5: 생활패턴·임상징후 & 병력 & 니즈/예산 (B2B 데이터 가치 강화) ----
+  bindExclusiveMultiGroup('jointSignsGroup', dog.jointSigns);
+  bindExclusiveMultiGroup('digestiveSignsGroup', dog.digestiveSigns);
+  bindExclusiveMultiGroup('skinSignsGroup', dog.skinSigns);
+  bindExclusiveMultiGroup('diagnosedHistoryGroup', dog.diagnosedHistory);
+  bindSingleSelectGroup('waterIntakeStatusGroup', v=>dog.waterIntakeStatus=v);
+  bindSingleSelectGroup('vetVisitPurposeGroup', v=>dog.vetVisitPurpose=v);
+  bindSingleSelectGroup('onMedicationGroup', v=>dog.onMedication=v);
+  bindSingleSelectGroup('topConcernGroup', v=>dog.topConcern=v);
+  bindSingleSelectGroup('monthlyBudgetGroup', v=>dog.monthlyBudget=v);
+  document.getElementById('in_weekly_walk_freq').addEventListener('input', e=>{ dog.weeklyWalkFreq = parseFloat(e.target.value)||null; });
+  document.getElementById('in_food_product_name').addEventListener('input', e=>{ dog.foodProductName = e.target.value.trim(); });
+
   buildStepDots();
   document.getElementById('prevBtn').addEventListener('click', ()=>goStep(currentStep-1));
   document.getElementById('nextBtn').addEventListener('click', onNext);
@@ -1629,13 +1736,19 @@ function validateStep(step){
   }
   if(step===4){
     dog.walk = parseFloat(document.getElementById('in_walk').value)||0;
+    dog.weeklyWalkFreq = parseFloat(document.getElementById('in_weekly_walk_freq').value)||null;
     dog.foodKcal = parseFloat(document.getElementById('in_food_kcal').value);
+    dog.foodProductName = document.getElementById('in_food_product_name').value.trim();
     if(!dog.activity){ alert('활동 강도를 선택해주세요.'); return false; }
     if(!dog.foodTexture){ alert('사료 제형을 선택해주세요.'); return false; }
     if(!dog.foodKcal || dog.foodKcal<=0){ alert('사료의 100g당 칼로리를 입력해주세요.'); return false; }
     dog.feedFreqCurrent = parseFloat(document.getElementById('in_feed_freq').value)||null;
     dog.feedAmountCurrent = parseFloat(document.getElementById('in_feed_amount').value)||null;
     return true;
+  }
+  if(step===5){
+    if(!dog.topConcern){ alert('가장 우려되는 건강 관리 1순위를 선택해주세요.'); return false; }
+    return true; // 병력/임상징후/예산 등 나머지는 3초 답변용 선택 입력이에요
   }
   return true;
 }
@@ -1648,9 +1761,13 @@ function resetDiagnosisForm(){
   dog.plan = null;
   dog.name = ""; dog.breed = ""; dog.ageYear = ""; dog.ageMonth = "";
   dog.weight = null; dog.target = null; dog.neutered = null; dog.bcs = null; dog.conditions = [];
-  dog.walk = null; dog.activity = null; dog.foodKcal = null; dog.foodBrandLabel = ""; dog.foodTexture = null;
+  dog.walk = null; dog.weeklyWalkFreq = null; dog.activity = null; dog.foodKcal = null;
+  dog.foodBrandLabel = ""; dog.foodProductName = ""; dog.foodTexture = null;
   dog.feedFreqCurrent = null; dog.feedAmountCurrent = null;
   dog.dynamic = {}; dog.supplements = []; dog.snacks = {};
+  dog.jointSigns = []; dog.digestiveSigns = []; dog.skinSigns = []; dog.waterIntakeStatus = null;
+  dog.vetVisitPurpose = null; dog.diagnosedHistory = []; dog.onMedication = null;
+  dog.topConcern = null; dog.monthlyBudget = null;
 
   const setIfExists = (id, val)=>{ const el = document.getElementById(id); if(el) el.value = val; };
   setIfExists('in_name', '');
@@ -1659,8 +1776,9 @@ function resetDiagnosisForm(){
   if(breedCustom){ breedCustom.value = ''; breedCustom.classList.add('hidden'); }
   setIfExists('in_age_year', ''); setIfExists('in_age_month', '');
   setIfExists('in_weight', ''); setIfExists('in_target', '');
-  setIfExists('in_walk', '');
+  setIfExists('in_walk', ''); setIfExists('in_weekly_walk_freq', '');
   setIfExists('in_feed_freq', ''); setIfExists('in_feed_amount', '');
+  setIfExists('in_food_product_name', '');
   const foodKcalInput = document.getElementById('in_food_kcal');
   if(foodKcalInput){ foodKcalInput.value = ''; foodKcalInput.disabled = false; }
 
@@ -1676,6 +1794,12 @@ function resetDiagnosisForm(){
   document.getElementById('dynamicQuestions').innerHTML = '';
   buildSupplementGroup();
   buildSnackGroup();
+  ['jointSignsGroup','digestiveSignsGroup','skinSignsGroup','waterIntakeStatusGroup',
+   'vetVisitPurposeGroup','diagnosedHistoryGroup','onMedicationGroup','topConcernGroup','monthlyBudgetGroup'
+  ].forEach(id=>{
+    const wrap = document.getElementById(id);
+    if(wrap) wrap.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+  });
 
   currentStep = 1;
   updateStepView();
@@ -1686,6 +1810,38 @@ function goToDiagnosisForm(){
   currentStep = 1;
   updateStepView();
   window.scrollTo({top:0, behavior:'smooth'});
+}
+
+/* ---- Step5 공통 UI 헬퍼: 다중 선택(‘없음/이상없음’과 배타적) & 단일 선택 그룹 ---- */
+function bindExclusiveMultiGroup(elId, stateArray){
+  const wrap = document.getElementById(elId);
+  if(!wrap) return;
+  wrap.querySelectorAll('button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const val = btn.dataset.val;
+      if(val === 'none'){
+        stateArray.length = 0;
+        stateArray.push('none');
+      } else {
+        const noneIdx = stateArray.indexOf('none');
+        if(noneIdx>-1) stateArray.splice(noneIdx,1);
+        const idx = stateArray.indexOf(val);
+        if(idx>-1) stateArray.splice(idx,1); else stateArray.push(val);
+      }
+      wrap.querySelectorAll('button').forEach(b=>b.classList.toggle('active', stateArray.includes(b.dataset.val)));
+    });
+  });
+}
+function bindSingleSelectGroup(elId, setter){
+  const wrap = document.getElementById(elId);
+  if(!wrap) return;
+  wrap.querySelectorAll('button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      setter(btn.dataset.val);
+      wrap.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
 }
 
 function goStep(n){
@@ -1876,11 +2032,23 @@ function runCalculation(){
     ratio_snack: Math.round(r.allocation.snackRatio*100),
     food_texture: dog.foodTexture || '',
     food_kcal_per_100g: dog.foodKcal,
+    food_product_name: dog.foodProductName || '',
+    weekly_walk_freq: dog.weeklyWalkFreq,
     age_year: dog.ageYear, age_month: dog.ageMonth,
     neutered: String(!!dog.neutered), conditions: JSON.stringify(dog.conditions),
     paid: false,
     feed_freq_current: dog.feedFreqCurrent,
     feed_amount_current_g: dog.feedAmountCurrent,
+    // ---- Step5: 생활패턴·임상징후 & 병력 & 니즈/예산 (B2B 데이터 가치 강화) ----
+    joint_signs: JSON.stringify(dog.jointSigns),
+    digestive_signs: JSON.stringify(dog.digestiveSigns),
+    skin_signs: JSON.stringify(dog.skinSigns),
+    water_intake_status: dog.waterIntakeStatus || '',
+    vet_visit_purpose: dog.vetVisitPurpose || '',
+    diagnosed_history: JSON.stringify(dog.diagnosedHistory),
+    on_medication: String(!!dog.onMedication),
+    top_concern: dog.topConcern || '',
+    monthly_budget: dog.monthlyBudget || '',
   }).catch(err=>{
     console.error('[seon] saveUserAnalyticsData 실행 중 처리되지 않은 오류가 발생했어요:', err);
   });
@@ -3553,6 +3721,22 @@ function openUserReportModal(rec){
       </div>
     </div>` : '';
 
+  const b2bDataSummary = `
+    <p class="text-xs font-bold text-primary-dark mb-2">📋 생활패턴·병력·니즈 (B2B 데이터)</p>
+    <div class="tooltip-box p-4 mb-5 space-y-2">
+      <p class="text-xs text-muted"><b>주식 제품명:</b> ${rec.food_product_name || '정보 없음'}</p>
+      <p class="text-xs text-muted"><b>주당 산책 횟수:</b> ${rec.weekly_walk_freq!=null ? rec.weekly_walk_freq+'회' : '정보 없음'}</p>
+      <p class="text-xs text-muted"><b>관절 징후:</b> ${decodeList(rec.joint_signs, JOINT_SIGN_LABELS)}</p>
+      <p class="text-xs text-muted"><b>소화기 징후:</b> ${decodeList(rec.digestive_signs, DIGESTIVE_SIGN_LABELS)}</p>
+      <p class="text-xs text-muted"><b>피부 징후:</b> ${decodeList(rec.skin_signs, SKIN_SIGN_LABELS)}</p>
+      <p class="text-xs text-muted"><b>음수량 상태:</b> ${decodeSingle(rec.water_intake_status, WATER_INTAKE_LABELS)}</p>
+      <p class="text-xs text-muted"><b>최근 병원 방문 목적:</b> ${decodeSingle(rec.vet_visit_purpose, VET_VISIT_LABELS)}</p>
+      <p class="text-xs text-muted"><b>기존 질환 이력:</b> ${decodeList(rec.diagnosed_history, DIAGNOSED_HISTORY_LABELS)}</p>
+      <p class="text-xs text-muted"><b>처방약 복용:</b> ${rec.on_medication==='true' ? '예' : rec.on_medication==='false' ? '아니오' : '정보 없음'}</p>
+      <p class="text-xs text-muted"><b>건강관리 1순위:</b> ${decodeSingle(rec.top_concern, TOP_CONCERN_LABELS)}</p>
+      <p class="text-xs text-muted"><b>월 예산:</b> ${decodeSingle(rec.monthly_budget, MONTHLY_BUDGET_LABELS)}</p>
+    </div>`;
+
   const approxNote = n && n.approximated ? `
     <div class="tooltip-box p-3 text-[11px] text-muted mb-4">
       ⚠️ 상세 계산 데이터가 저장되기 전 기록이라, 아래 수치는 체중·BCS 기준 근사 재계산 값이에요 (활동량·중성화 정보 없이 표준값 가정).
@@ -3639,6 +3823,7 @@ function openUserReportModal(rec){
       ${macroSection}
       ${proteinWaterSection}
       ${fourSectionSummary}
+      ${b2bDataSummary}
 
       <p class="text-xs font-bold text-primary-dark mb-2">관리자 메모 (내부용)</p>
       <textarea id="reportAdminNote" rows="3" placeholder="상담 시 참고할 메모를 남겨보세요. 인쇄물에도 함께 포함돼요." class="w-full rounded-xl border border-token px-3 py-2 text-sm mb-1" style="background:var(--surface); color:var(--text);"></textarea>
@@ -3813,15 +3998,38 @@ const CORE_COLUMNS = ['dog_name', 'breed', 'weight', 'target_weight', 'bcs', 'pl
 const EXTRA_FIELD_KEYS = [
   'rer','ibw','mer','daily_feed_g','treat_limit_kcal','water_recommend_ml',
   'protein_min_g','protein_max_g','ratio_protein','ratio_fat','ratio_carb',
-  'food_brand','dynamic_answers','supplements','snacks',
+  'food_brand','food_product_name','dynamic_answers','supplements','snacks',
   'ratio_food','ratio_supplement','ratio_snack',
   'food_texture','food_kcal_per_100g','feed_freq_current','feed_amount_current_g',
-  'age_year','age_month','neutered','conditions','paid',
+  'weekly_walk_freq','age_year','age_month','neutered','conditions','paid',
+  // ---- B2B 데이터 가치 강화 (Step5) ----
+  'joint_signs','digestive_signs','skin_signs','water_intake_status',
+  'vet_visit_purpose','diagnosed_history','on_medication','top_concern','monthly_budget',
 ];
 function extractExtraData(flatObj){
   const out = {};
   EXTRA_FIELD_KEYS.forEach(k=>{ out[k] = flatObj[k] ?? null; });
   return out;
+}
+
+/* Step5 응답 코드 → 한글 라벨 매핑 (관리자 리포트/CSV 가독성용) */
+const JOINT_SIGN_LABELS = {crack:'파절음(뚝 소리)', limp:'절뚝거림', hesitate:'계단/소파 주저함', none:'이상 없음'};
+const DIGESTIVE_SIGN_LABELS = {vomit_weekly:'주 1회 이상 구토', empty_vomit:'공복토', diarrhea:'설사/묽은 변', none:'이상 없음'};
+const SKIN_SIGN_LABELS = {paw_licking:'발사탕(발 핥음)', scratching:'몸 긁음', dandruff:'비듬/탈모', none:'이상 없음'};
+const WATER_INTAKE_LABELS = {low:'부족(목마름 자주)', normal:'적정', high:'과다'};
+const VET_VISIT_LABELS = {checkup:'정기검진/예방접종', treatment:'질환 치료', surgery:'수술/입원', none:'방문 안 함'};
+const DIAGNOSED_HISTORY_LABELS = {patella:'슬개골 탈구', allergy:'식이 알러지', ear_skin:'귓병/피부염', heart:'심장질환', etc:'기타', none:'없음'};
+const TOP_CONCERN_LABELS = {diet:'체중/다이어트', joint:'관절/슬개골', skin:'피부/알러지', digestive:'장/소화기', senior:'노령견 케어'};
+const MONTHLY_BUDGET_LABELS = {under10:'10만 원 미만', '10to20':'10만~20만 원', '20to30':'20만~30만 원', over30:'30만 원 이상'};
+function decodeList(jsonStr, labelMap){
+  let arr = [];
+  try{ arr = typeof jsonStr==='string' ? JSON.parse(jsonStr) : (jsonStr||[]); }catch(e){ arr = []; }
+  if(!Array.isArray(arr) || !arr.length) return '정보 없음';
+  return arr.map(v=>labelMap[v]||v).join(', ');
+}
+function decodeSingle(val, labelMap){
+  if(!val) return '정보 없음';
+  return labelMap[val] || val;
 }
 
 /* PostgREST가 "Could not find the 'X' column of 'Y' in the schema cache" (PGRST204)를 반환하면
@@ -3907,6 +4115,7 @@ async function saveUserAnalyticsData(record){
     ratio_carb: numOrNull(record.ratio_carb),
     // ---- Step3 동적 질문 & Step4 세부 입력 (문자열로 저장) ----
     food_brand: String(record.food_brand ?? ''),
+    food_product_name: String(record.food_product_name ?? ''),
     dynamic_answers: typeof record.dynamic_answers==='string' ? record.dynamic_answers : JSON.stringify(record.dynamic_answers ?? {}),
     supplements: typeof record.supplements==='string' ? record.supplements : JSON.stringify(record.supplements ?? []),
     snacks: typeof record.snacks==='string' ? record.snacks : JSON.stringify(record.snacks ?? {}),
@@ -3917,10 +4126,21 @@ async function saveUserAnalyticsData(record){
     food_kcal_per_100g: numOrNull(record.food_kcal_per_100g),
     feed_freq_current: numOrNull(record.feed_freq_current),
     feed_amount_current_g: numOrNull(record.feed_amount_current_g),
+    weekly_walk_freq: numOrNull(record.weekly_walk_freq),
     age_year: numOrNull(record.age_year), age_month: numOrNull(record.age_month),
     neutered: String(record.neutered ?? 'false'),
     conditions: typeof record.conditions==='string' ? record.conditions : JSON.stringify(record.conditions ?? []),
     paid: !!record.paid,
+    // ---- Step5: 생활패턴·임상징후 & 병력 & 니즈/예산 (B2B 데이터 가치 강화) ----
+    joint_signs: typeof record.joint_signs==='string' ? record.joint_signs : JSON.stringify(record.joint_signs ?? []),
+    digestive_signs: typeof record.digestive_signs==='string' ? record.digestive_signs : JSON.stringify(record.digestive_signs ?? []),
+    skin_signs: typeof record.skin_signs==='string' ? record.skin_signs : JSON.stringify(record.skin_signs ?? []),
+    water_intake_status: String(record.water_intake_status ?? ''),
+    vet_visit_purpose: String(record.vet_visit_purpose ?? ''),
+    diagnosed_history: typeof record.diagnosed_history==='string' ? record.diagnosed_history : JSON.stringify(record.diagnosed_history ?? []),
+    on_medication: String(record.on_medication ?? 'false'),
+    top_concern: String(record.top_concern ?? ''),
+    monthly_budget: String(record.monthly_budget ?? ''),
   };
 
   // 1) 로컬(메모리 + localStorage)에 항상 먼저 쌓아요 — DB 연결 여부와 무관하게 안전망 역할
@@ -3975,9 +4195,12 @@ function exportAnalyticsCSV(){
     ['daily_feed_g','일일급여량(g)'], ['treat_limit_kcal','간식한도(kcal)'], ['water_recommend_ml','권장음수량(ml)'],
     ['protein_min_g','최소단백질(g)'], ['protein_max_g','최대단백질(g)'],
     ['ratio_protein','단백질비율(%)'], ['ratio_fat','지방비율(%)'], ['ratio_carb','탄수화물비율(%)'],
-    ['food_brand','사료브랜드'], ['food_texture','사료제형'], ['food_kcal_per_100g','사료kcal(100g)'], ['ratio_food','사료배분(%)'], ['ratio_supplement','영양제배분(%)'], ['ratio_snack','간식배분(%)'],
-    ['feed_freq_current','현재급여횟수'], ['feed_amount_current_g','현재1회급여량(g)'],
+    ['food_brand','사료브랜드'], ['food_product_name','제품명'], ['food_texture','사료제형'], ['food_kcal_per_100g','사료kcal(100g)'], ['ratio_food','사료배분(%)'], ['ratio_supplement','영양제배분(%)'], ['ratio_snack','간식배분(%)'],
+    ['feed_freq_current','현재급여횟수'], ['feed_amount_current_g','현재1회급여량(g)'], ['weekly_walk_freq','주당산책횟수'],
     ['dynamic_answers','맞춤질문답변(JSON)'], ['supplements','영양제목록(JSON)'], ['snacks','간식목록(JSON)'],
+    ['joint_signs','관절징후(JSON)'], ['digestive_signs','소화기징후(JSON)'], ['skin_signs','피부징후(JSON)'],
+    ['water_intake_status','음수량상태'], ['vet_visit_purpose','병원방문목적'], ['diagnosed_history','기존질환이력(JSON)'],
+    ['on_medication','처방약복용여부'], ['top_concern','건강관리1순위'], ['monthly_budget','월예산'],
     ['paid','결제상태'],
     ['created_at','제출일시'],
   ];
@@ -4114,9 +4337,15 @@ async function loadAnalyticsFromDB(){
           supplements: pick('supplements') || '[]', snacks: pick('snacks') || '{}',
           ratio_food: numOrNull(pick('ratio_food')), ratio_supplement: numOrNull(pick('ratio_supplement')), ratio_snack: numOrNull(pick('ratio_snack')),
           food_texture: pick('food_texture') || '', food_kcal_per_100g: numOrNull(pick('food_kcal_per_100g')),
+          food_product_name: pick('food_product_name') || '',
+          weekly_walk_freq: numOrNull(pick('weekly_walk_freq')),
           age_year: numOrNull(pick('age_year')), age_month: numOrNull(pick('age_month')),
           neutered: pick('neutered') ?? 'false', conditions: pick('conditions') || '[]', paid: !!pick('paid'),
           feed_freq_current: numOrNull(pick('feed_freq_current')), feed_amount_current_g: numOrNull(pick('feed_amount_current_g')),
+          joint_signs: pick('joint_signs') || '[]', digestive_signs: pick('digestive_signs') || '[]', skin_signs: pick('skin_signs') || '[]',
+          water_intake_status: pick('water_intake_status') || '', vet_visit_purpose: pick('vet_visit_purpose') || '',
+          diagnosed_history: pick('diagnosed_history') || '[]', on_medication: pick('on_medication') ?? 'false',
+          top_concern: pick('top_concern') || '', monthly_budget: pick('monthly_budget') || '',
         };
       });
       try{ localStorage.setItem(ANALYTICS_STORAGE_KEY, JSON.stringify(analyticsRecords)); }catch(e){}
