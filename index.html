@@ -298,7 +298,7 @@
           3분 만에 받는 반려동물 맞춤 영양 리포트
         </p>
         <button type="button" class="landing-cta-btn btn-primary rounded-2xl px-7 py-4 text-sm sm:text-base font-bold inline-flex items-center gap-2">
-          🐾 3분 만에 무료 건강 리포트 받기
+          3분 만에 무료 건강 리포트 받기
         </button>
       </div>
 
@@ -310,19 +310,19 @@
           <button type="button" class="demo-preview-card surface rounded-2xl p-5 text-left transition hover:-translate-y-1" data-demo="basic">
             <span class="text-3xl mb-3 block">📄</span>
             <p class="font-bold text-sm mb-1.5">기본 리포트</p>
-            <p class="text-xs text-muted leading-relaxed">하루 적정 급여량(g), 칼로리 계산, 맞춤 간식 가이드</p>
+            <p class="text-xs text-muted leading-relaxed">우리 아이 맞춤 하루 권장 급여량(g), 칼로리, 음수량, 간식 한도 안내</p>
             <p class="text-[11px] font-semibold text-primary-dark mt-3">미리보기 →</p>
           </button>
-          <button type="button" class="demo-preview-card surface rounded-2xl p-5 text-left transition hover:-translate-y-1" data-demo="dm">
-            <span class="text-3xl mb-3 block">📊</span>
-            <p class="font-bold text-sm mb-1.5">1:1 DM 영양 분석표</p>
-            <p class="text-xs text-muted leading-relaxed">급여 중인 사료·영양제 수의학적 성분 분해 및 비율 검증</p>
+          <button type="button" class="demo-preview-card surface rounded-2xl p-5 text-left transition hover:-translate-y-1" data-demo="premium">
+            <span class="text-3xl mb-3 block">⭐</span>
+            <p class="font-bold text-sm mb-1.5">유료 상세 리포트</p>
+            <p class="text-xs text-muted leading-relaxed">맞춤 홈메이드 레시피 3종, 1:1 운동·마사지 루틴 &amp; 12주 케어 타임라인</p>
             <p class="text-[11px] font-semibold text-primary-dark mt-3">미리보기 →</p>
           </button>
           <button type="button" class="demo-preview-card surface rounded-2xl p-5 text-left transition hover:-translate-y-1" data-demo="clinical">
             <span class="text-3xl mb-3 block">🏥</span>
             <p class="font-bold text-sm mb-1.5">메디컬 서머리</p>
-            <p class="text-xs text-muted leading-relaxed">병원 제출용 1장 종합 소견서 &amp; 12주 예측 곡선</p>
+            <p class="text-xs text-muted leading-relaxed">동물병원 방문 시 수의사에게 바로 보여주는 1장 정식 수의영양학 소견서</p>
             <p class="text-[11px] font-semibold text-primary-dark mt-3">미리보기 →</p>
           </button>
         </div>
@@ -2784,20 +2784,30 @@ const DEMO_PREVIEW_CONTENT = {
     </div>
     <p class="text-xs text-muted">* 위 수치는 예시예요. 실제 리포트는 우리 아이의 체중·BCS·케어플랜에 맞춰 정밀하게 계산돼요.</p>
   `,
-  dm: () => `
+  premium: () => `
     <p class="text-xs font-bold text-primary-dark mb-1">DEMO PREVIEW</p>
-    <h3 class="font-display text-xl font-bold mb-4">📊 1:1 DM 영양 분석표 예시</h3>
-    <table class="w-full text-xs mb-3" style="border-collapse:collapse;">
-      <thead><tr style="border-bottom:2px solid var(--text);">
-        <th class="text-left py-2">성분</th><th class="text-right py-2">As-Fed</th><th class="text-right py-2">DM</th><th class="text-right py-2">플랜 권장</th>
-      </tr></thead>
-      <tbody>
-        ${[['조단백','25.2%','28%','30%'],['조지방','14.4%','16%','12%'],['조섬유','3.2%','3.5%','3~5%'],['칼슘:인 비율','1.25 : 1','1.25 : 1','1.1~1.4 : 1']].map(([a,b,c,d])=>`
-          <tr class="border-token" style="border-bottom:1px solid var(--border);"><td class="py-1.5">${a}</td><td class="text-right py-1.5">${b}</td><td class="text-right py-1.5 font-bold">${c}</td><td class="text-right py-1.5 text-muted">${d}</td></tr>
-        `).join('')}
-      </tbody>
-    </table>
-    <p class="text-xs text-muted">급여 중인 사료·영양제의 실제 성분을 우리 아이 플랜 권장치와 1:1로 비교해드려요. (위 수치는 예시예요)</p>
+    <h3 class="font-display text-xl font-bold mb-4">⭐ 유료 상세 리포트 예시</h3>
+    <div class="space-y-3 mb-3">
+      <div class="surface-2 rounded-xl p-4">
+        <p class="text-xs font-bold mb-1">🍳 맞춤 레시피 예시</p>
+        <p class="text-xs text-muted">닭가슴살 &amp; 양배추 다이어트 화식 <span class="text-muted">(하루 40g 토핑 전용 레시피)</span></p>
+      </div>
+      <div class="surface-2 rounded-xl p-4">
+        <p class="text-xs font-bold mb-1">🏃 맞춤 운동 루틴 예시</p>
+        <p class="text-xs text-muted">슬개골 부담 없는 평지 15분 분할 산책 &amp; 산책 후 5분 관절 마사지</p>
+      </div>
+      <div class="surface-2 rounded-xl p-4">
+        <p class="text-xs font-bold mb-2">📈 12주 케어 타임라인 예시</p>
+        <p class="text-xs text-muted mb-2">주당 -1% 안전 체중 감량 시뮬레이션 곡선</p>
+        <div class="flex items-end gap-1" style="height:40px;">
+          ${[8.5,8.3,8.1,7.9,7.7,7.5,7.3,7.2,7.1,7.05,7.0,7.0].map(v=>{
+            const h = Math.round((v-6.8)/(8.5-6.8)*100);
+            return `<div style="width:8%; height:${Math.max(h,10)}%; background:var(--c-primary); border-radius:3px 3px 0 0;"></div>`;
+          }).join('')}
+        </div>
+      </div>
+    </div>
+    <p class="text-xs text-muted">이 외에도 성분 상충 체크, 병원 제출용 서머리까지 8페이지 전체 리포트로 받아보실 수 있어요. (위 내용은 예시예요)</p>
   `,
   clinical: () => `
     <p class="text-xs font-bold text-primary-dark mb-1">DEMO PREVIEW</p>
