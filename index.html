@@ -874,15 +874,9 @@
 
             <!-- Option B: 직접 성분 입력 -->
             <div id="dniManualPanel">
-              <div class="grid grid-cols-3 gap-2 mb-1" id="dniMedGroup">
-                <button data-val="diuretic" class="mc-chip rounded-xl py-2.5 text-xs">💧 이뇨제</button>
-                <button data-val="antibiotic" class="mc-chip rounded-xl py-2.5 text-xs">💊 항생제</button>
-                <button data-val="steroid" class="mc-chip rounded-xl py-2.5 text-xs">🧪 스테로이드</button>
-                <button data-val="joint_med" class="mc-chip rounded-xl py-2.5 text-xs">🦴 관절약</button>
-                <button data-val="none" class="mc-chip rounded-xl py-2.5 text-xs col-span-2">복용 안 함</button>
-              </div>
-              <p class="text-[11px] mt-2 mb-3" style="color:#6b6259;">중복 선택 가능해요. 카테고리를 고르면 세부 성분명·용량 입력란이 나타나요.</p>
-              <div class="space-y-2 mb-4" id="dniMedDetailWrap"></div>
+              <div class="space-y-2 mb-3" id="dniMedEntriesWrap"></div>
+              <button type="button" id="dniAddMedBtn" class="w-full rounded-xl py-2.5 text-xs font-bold" style="background:#FAF9F5; border:1.5px dashed #3A5A4055; color:#3A5A40;">➕ 약물 추가</button>
+              <p class="text-[11px] mt-2" style="color:#6b6259;">약물이 없다면 추가하지 않고 넘어가셔도 돼요.</p>
             </div>
 
             <p class="font-bold text-sm mb-1" style="color:#2C241F;">③ 복용 중인 영양제 <span class="font-normal text-[11px]" style="color:#6b6259;">(주성분 기반)</span></p>
@@ -1166,7 +1160,7 @@ const SUPABASE_TABLE = "user_analytics"; // 진단 데이터를 저장/조회할
      bcs                       text,
      gender_neutered           text,   -- 성별/중성화 여부 (male/male_neutered/female/female_neutered)
      medical_history           jsonb,  -- 기왕력·수술 히스토리 태그 목록
-     active_medication_details jsonb,  -- [{ category, drug_molecule, dosage_optional }]
+     active_medication_details jsonb,  -- [{ category, drug_molecule, dosage_optional, route_of_administration }]
      active_supplement_details jsonb,  -- [{ category, ingredient_or_product_name }]
      daily_chrono_schedule     jsonb,  -- 시간대별(오전/점심/저녁/야간) 1g 급여·투약 타임라인
      dni_warnings              jsonb,  -- [{ molecule, nutrient, interaction_type, dosage_flag, clinical_reference, recommendation_note }]
@@ -5447,10 +5441,13 @@ const STUDIO_TAB_HTML = {
                   ${chipList(rec.medical_history, '')}
                 </div>` : ''}
 
-              <p class="text-[10px] font-bold text-muted mb-1">💊 복용 약물 (분자 성분 / 용량)</p>
+              <p class="text-[10px] font-bold text-muted mb-1">💊 복용 약물 (분자 성분 / 용량 / 투여경로)</p>
               <div class="space-y-0.5 mb-2">
                 ${Array.isArray(rec.active_medication_details) && rec.active_medication_details.length
-                  ? rec.active_medication_details.map(m=>`<p class="text-[10px]" style="color:#2C241F;">· ${m.category}: <b>${m.drug_molecule}</b>${m.dosage_optional ? ` (${m.dosage_optional}mg/kg)` : ' (용량 미입력)'}</p>`).join('')
+                  ? rec.active_medication_details.map(m=>{
+                      const routeIcon = ROUTES.find(r=>r.label===m.route_of_administration)?.icon || '💊';
+                      return `<p class="text-[10px]" style="color:#2C241F;">· ${m.category}: <b>${m.drug_molecule}</b>${m.dosage_optional ? ` (${m.dosage_optional})` : ' (용량 미입력)'} <span class="px-1.5 py-0.5 rounded-full" style="background:#3A5A401A; color:#3A5A40;">${routeIcon} ${m.route_of_administration || '경로 미상'}</span></p>`;
+                    }).join('')
                   : `<p class="text-[10px] text-muted">복용 중인 약물 없음</p>`}
               </div>
 
@@ -5835,7 +5832,8 @@ function initMixCalcPage(){
 
 
 /* ============================================================
-   🧬 DNI-Chrono Matrix (분자 성분 기반 정밀 약물-영양소 상극 감지 & 시간대별 1g 스케줄러)
+   🧬 DNI-Chrono Matrix (수의학 임상 기준 확장판: 11개 약물 카테고리 ×
+   투여 경로(Route of Administration) 분기 × 동적 N개 처방 파싱)
    — DB 저장 없이도 동작하지만, 제출 시 Supabase pet_health_scores 테이블에 인서트해요.
 ============================================================ */
 const petInsurance = {
@@ -5848,19 +5846,54 @@ const GENDER_NEUTERED_OPTIONS = {
   male: "수컷", male_neutered: "중성화 수컷", female: "암컷", female_neutered: "중성화 암컷",
 };
 
+/* 약물 대분류 — 수의학 임상에서 흔히 쓰이는 11개 카테고리 */
 const MEDICATIONS = [
-  {id:"diuretic",   label:"이뇨제"},
-  {id:"antibiotic", label:"항생제"},
-  {id:"steroid",    label:"스테로이드"},
-  {id:"joint_med",  label:"관절약"},
+  {id:"diuretic",       label:"이뇨제"},
+  {id:"antibiotic",     label:"항생제"},
+  {id:"steroid",        label:"스테로이드"},
+  {id:"joint_med",      label:"관절약"},
+  {id:"cardiac",        label:"심장/혈압약"},
+  {id:"anticonvulsant", label:"항간질/항경련제"},
+  {id:"gi",             label:"위장관/소화기약"},
+  {id:"nsaid",          label:"NSAIDs 소염진통제"},
+  {id:"immuno_skin",    label:"면역억제/피부약"},
+  {id:"hormone",        label:"호르몬/내분비약"},
+  {id:"other",          label:"기타"},
 ];
 /* 대분류 카테고리별 대표 활성 성분(Active Ingredient / Drug Molecule) 예시 */
 const DRUG_MOLECULES_BY_CATEGORY = {
-  diuretic:   ["Furosemide", "Spironolactone", "Torsemide"],
-  antibiotic: ["Enrofloxacin", "Amoxicillin", "Cephalexin", "Metronidazole"],
-  steroid:    ["Prednisolone", "Dexamethasone", "Methylprednisolone"],
-  joint_med:  ["Carprofen", "Meloxicam", "Firocoxib", "Robenacoxib"],
+  diuretic:       ["Furosemide", "Spironolactone", "Torsemide"],
+  antibiotic:     ["Enrofloxacin", "Amoxicillin", "Cephalexin", "Metronidazole"],
+  steroid:        ["Prednisolone", "Dexamethasone", "Methylprednisolone"],
+  joint_med:      ["Polysulfated GAG (Adequan)", "Bedinvetmab (Librela)", "Pentosan Polysulfate"],
+  cardiac:        ["Pimobendan", "Benazepril", "Amlodipine"],
+  anticonvulsant: ["Phenobarbital", "Potassium Bromide", "Levetiracetam"],
+  gi:             ["Omeprazole", "Famotidine", "Metoclopramide", "Sucralfate"],
+  nsaid:          ["Carprofen", "Meloxicam", "Firocoxib", "Robenacoxib"],
+  immuno_skin:    ["Cyclosporine", "Oclacitinib (Apoquel)", "Lokivetmab (Cytopoint)"],
+  hormone:        ["Levothyroxine", "Trilostane", "Insulin Glargine"],
+  other:          [],
 };
+/* 투여 경로 — 위장관(GI) 통과 여부로 흡수상충(CONFLICT) 경고 적용 여부를 분기해요 */
+const ROUTES = [
+  {id:"oral_tablet", label:"경구제(알약/가루약)", icon:"💊", passesGI:true},
+  {id:"syrup",        label:"시럽/물약",           icon:"💧", passesGI:true},
+  {id:"injection",    label:"피하/근육주사",        icon:"💉", passesGI:false},
+  {id:"topical",      label:"외용제/안약",          icon:"🧴", passesGI:false},
+];
+function routeInfo(routeId){ return ROUTES.find(r=>r.id===routeId) || ROUTES[0]; }
+/* Vision AI 응답은 카테고리를 한글 라벨로 주므로(예: "항생제"), 내부 id로 역매핑해요. 매칭 실패 시 'other'. */
+function categoryIdFromLabel(label){
+  const found = MEDICATIONS.find(m=>m.label===label || m.label.includes(label) || (label && label.includes(m.label)));
+  return found ? found.id : 'other';
+}
+/* Vision AI 응답의 투여경로 라벨(예: "경구제")을 내부 route id로 역매핑해요. */
+function routeIdFromLabel(label){
+  if(!label) return 'oral_tablet';
+  const found = ROUTES.find(r=>r.label===label || r.label.includes(label) || label.includes(r.label.split('(')[0]));
+  return found ? found.id : 'oral_tablet';
+}
+
 /* 영양제 카테고리별 주성분(Nutrient Ingredient) 예시 */
 const SUPPLEMENT_INGREDIENTS_BY_CATEGORY = {
   joint:        ["글루코사민", "콘드로이친", "초록입홍합(GLM)", "MSM"],
@@ -5869,23 +5902,35 @@ const SUPPLEMENT_INGREDIENTS_BY_CATEGORY = {
   multivitamin: ["킬레이트 칼슘", "비타민D3", "종합비타민"],
 };
 
+let medEntrySeq = 0;
+function newMedEntry(overrides){
+  medEntrySeq += 1;
+  const category = (overrides && overrides.category) || 'antibiotic';
+  return Object.assign({
+    id: 'med_' + medEntrySeq,
+    category,
+    drugMolecule: (DRUG_MOLECULES_BY_CATEGORY[category] || [])[0] || '직접입력',
+    customMolecule: '',
+    tradeName: '',        // 상품명/처방명 (선택)
+    dosage: '',           // 용량 — 자유 형식 문자열 (예: "5mg/kg", "1정")
+    frequencyPerDay: '',  // 1일 투여 횟수 (선택)
+    route: 'oral_tablet',
+  }, overrides || {});
+}
+
 const dniMatrix = {
-  medications: ["none"],   // 선택된 약물 카테고리 id 배열 ('none' 포함 시 나머지와 배타)
+  medicationEntries: [],   // [{id, category, drugMolecule, customMolecule, dosage, route}] — 유연한 리스트 구조
   supplements: ["none"],   // 선택된 영양제 카테고리 id 배열
-  medicationDetails: {},   // { [categoryId]: {drugMolecule, customMolecule, dosage} }
   supplementDetails: {},   // { [categoryId]: {ingredient, customIngredient, productName} }
   medicationInputMode: "manual", // 'scan' | 'manual' — 처방전 AI 스캔 vs 직접 성분 입력 (현재 화면 상태)
   usedPrescriptionScan: false,   // 이번 세션에서 처방전 스캔을 한 번이라도 사용했는지 (모드 전환과 무관하게 유지)
   prescriptionImageUrl: null,    // Supabase Storage('prescriptions')에 업로드된 사진 URL
-  rawOcrExtractedData: {},       // Vision AI(OCR) 추출 원본 JSON (스캔 입력 시에만 채워짐)
-  prescriptionFile: null,        // 선택된 파일 객체(업로드 전 임시 보관)
+  rawOcrExtractedData: [],       // Vision AI(OCR) 추출 원본 JSON 배열 (직접 입력 시에만 비어있음)
 };
 
-function resolveMedicationMolecule(categoryId){
-  const detail = dniMatrix.medicationDetails[categoryId];
-  if(!detail) return (DRUG_MOLECULES_BY_CATEGORY[categoryId] || [])[0] || categoryId;
-  if(detail.drugMolecule === '직접입력') return (detail.customMolecule || '').trim() || '(성분명 미입력)';
-  return detail.drugMolecule || (DRUG_MOLECULES_BY_CATEGORY[categoryId] || [])[0] || categoryId;
+function resolveEntryMolecule(entry){
+  if(entry.drugMolecule === '직접입력') return (entry.customMolecule || '').trim() || '(성분명 미입력)';
+  return entry.drugMolecule || '(성분명 미입력)';
 }
 function resolveSupplementIngredient(categoryId){
   const detail = dniMatrix.supplementDetails[categoryId];
@@ -5895,7 +5940,8 @@ function resolveSupplementIngredient(categoryId){
 }
 
 /* 분자 성분(Drug Molecule) × 영양소 주성분(Nutrient Ingredient) 임상 상극/고갈 매핑 규칙 —
-   Plumb's Veterinary Drug Handbook 등 임상 참고자료 기반 예시 데이터예요. */
+   Plumb's Veterinary Drug Handbook 등 임상 참고자료 기반 예시 데이터예요.
+   type: CONFLICT(위장관 흡수 상충 — 경구/시럽에만 적용) | DEPLETION(전신 영양 고갈 — 투여 경로 무관하게 적용) */
 const DNI_MOLECULE_RULES = [
   { molecule:"Enrofloxacin", nutrient:"킬레이트 칼슘", type:"CONFLICT", isolationHours:2,
     note:"퀴놀론계 항생제는 칼슘과 킬레이트를 형성해 항생제 흡수율이 크게 저하될 수 있어요.",
@@ -5924,13 +5970,20 @@ const DNI_MOLECULE_RULES = [
   { molecule:"Meloxicam", nutrient:"오메가3(EPA/DHA)", type:"CONFLICT", isolationHours:1,
     note:"NSAIDs와 고용량 오메가3를 동시 급여하면 위장관 출혈 위험이 중복될 수 있어요.",
     reference:"Plumb's Veterinary Drug Handbook, 9th ed." },
+  { molecule:"Omeprazole", nutrient:"킬레이트 칼슘", type:"CONFLICT", isolationHours:2,
+    note:"위산 분비를 억제하는 PPI 계열은 칼슘 흡수에 필요한 위산 환경을 저해할 수 있어요.",
+    reference:"Plumb's Veterinary Drug Handbook, 9th ed." },
+  { molecule:"Phenobarbital", nutrient:"비타민D3", type:"DEPLETION", isolationHours:2,
+    note:"항경련제 장기 복용은 간 대사 효소를 유도해 비타민D 대사를 촉진, 결핍 위험을 높일 수 있어요.",
+    reference:"Plumb's Veterinary Drug Handbook, 9th ed." },
 ];
 
 function detectDniWarnings(){
-  const activeMeds = dniMatrix.medications.filter(m=>m!=='none').map(cat=>({
-    category: cat,
-    molecule: resolveMedicationMolecule(cat),
-    dosage: (dniMatrix.medicationDetails[cat] && dniMatrix.medicationDetails[cat].dosage) || null,
+  const activeMeds = dniMatrix.medicationEntries.map(e=>({
+    category: e.category,
+    molecule: resolveEntryMolecule(e),
+    dosage: e.dosage,
+    route: e.route,
   }));
   const activeSupps = dniMatrix.supplements.filter(s=>s!=='none').map(cat=>({
     category: cat,
@@ -5939,19 +5992,25 @@ function detectDniWarnings(){
 
   const warnings = [];
   activeMeds.forEach(med=>{
+    const rt = routeInfo(med.route);
     activeSupps.forEach(supp=>{
       const rule = DNI_MOLECULE_RULES.find(r=>r.molecule===med.molecule && r.nutrient===supp.ingredient);
       if(!rule) return;
+      // 흡수 상충(CONFLICT)은 위장관을 통과하는 경구제/시럽에만 적용하고,
+      // 주사제/외용제는 흡수 경로가 달라 이 경고 대상에서 제외해요 (영양 고갈 메커니즘만 적용).
+      if(rule.type === 'CONFLICT' && !rt.passesGI) return;
+
       const dosageFlag = !med.dosage;
       const recommendationNote = dosageFlag
         ? `⚠️ ${rule.molecule}은 특정 용량 이상 복용 시 ${rule.nutrient} 고갈 또는 흡수 억제 반응이 나타날 수 있습니다.`
-        : `${rule.note} 최소 ${rule.isolationHours}시간 이상 간격을 두고 급여해주세요. (현재 용량: ${med.dosage}mg/kg)`;
+        : `${rule.note} 최소 ${rule.isolationHours}시간 이상 간격을 두고 급여해주세요. (현재 용량: ${med.dosage}, 투여경로: ${rt.label})`;
       warnings.push({
         molecule: rule.molecule,
         nutrient: rule.nutrient,
         interaction_type: rule.type,
         isolation_hours: rule.isolationHours,
         dosage_flag: dosageFlag,
+        route_of_administration: rt.label,
         clinical_reference: rule.reference,
         recommendation_note: recommendationNote,
         medCategory: med.category,
@@ -5974,7 +6033,7 @@ function renderDniWarningBanner(warnings){
   banner.innerHTML = warnings.map(w=>`
     <div class="rounded-xl p-3" style="background:${w.interaction_type==='CONFLICT' ? '#C0473A14' : '#D89A1E14'}; border:1.5px solid ${w.interaction_type==='CONFLICT' ? '#C0473A44' : '#D89A1E44'};">
       <p class="text-xs font-bold mb-1" style="color:${w.interaction_type==='CONFLICT' ? '#C0473A' : '#D89A1E'};">
-        ${w.interaction_type==='CONFLICT' ? '⚠️ 상극(CONFLICT)' : '🧪 영양 고갈(DEPLETION)'} · ${w.molecule} × ${w.nutrient}
+        ${w.interaction_type==='CONFLICT' ? '⚠️ 상극(CONFLICT)' : '🧪 영양 고갈(DEPLETION)'} · ${w.molecule}(${w.route_of_administration}) × ${w.nutrient}
       </p>
       <p class="text-xs mb-1" style="color:#2C241F;">${w.recommendation_note}</p>
       ${w.dosage_flag ? `<p class="text-[10px] font-semibold mb-1" style="color:${w.interaction_type==='CONFLICT' ? '#C0473A' : '#D89A1E'};">🚩 용량(Dosage) 미입력 — 위 문구는 조건부 가이드예요. 정확한 용량을 입력하면 더 구체적인 안내를 받을 수 있어요.</p>` : ''}
@@ -6000,10 +6059,10 @@ function buildDniChronoSchedule(warnings){
     { time:"22:00", label:"야간", foodG: 0, items:[] },
   ];
 
-  dniMatrix.medications.filter(m=>m!=='none').forEach(cat=>{
-    const molecule = resolveMedicationMolecule(cat);
-    const dosage = dniMatrix.medicationDetails[cat] && dniMatrix.medicationDetails[cat].dosage;
-    slots[0].items.push(`💊 ${molecule}${dosage ? ` (${dosage}mg/kg)` : ''}`);
+  dniMatrix.medicationEntries.forEach(e=>{
+    const molecule = resolveEntryMolecule(e);
+    const rt = routeInfo(e.route);
+    slots[0].items.push(`${rt.icon} ${molecule}${e.dosage ? ` (${e.dosage})` : ''}`);
   });
   dniMatrix.supplements.filter(s=>s!=='none').forEach(cat=>{
     const ingredient = resolveSupplementIngredient(cat);
@@ -6046,172 +6105,86 @@ function renderMedicalHistoryTags(){
   });
 }
 
-/* ---- 약물/영양제 세부 입력 행 렌더링 ---- */
-/* ---- 약물 입력 모드(스캔/수동) 전환 ---- */
-function syncMedModePanels(){
-  document.getElementById('dniScanPanel').classList.toggle('hidden', dniMatrix.medicationInputMode !== 'scan');
-  document.getElementById('dniManualPanel').classList.toggle('hidden', dniMatrix.medicationInputMode !== 'manual');
+/* ---- 약물 항목 카드 공통 렌더러 (직접입력 패널 + 스캔 검토 모달에서 공용으로 써요) ---- */
+function medEntryCardHtml(entry, opts){
+  opts = opts || {};
+  const catOptions = MEDICATIONS.map(m=>`<option value="${m.id}" ${entry.category===m.id?'selected':''}>${m.label}</option>`).join('');
+  const moleculeChoices = [...(DRUG_MOLECULES_BY_CATEGORY[entry.category] || []), '직접입력'];
+  const moleculeOptions = moleculeChoices.map(o=>`<option value="${o}" ${entry.drugMolecule===o?'selected':''}>${o}</option>`).join('');
+  const routeOptions = ROUTES.map(r=>`<option value="${r.id}" ${entry.route===r.id?'selected':''}>${r.icon} ${r.label}</option>`).join('');
+  return `
+    <div class="med-entry-card rounded-xl p-3" data-entry-id="${entry.id}" style="background:#FAF9F5;">
+      <div class="flex items-center justify-between mb-2">
+        <select class="med-entry-category-select rounded-lg px-2 py-1.5 text-xs" data-entry-id="${entry.id}" style="border:1px solid #3A5A4033;">${catOptions}</select>
+        <button type="button" class="med-entry-remove-btn text-xs font-bold" data-entry-id="${entry.id}" style="color:#C0473A;">삭제</button>
+      </div>
+      <select class="med-entry-molecule-select w-full rounded-lg px-2 py-2 text-xs mb-2" data-entry-id="${entry.id}" style="border:1px solid #3A5A4033;">${moleculeOptions}</select>
+      ${entry.drugMolecule==='직접입력' ? `<input type="text" class="med-entry-custom-input w-full rounded-lg px-2 py-2 text-xs mb-2" data-entry-id="${entry.id}" placeholder="성분명을 입력해주세요" value="${entry.customMolecule||''}" style="border:1px solid #3A5A4033;">` : ''}
+      <input type="text" class="med-entry-tradename-input w-full rounded-lg px-2 py-2 text-xs mb-2" data-entry-id="${entry.id}" placeholder="상품명/처방명 (선택)" value="${entry.tradeName||''}" style="border:1px solid #3A5A4033;">
+      <div class="grid grid-cols-2 gap-2 mb-2">
+        <input type="text" class="med-entry-dosage-input w-full rounded-lg px-2 py-2 text-xs" data-entry-id="${entry.id}" placeholder="용량 (예: 5mg/kg, 1정)" value="${entry.dosage||''}" style="border:1px solid #3A5A4033;">
+        <input type="text" class="med-entry-frequency-input w-full rounded-lg px-2 py-2 text-xs" data-entry-id="${entry.id}" placeholder="1일 투여횟수 (예: 2회)" value="${entry.frequencyPerDay||''}" style="border:1px solid #3A5A4033;">
+      </div>
+      <select class="med-entry-route-select w-full rounded-lg px-2 py-2 text-xs" data-entry-id="${entry.id}" style="border:1px solid #3A5A4033;">${routeOptions}</select>
+      ${opts.rawTextSnippet ? `<p class="text-[10px] mt-1.5" style="color:#6b6259;">🤖 AI 인식: "${opts.rawTextSnippet}"${opts.confidence!=null ? ` (신뢰도 ${Math.round(opts.confidence*100)}%)` : ''}</p>` : ''}
+    </div>`;
 }
-function syncCategoryButtonActiveState(containerId, activeArray){
-  document.querySelectorAll(`#${containerId} button`).forEach(b=>{
-    b.classList.toggle('active', activeArray.includes(b.dataset.val));
-  });
-}
-function guessCategoryForMolecule(molecule){
-  for(const [cat, list] of Object.entries(DRUG_MOLECULES_BY_CATEGORY)){
-    if(list.includes(molecule)) return cat;
-  }
-  return 'antibiotic';
-}
-
-/* ⚠️ 실제 서비스에서는 이 자리에서 Vision AI(OCR) API를 호출해요.
-   이 데모 환경에는 별도 백엔드가 없어서, 업로드된 처방전 사진을 분석하는 대신
-   그럴듯한 예시 추출 결과를 시뮬레이션으로 반환해요 (검토 모달에서 반드시 확인/수정할 수 있어요). */
-function simulateVisionAiExtraction(){
-  const samples = [
-    { drug_molecule:'Enrofloxacin', category:'antibiotic', dosage:5,  confidence:0.91, raw_text_snippet:'Rx: Enrofloxacin 5mg/kg SID x 7days' },
-    { drug_molecule:'Furosemide',   category:'diuretic',   dosage:2,  confidence:0.88, raw_text_snippet:'Rx: Furosemide 2mg/kg BID' },
-    { drug_molecule:'Prednisolone', category:'steroid',    dosage:0.5,confidence:0.89, raw_text_snippet:'Rx: Prednisolone 0.5mg/kg SID' },
-  ];
-  return samples[0]; // 데모 안정성을 위해 첫 번째 예시로 고정
-}
-
-async function handlePrescriptionScan(){
-  const fileInput = document.getElementById('dniPrescriptionFileInput');
-  const file = fileInput.files && fileInput.files[0];
-  const statusEl = document.getElementById('dniScanStatus');
-  if(!file){
-    statusEl.textContent = '⚠️ 먼저 처방전 사진을 선택해주세요.';
-    statusEl.style.color = '#C0473A';
-    return;
-  }
-
-  statusEl.style.color = '#3A5A40';
-  statusEl.textContent = '⏳ 업로드 중...';
-
-  let imageUrl = null;
-  if(supabaseClient){
-    try{
-      const path = `scan_${Date.now()}_${file.name}`;
-      const { error: uploadError } = await supabaseClient.storage.from('prescriptions').upload(path, file);
-      if(uploadError){
-        console.error('PRESCRIPTION_UPLOAD_ERROR:', JSON.stringify(uploadError, null, 2));
-        statusEl.textContent = `⚠️ 업로드 실패: ${uploadError.message || '알 수 없는 오류'} — 로컬 미리보기로만 진행해요.`;
-        imageUrl = URL.createObjectURL(file);
-      } else {
-        const { data: publicUrlData } = supabaseClient.storage.from('prescriptions').getPublicUrl(path);
-        imageUrl = (publicUrlData && publicUrlData.publicUrl) || URL.createObjectURL(file);
-      }
-    }catch(err){
-      console.error('PRESCRIPTION_UPLOAD_ERROR:', safeStringifyError(err));
-      statusEl.textContent = '⚠️ 업로드 중 오류가 발생해 로컬 미리보기로만 진행해요.';
-      imageUrl = URL.createObjectURL(file);
-    }
-  } else {
-    // Supabase 미연결 시에는 실제 저장 없이 로컬 미리보기만 제공해요.
-    imageUrl = URL.createObjectURL(file);
-  }
-
-  dniMatrix.prescriptionImageUrl = imageUrl;
-  dniMatrix.usedPrescriptionScan = true;
-  const thumb = document.getElementById('dniScanThumb');
-  thumb.src = imageUrl;
-  document.getElementById('dniScanThumbWrap').classList.remove('hidden');
-
-  statusEl.textContent = '🤖 AI가 약물 정보를 분석하고 있어요...';
-  const extracted = simulateVisionAiExtraction();
-  dniMatrix.rawOcrExtractedData = extracted;
-  statusEl.textContent = '✅ 분석 완료! 아래에서 확인·수정해주세요.';
-  openPrescriptionReviewModal(extracted);
-}
-
-function openPrescriptionReviewModal(extracted){
-  mountModal(`
-    <p class="text-xs font-bold mb-1" style="color:#3A5A40;">🤖 AI 자동 추출 결과 (검토 후 확인해주세요)</p>
-    <h3 class="font-display text-xl font-bold mb-3">처방전 스캔 검토</h3>
-    <p class="text-xs text-muted mb-3">스캔 원문: "${extracted.raw_text_snippet}" (신뢰도 ${Math.round(extracted.confidence*100)}%)</p>
-
-    <label class="block text-xs font-semibold mb-1.5">약물 대분류</label>
-    <select id="reviewCategorySelect" class="w-full rounded-xl px-3 py-2.5 mb-3 text-sm" style="border:1px solid #3A5A4033;">
-      ${MEDICATIONS.map(m=>`<option value="${m.id}" ${m.id===extracted.category?'selected':''}>${m.label}</option>`).join('')}
-    </select>
-
-    <label class="block text-xs font-semibold mb-1.5">약물 성분명 (Drug Molecule)</label>
-    <input type="text" id="reviewMoleculeInput" value="${extracted.drug_molecule}" class="w-full rounded-xl px-3 py-2.5 mb-3 text-sm" style="border:1px solid #3A5A4033;">
-
-    <label class="block text-xs font-semibold mb-1.5">용량 (mg/kg, 선택)</label>
-    <input type="number" step="0.1" id="reviewDosageInput" value="${extracted.dosage ?? ''}" class="w-full rounded-xl px-3 py-2.5 mb-4 text-sm" style="border:1px solid #3A5A4033;">
-
-    <button id="reviewConfirmBtn" class="btn-primary w-full rounded-xl py-3 text-sm">확인하고 반영하기</button>
-  `, true);
-
-  document.getElementById('reviewConfirmBtn').addEventListener('click', ()=>{
-    const category = document.getElementById('reviewCategorySelect').value;
-    const molecule = document.getElementById('reviewMoleculeInput').value.trim();
-    const dosage = document.getElementById('reviewDosageInput').value ? parseFloat(document.getElementById('reviewDosageInput').value) : null;
-
-    // 'none'을 제거하고 해당 카테고리를 추가해요.
-    const noneIdx = dniMatrix.medications.indexOf('none');
-    if(noneIdx > -1) dniMatrix.medications.splice(noneIdx, 1);
-    if(!dniMatrix.medications.includes(category)) dniMatrix.medications.push(category);
-
-    const isKnownMolecule = (DRUG_MOLECULES_BY_CATEGORY[category] || []).includes(molecule);
-    dniMatrix.medicationDetails[category] = isKnownMolecule
-      ? { drugMolecule: molecule, customMolecule:'', dosage }
-      : { drugMolecule: '직접입력', customMolecule: molecule, dosage };
-
-    // 검토 완료 후에는 직접입력(수동) 화면으로 전환해 반영 결과를 바로 보여줘요.
-    dniMatrix.medicationInputMode = 'manual';
-    syncMedModePanels();
-    syncCategoryButtonActiveState('dniMedModeGroup', ['manual']);
-    syncCategoryButtonActiveState('dniMedGroup', dniMatrix.medications);
-    renderMedicationDetailRows();
-    updateInsuranceOutputs();
-    closeModal();
-  });
-}
-
-function renderMedicationDetailRows(){
-  const wrap = document.getElementById('dniMedDetailWrap');
-  const activeCats = dniMatrix.medications.filter(m=>m!=='none');
-  wrap.innerHTML = activeCats.map(cat=>{
-    if(!dniMatrix.medicationDetails[cat]) dniMatrix.medicationDetails[cat] = { drugMolecule: DRUG_MOLECULES_BY_CATEGORY[cat][0], customMolecule:'', dosage:null };
-    const detail = dniMatrix.medicationDetails[cat];
-    const catLabel = MEDICATIONS.find(m=>m.id===cat)?.label || cat;
-    const options = [...DRUG_MOLECULES_BY_CATEGORY[cat], '직접입력'];
-    return `
-      <div class="rounded-xl p-3" style="background:#FAF9F5;">
-        <p class="text-[11px] font-bold mb-2" style="color:#3A5A40;">${catLabel} 세부 정보</p>
-        <select class="dni-med-molecule-select w-full rounded-lg px-2 py-2 text-xs mb-2" data-cat="${cat}" style="border:1px solid #3A5A4033;">
-          ${options.map(o=>`<option value="${o}" ${detail.drugMolecule===o?'selected':''}>${o}</option>`).join('')}
-        </select>
-        ${detail.drugMolecule==='직접입력' ? `<input type="text" class="dni-med-custom-input w-full rounded-lg px-2 py-2 text-xs mb-2" data-cat="${cat}" placeholder="성분명을 입력해주세요" value="${detail.customMolecule||''}" style="border:1px solid #3A5A4033;">` : ''}
-        <div class="relative">
-          <input type="number" step="0.1" class="dni-med-dosage-input w-full rounded-lg px-2 py-2 text-xs" data-cat="${cat}" placeholder="용량 (선택 입력)" value="${detail.dosage ?? ''}" style="border:1px solid #3A5A4033;">
-          <span class="absolute right-2 top-1/2 -translate-y-1/2 text-[10px]" style="color:#6b6259;">mg/kg</span>
-        </div>
-      </div>`;
-  }).join('');
-
-  wrap.querySelectorAll('.dni-med-molecule-select').forEach(sel=>{
+function bindMedEntryCardEvents(wrap, entries, onChange){
+  wrap.querySelectorAll('.med-entry-category-select').forEach(sel=>{
     sel.addEventListener('change', e=>{
-      dniMatrix.medicationDetails[sel.dataset.cat].drugMolecule = e.target.value;
-      renderMedicationDetailRows();
-      updateInsuranceOutputs();
+      const entry = entries.find(x=>x.id===sel.dataset.entryId);
+      entry.category = e.target.value;
+      entry.drugMolecule = (DRUG_MOLECULES_BY_CATEGORY[entry.category] || [])[0] || '직접입력';
+      entry.customMolecule = '';
+      onChange();
     });
   });
-  wrap.querySelectorAll('.dni-med-custom-input').forEach(inp=>{
+  wrap.querySelectorAll('.med-entry-molecule-select').forEach(sel=>{
+    sel.addEventListener('change', e=>{
+      entries.find(x=>x.id===sel.dataset.entryId).drugMolecule = e.target.value;
+      onChange();
+    });
+  });
+  wrap.querySelectorAll('.med-entry-custom-input').forEach(inp=>{
     inp.addEventListener('input', e=>{
-      dniMatrix.medicationDetails[inp.dataset.cat].customMolecule = e.target.value;
-      updateInsuranceOutputs();
+      entries.find(x=>x.id===inp.dataset.entryId).customMolecule = e.target.value;
     });
   });
-  wrap.querySelectorAll('.dni-med-dosage-input').forEach(inp=>{
+  wrap.querySelectorAll('.med-entry-tradename-input').forEach(inp=>{
     inp.addEventListener('input', e=>{
-      dniMatrix.medicationDetails[inp.dataset.cat].dosage = e.target.value ? parseFloat(e.target.value) : null;
-      updateInsuranceOutputs();
+      entries.find(x=>x.id===inp.dataset.entryId).tradeName = e.target.value;
     });
   });
+  wrap.querySelectorAll('.med-entry-dosage-input').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      entries.find(x=>x.id===inp.dataset.entryId).dosage = e.target.value;
+    });
+  });
+  wrap.querySelectorAll('.med-entry-frequency-input').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      entries.find(x=>x.id===inp.dataset.entryId).frequencyPerDay = e.target.value;
+    });
+  });
+  wrap.querySelectorAll('.med-entry-route-select').forEach(sel=>{
+    sel.addEventListener('change', e=>{
+      entries.find(x=>x.id===sel.dataset.entryId).route = e.target.value;
+    });
+  });
+  wrap.querySelectorAll('.med-entry-remove-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const idx = entries.findIndex(x=>x.id===btn.dataset.entryId);
+      if(idx>-1) entries.splice(idx,1);
+      onChange();
+    });
+  });
+}
+
+/* ---- 직접 입력(Option B) 패널: 약물 항목 리스트 렌더링 ---- */
+function renderMedicationEntries(){
+  const wrap = document.getElementById('dniMedEntriesWrap');
+  wrap.innerHTML = dniMatrix.medicationEntries.map(e=>medEntryCardHtml(e)).join('')
+    || `<p class="text-[11px] text-center py-2" style="color:#6b6259;">추가된 약물이 없어요.</p>`;
+  bindMedEntryCardEvents(wrap, dniMatrix.medicationEntries, ()=>{ renderMedicationEntries(); updateInsuranceOutputs(); });
 }
 
 function renderSupplementDetailRows(){
@@ -6284,6 +6257,253 @@ function buildInsuranceBcsButtons(){
   }
 }
 
+/* ---- 약물 입력 모드(스캔/수동) 전환 ---- */
+function syncMedModePanels(){
+  document.getElementById('dniScanPanel').classList.toggle('hidden', dniMatrix.medicationInputMode !== 'scan');
+  document.getElementById('dniManualPanel').classList.toggle('hidden', dniMatrix.medicationInputMode !== 'manual');
+}
+
+/* ============================================================
+   범용 Vision AI(OCR) 연동 지점
+   ------------------------------------------------------------
+   analyzePrescriptionImage(base64Image)가 유일한 연동 지점이에요.
+   실제 배포 시에는 이 함수 내부만 백엔드 프록시 엔드포인트(Claude Vision / GPT-4o Vision
+   API 키를 서버에 안전하게 보관) 호출로 교체하면 나머지(검토 모달, DNI 분석, Chrono
+   타임라인)는 그대로 동작해요. API 키를 프론트엔드 코드에 직접 넣는 건 키 유출
+   위험이 있어 권장하지 않아요 — 반드시 서버 프록시를 통해 호출해주세요.
+============================================================ */
+const PRESCRIPTION_VISION_SYSTEM_PROMPT = `당신은 반려동물 처방전/약봉투 사진을 분석하는 수의학 전문 Vision AI입니다.
+이미지에 포함된 모든 처방 내역(1개~N개, 개수 제한 없음)을 빠짐없이 읽어 아래 JSON 스키마로만 응답하세요.
+이미지에서 값을 읽을 수 없는 필드는 빈 문자열로 두고, 절대로 예시 값을 지어내지 마세요.
+
+{
+  "hospital_name": "string",
+  "extracted_medications": [
+    {
+      "category": "항생제 | 이뇨제 | 스테로이드 | 관절약 | 심장/혈압약 | 위장관약 | NSAIDs소염진통제 | 기타",
+      "drug_molecule": "성분명(Active Ingredient / Drug Molecule, 예: Enrofloxacin, Furosemide, Prednisolone 등)",
+      "trade_name": "상품명/처방명",
+      "dosage": "용량(예: 5mg/kg 또는 1정)",
+      "route_of_administration": "경구제 | 시럽/물약 | 피하/근육주사 | 외용제/안약"
+    }
+  ]
+}`;
+
+/* Vision API가 반환한 한글 라벨(category/route_of_administration)을 우리 내부 id로 매핑해요.
+   스펙에 명시된 정확한 enum 문자열(예: "위장관약", "NSAIDs소염진통제")을 우선 매핑하고,
+   그 외에는 내부 카테고리 라벨과 느슨하게(공백/슬래시 무시) 비교해요. */
+const CATEGORY_LABEL_ALIASES = {
+  '항생제':'antibiotic', '이뇨제':'diuretic', '스테로이드':'steroid', '관절약':'joint_med',
+  '심장/혈압약':'cardiac', '심장약':'cardiac', '혈압약':'cardiac',
+  '항간질/항경련제':'anticonvulsant', '항경련제':'anticonvulsant',
+  '위장관약':'gi', '위장관/소화기약':'gi', '소화기약':'gi',
+  'NSAIDs소염진통제':'nsaid', 'NSAIDs 소염진통제':'nsaid', '소염진통제':'nsaid',
+  '면역억제/피부약':'immuno_skin', '면역억제제':'immuno_skin', '피부약':'immuno_skin',
+  '호르몬/내분비약':'hormone', '호르몬약':'hormone', '내분비약':'hormone',
+  '기타':'other',
+};
+function mapCategoryLabelToId(label){
+  const trimmed = (label || '').trim();
+  if(CATEGORY_LABEL_ALIASES[trimmed]) return CATEGORY_LABEL_ALIASES[trimmed];
+  const norm = trimmed.replace(/[\s/]/g, '');
+  const aliasHit = Object.keys(CATEGORY_LABEL_ALIASES).find(k => k.replace(/[\s/]/g,'') === norm);
+  if(aliasHit) return CATEGORY_LABEL_ALIASES[aliasHit];
+  const found = MEDICATIONS.find(m => m.label === trimmed || m.label.replace(/[\s/]/g,'') === norm);
+  return found ? found.id : 'other';
+}
+function mapRouteLabelToId(label){
+  const aliasMap = { '경구제':'oral_tablet', '시럽/물약':'syrup', '피하/근육주사':'injection', '외용제/안약':'topical' };
+  if(aliasMap[label]) return aliasMap[label];
+  const found = ROUTES.find(r=>r.label===label || (label||'').includes(r.label));
+  return found ? found.id : 'oral_tablet';
+}
+/* "5mg/kg", "1정" 같은 자유 형식 문자열에서 숫자만 뽑아내요 (mg/kg 표기가 없으면 숫자만 추출) */
+function parseDosageNumber(dosageStr){
+  if(!dosageStr) return null;
+  const m = /([\d.]+)/.exec(String(dosageStr));
+  return m ? parseFloat(m[1]) : null;
+}
+
+/* Vision API 응답(표준 스키마)을 검토 모달이 쓰는 내부 작업 형태로 정규화해요. */
+function normalizeVisionAiResponse(apiResponse){
+  const meds = (apiResponse && Array.isArray(apiResponse.extracted_medications)) ? apiResponse.extracted_medications : [];
+  return meds.map(m=>({
+    drug_molecule: (m.drug_molecule || m.trade_name || '').trim() || '(성분명 미인식)',
+    trade_name: m.trade_name || '',
+    category: mapCategoryLabelToId(m.category),
+    dosage: parseDosageNumber(m.dosage),
+    dosage_raw: m.dosage || '',
+    route: mapRouteLabelToId(m.route_of_administration),
+    confidence: null, // 실제 API가 신뢰도를 제공하면 여기에 매핑해주세요
+    raw_text_snippet: m.trade_name ? `${m.drug_molecule || ''} (${m.trade_name})` : (m.drug_molecule || ''),
+  }));
+}
+
+/**
+ * 처방전 이미지(base64 DataURL)를 Vision AI로 분석해 약물 목록을 반환해요.
+ * ⚠️ 연동 지점: 아래 fetch 호출의 주석을 해제하고 실제 백엔드 프록시 URL로 교체하면
+ * 실시간 OCR 분석이 연결돼요. 지금은 백엔드가 없어 명시적으로 에러를 던지고,
+ * 호출부(handlePrescriptionScan)에서 이를 감지해 빈 검토 모달로 안전하게 폴백해요.
+ */
+async function analyzePrescriptionImage(base64Image){
+  // ---- 실제 배포 시 이 부분을 교체하세요 ----
+  // const res = await fetch('/api/analyze-prescription', {
+  //   method: 'POST',
+  //   headers: { 'Content-Type': 'application/json' },
+  //   body: JSON.stringify({ image: base64Image, systemPrompt: PRESCRIPTION_VISION_SYSTEM_PROMPT }),
+  // });
+  // if(!res.ok) throw new Error(`Vision AI 분석 요청이 실패했습니다 (HTTP ${res.status})`);
+  // const apiResponse = await res.json();
+  // return normalizeVisionAiResponse(apiResponse);
+
+  throw new Error('VISION_API_NOT_CONFIGURED');
+}
+
+/* Storage 업로드 실패/네트워크 오류 시 앱이 죽지 않도록, 파일을 Base64 DataURL로 안전하게 읽어요.
+   (Blob URL 대신 DataURL을 쓰면 별도 revoke 없이도 안전하고, 세션이 끝나도 값 자체는 유지돼요.) */
+function readFileAsDataUrl(file){
+  return new Promise((resolve, reject)=>{
+    try{
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(new Error('파일을 읽는 중 오류가 발생했습니다.'));
+      reader.readAsDataURL(file);
+    }catch(err){
+      reject(new Error((err && err.message) || '파일을 읽는 중 오류가 발생했습니다.'));
+    }
+  });
+}
+
+async function handlePrescriptionScan(){
+  const fileInput = document.getElementById('dniPrescriptionFileInput');
+  const file = fileInput.files && fileInput.files[0];
+  const statusEl = document.getElementById('dniScanStatus');
+  if(!file){
+    statusEl.textContent = '⚠️ 먼저 처방전 사진을 선택해주세요.';
+    statusEl.style.color = '#C0473A';
+    return;
+  }
+
+  statusEl.style.color = '#3A5A40';
+  statusEl.textContent = '⏳ 업로드 중...';
+
+  let imageUrl = null;
+  if(supabaseClient){
+    try{
+      const path = `scan_${Date.now()}_${file.name}`;
+      const { error: uploadError } = await supabaseClient.storage.from('prescriptions').upload(path, file);
+      if(uploadError){
+        // ⚠️ 프로덕션 안전장치: catch/에러 객체를 그대로 넘기면(postMessage, 상태 저장 등에서)
+        // "Headers object could not be cloned" 같은 직렬화 에러가 날 수 있어요.
+        // 반드시 사람이 읽을 수 있는 단순 문자열(error?.message)만 사용해요.
+        const errMsg = uploadError?.message || '업로드 실패';
+        console.error('PRESCRIPTION_UPLOAD_ERROR:', errMsg);
+        statusEl.textContent = `⚠️ 업로드 실패: ${errMsg} — 안전하게 로컬 미리보기로 전환할게요.`;
+        imageUrl = await readFileAsDataUrl(file);
+      } else {
+        const { data: publicUrlData } = supabaseClient.storage.from('prescriptions').getPublicUrl(path);
+        imageUrl = (publicUrlData && publicUrlData.publicUrl) || await readFileAsDataUrl(file);
+      }
+    }catch(err){
+      const errMsg = err?.message || '업로드 실패';
+      console.error('PRESCRIPTION_UPLOAD_ERROR:', errMsg);
+      statusEl.textContent = `⚠️ 업로드 중 오류가 발생했어요 (${errMsg}) — 안전하게 로컬 미리보기로 전환할게요.`;
+      try{
+        imageUrl = await readFileAsDataUrl(file);
+      }catch(readErr){
+        console.error('PRESCRIPTION_FILEREADER_ERROR:', readErr?.message || '파일 읽기 실패');
+        statusEl.textContent = '⚠️ 이미지를 불러오지 못했어요. 다른 사진으로 다시 시도해주세요.';
+        return;
+      }
+    }
+  } else {
+    try{
+      imageUrl = await readFileAsDataUrl(file);
+    }catch(readErr){
+      statusEl.textContent = '⚠️ 이미지를 불러오지 못했어요. 다른 사진으로 다시 시도해주세요.';
+      return;
+    }
+  }
+
+  dniMatrix.prescriptionImageUrl = imageUrl;
+  dniMatrix.usedPrescriptionScan = true;
+  const thumb = document.getElementById('dniScanThumb');
+  thumb.src = imageUrl;
+  document.getElementById('dniScanThumbWrap').classList.remove('hidden');
+
+  statusEl.textContent = '🤖 AI가 약물 정보를 분석하고 있어요...';
+  let extracted = [];
+  try{
+    const apiResponse = await analyzePrescriptionImage(imageUrl);
+    extracted = normalizeVisionAiResponse(apiResponse);
+    statusEl.textContent = extracted.length
+      ? `✅ 분석 완료! ${extracted.length}개 약물을 찾았어요. 아래에서 확인·수정해주세요.`
+      : '⚠️ 이미지에서 약물 정보를 찾지 못했어요. 검토 화면에서 직접 추가해주세요.';
+  }catch(err){
+    const errMsg = err?.message || 'Vision AI 분석에 실패했습니다.';
+    console.warn('VISION_AI_ERROR:', errMsg);
+    extracted = [];
+    statusEl.textContent = errMsg === 'VISION_API_NOT_CONFIGURED'
+      ? '⚠️ Vision AI 분석 서버가 아직 연결되지 않았어요. 검토 화면에서 [약물 직접 추가]로 입력해주세요.'
+      : `⚠️ 분석 중 오류가 발생했어요 (${errMsg}). 검토 화면에서 직접 추가해주세요.`;
+  }
+  dniMatrix.rawOcrExtractedData = extracted;
+  openPrescriptionReviewModal(extracted);
+}
+
+function openPrescriptionReviewModal(extracted){
+  // 모달 내부에서만 쓰는 작업용 사본 — '확인하고 반영하기'를 눌러야 실제 dniMatrix에 반영돼요.
+  const reviewEntries = extracted.map(x=>{
+    const knownMolecules = DRUG_MOLECULES_BY_CATEGORY[x.category] || [];
+    const isKnown = knownMolecules.includes(x.drug_molecule);
+    return newMedEntry({
+      category: x.category,
+      drugMolecule: isKnown ? x.drug_molecule : '직접입력',
+      customMolecule: isKnown ? '' : (x.drug_molecule || ''),
+      dosage: x.dosage,
+      route: x.route,
+    });
+  });
+  const confidenceById = {};
+  reviewEntries.forEach((e,i)=>{ confidenceById[e.id] = { confidence: extracted[i].confidence, rawTextSnippet: extracted[i].raw_text_snippet }; });
+
+  mountModal(`
+    <p class="text-xs font-bold mb-1" style="color:#3A5A40;">🤖 AI 자동 추출 결과 (검토 후 확인해주세요)</p>
+    <h3 class="font-display text-xl font-bold mb-3">처방전 스캔 검토</h3>
+    <p class="text-xs text-muted mb-3">처방전에서 총 <b id="reviewEntryCount">${reviewEntries.length}</b>개의 약물을 찾았어요. 각 항목을 확인·수정하거나 삭제/추가할 수 있어요.</p>
+
+    <div class="space-y-2 mb-3" id="reviewEntriesWrap"></div>
+    <button type="button" id="reviewAddMedBtn" class="w-full rounded-xl py-2.5 text-xs font-bold mb-4" style="background:#FAF9F5; border:1.5px dashed #3A5A4055; color:#3A5A40;">➕ 약물 직접 추가</button>
+
+    <button id="reviewConfirmBtn" class="btn-primary w-full rounded-xl py-3 text-sm">확인하고 반영하기</button>
+  `, true);
+
+  function renderReviewEntries(){
+    const wrap = document.getElementById('reviewEntriesWrap');
+    wrap.innerHTML = reviewEntries.map(e=>medEntryCardHtml(e, confidenceById[e.id] || {})).join('')
+      || `<p class="text-[11px] text-center py-2" style="color:#6b6259;">추가된 약물이 없어요.</p>`;
+    document.getElementById('reviewEntryCount').textContent = reviewEntries.length;
+    bindMedEntryCardEvents(wrap, reviewEntries, renderReviewEntries);
+  }
+  renderReviewEntries();
+
+  document.getElementById('reviewAddMedBtn').addEventListener('click', ()=>{
+    reviewEntries.push(newMedEntry({}));
+    renderReviewEntries();
+  });
+
+  document.getElementById('reviewConfirmBtn').addEventListener('click', ()=>{
+    // 검토된 항목들을 실제 상태에 반영(기존 직접입력 항목 뒤에 추가)하고, 직접입력 화면으로 전환해 결과를 보여줘요.
+    reviewEntries.forEach(e=>{ dniMatrix.medicationEntries.push(newMedEntry(e)); });
+    dniMatrix.medicationInputMode = 'manual';
+    syncMedModePanels();
+    document.querySelectorAll('#dniMedModeGroup button').forEach(b=>b.classList.toggle('active', b.dataset.val==='manual'));
+    renderMedicationEntries();
+    updateInsuranceOutputs();
+    closeModal();
+  });
+}
+
 async function submitDniChronoData(){
   const { warnings, schedule } = updateInsuranceOutputs();
 
@@ -6295,10 +6515,11 @@ async function submitDniChronoData(){
   const genderNeutered = petInsurance.genderNeutered;
   const medicalHistory = petInsurance.medicalHistory;
 
-  const activeMedicationDetails = dniMatrix.medications.filter(m=>m!=='none').map(cat=>({
-    category: MEDICATIONS.find(m=>m.id===cat)?.label || cat,
-    drug_molecule: resolveMedicationMolecule(cat),
-    dosage_optional: (dniMatrix.medicationDetails[cat] && dniMatrix.medicationDetails[cat].dosage) || null,
+  const activeMedicationDetails = dniMatrix.medicationEntries.map(e=>({
+    category: MEDICATIONS.find(m=>m.id===e.category)?.label || e.category,
+    drug_molecule: resolveEntryMolecule(e),
+    dosage_optional: e.dosage || null,
+    route_of_administration: routeInfo(e.route).label,
   }));
   const activeSupplementDetails = dniMatrix.supplements.filter(s=>s!=='none').map(cat=>{
     const detail = dniMatrix.supplementDetails[cat] || {};
@@ -6323,7 +6544,7 @@ async function submitDniChronoData(){
     dni_warnings: JSON.stringify(warnings),
     daily_chrono_schedule: JSON.stringify(schedule),
     prescription_image_url: dniMatrix.usedPrescriptionScan ? (dniMatrix.prescriptionImageUrl || null) : null,
-    raw_ocr_extracted_data: JSON.stringify(dniMatrix.usedPrescriptionScan ? (dniMatrix.rawOcrExtractedData || {}) : {}),
+    raw_ocr_extracted_data: JSON.stringify(dniMatrix.usedPrescriptionScan ? (dniMatrix.rawOcrExtractedData || []) : []),
 
     // 전체 폼 상태 및 계산 결과를 JSONB로 백업 보존 (컬럼이 다르거나 빠져도 데이터는 항상 남아요)
     extra_data: JSON.stringify({
@@ -6411,12 +6632,15 @@ function initInsurancePage(){
   });
   renderMedicalHistoryTags();
 
-  bindExclusiveMultiGroup('dniMedGroup', dniMatrix.medications);
+  renderMedicationEntries();
+  document.getElementById('dniAddMedBtn').addEventListener('click', ()=>{
+    dniMatrix.medicationEntries.push(newMedEntry({}));
+    renderMedicationEntries();
+    updateInsuranceOutputs();
+  });
+
   bindExclusiveMultiGroup('dniSuppGroup', dniMatrix.supplements);
-  document.querySelector('#dniMedGroup button[data-val="none"]').classList.add('active');
   document.querySelector('#dniSuppGroup button[data-val="none"]').classList.add('active');
-  // 배타적 다중 선택 그룹이 바뀔 때마다 세부 입력 행 및 DNI 재계산이 즉시 반영되도록 위임 바인딩
-  document.getElementById('dniMedGroup').addEventListener('click', ()=>{ renderMedicationDetailRows(); updateInsuranceOutputs(); });
   document.getElementById('dniSuppGroup').addEventListener('click', ()=>{ renderSupplementDetailRows(); updateInsuranceOutputs(); });
 
   bindSingleSelectGroup('dniMedModeGroup', v=>{ dniMatrix.medicationInputMode = v; syncMedModePanels(); });
@@ -6428,6 +6652,10 @@ function initInsurancePage(){
 
   updateInsuranceOutputs();
 }
+
+
+
+
 
 
 
