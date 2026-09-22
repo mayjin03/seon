@@ -27,12 +27,11 @@
  */
 
 const ANTHROPIC_MESSAGES_URL = "https://api.anthropic.com/v1/messages";
-const CLAUDE_VISION_MODEL = "claude-3-5-sonnet-20241022";
+// 404 에러 원인 수정: Anthropic의 정식 Claude 3.5 Sonnet 모델 별칭 사용
+const CLAUDE_VISION_MODEL = "claude-3-5-sonnet-latest";
 
 /**
  * Vercel 스타일 서버리스 함수 핸들러.
- * (Netlify를 쓴다면 `export async function handler(event)` 형태로 바꾸고,
- *  req.body 대신 JSON.parse(event.body)를 쓰는 정도만 조정하면 돼요.)
  */
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -43,7 +42,6 @@ export default async function handler(req, res) {
   // ---- 1) API Key 확인: 서버 환경 변수에서만 읽어요 (프론트엔드로는 절대 전달하지 않음) ----
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
-    // 프론트엔드(analyzePrescriptionImage)가 이 문구를 그대로 사용자에게 보여줘요.
     res.status(500).json({
       error: "API Key가 설정되지 않았습니다. 환경 변수에 ANTHROPIC_API_KEY를 등록해 주세요.",
     });
@@ -57,7 +55,6 @@ export default async function handler(req, res) {
     return;
   }
 
-  // 프론트엔드는 "data:image/jpeg;base64,...." 형태의 DataURL을 보내요.
   // Anthropic Vision은 media_type과 순수 base64 데이터를 분리해서 받아야 해요.
   const match = /^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/.exec(image);
   if (!match) {
@@ -71,6 +68,10 @@ export default async function handler(req, res) {
     instruction ||
     "이 처방전/약봉투 이미지에서 모든 처방 약물 성분(drug_molecule), 카테고리(category), 용량(dosage), 투여경로(route_of_administration), 상품명(trade_name)을 추출하여 JSON 스키마 규격대로만 반환해 주세요.";
 
+  // 프론트엔드에서 구버전/잘못된 모델명이 들어오더라도 안전하게 fallback
+  const targetModel =
+    model && !model.includes("20241022") ? model : CLAUDE_VISION_MODEL;
+
   try {
     // ---- 3) Claude 3.5 Sonnet Vision 실제 호출 ----
     const anthropicRes = await fetch(ANTHROPIC_MESSAGES_URL, {
@@ -81,9 +82,9 @@ export default async function handler(req, res) {
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
-        model: model || CLAUDE_VISION_MODEL,
+        model: targetModel,
         max_tokens: 2048,
-        system: system, // PRESCRIPTION_VISION_SYSTEM_PROMPT (프론트엔드에서 그대로 전달)
+        system: system, // PRESCRIPTION_VISION_SYSTEM_PROMPT
         messages: [
           {
             role: "user",
@@ -100,14 +101,12 @@ export default async function handler(req, res) {
     });
 
     if (!anthropicRes.ok) {
-      // Anthropic이 돌려준 에러를 그대로 프론트엔드에 노출하지 않고, 상태 코드만 보고
-      // 사람이 이해할 수 있는 메시지로 정리해서 내려줘요 (원본 에러 객체를 그대로 넘기지 않음).
       let detail = "";
       try {
         const errBody = await anthropicRes.json();
         detail = errBody?.error?.message || "";
       } catch (_) {
-        /* 응답 본문이 JSON이 아닐 수도 있어요 — 무시하고 진행 */
+        /* 응답 본문이 JSON이 아닐 수도 있음 */
       }
       const statusMsg =
         anthropicRes.status === 401
@@ -124,7 +123,7 @@ export default async function handler(req, res) {
       .join("\n")
       .trim();
 
-    // Claude가 코드펜스(```json ... ```)로 감싸 반환하는 경우를 대비해 안전하게 벗겨내요.
+    // 코드펜스 제거
     const cleaned = rawText.replace(/^```json\s*/i, "").replace(/```\s*$/i, "").trim();
 
     let parsed;
@@ -148,8 +147,6 @@ export default async function handler(req, res) {
       extracted_medications: parsed.extracted_medications,
     });
   } catch (err) {
-    // 네트워크 오류 등 예기치 못한 예외 — 절대 원본 err 객체를 그대로 내려보내지 않고
-    // (Headers 등 직렬화 불가능한 내부 객체가 섞여있을 수 있어요) 문자열 메시지만 사용해요.
     console.error("ANALYZE_PRESCRIPTION_ERROR:", err?.message || String(err));
     res.status(500).json({ error: "Vision AI 분석 중 서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요." });
   }
