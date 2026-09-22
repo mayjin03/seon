@@ -2770,6 +2770,64 @@ function buildAlternateScenarioHtml(dailyFoodG, foodKcalPer100, snacks){
     </div>`;
 }
 
+/* 플랜별 대표 추천 사료(브랜드+제품라인) — 사료·영양제 교차 분석 카드용 */
+const FOOD_RECOMMENDATION_PRODUCTS = {
+  diet:     {brand:"힐스", product:"처방식 메타볼릭(Metabolic)"},
+  joint:    {brand:"로얄캐닌", product:"모빌리티 서포트"},
+  kidney:   {brand:"힐스", product:"처방식 케이디(k/d)"},
+  pancreas: {brand:"로얄캐닌", product:"저지방(Low Fat) 처방식"},
+  senior:   {brand:"힐스", product:"사이언스 다이어트 시니어"},
+};
+function buildRecommendedFoodCard(ctx){
+  if(ctx.dailyFoodG==null) return `<div class="tooltip-box p-3 text-xs text-muted mb-3">계산 데이터가 부족해 추천 사료 급여량을 표시할 수 없어요.</div>`;
+  const rec = FOOD_RECOMMENDATION_PRODUCTS[ctx.planId] || FOOD_RECOMMENDATION_PRODUCTS.diet;
+  const reasonMap = {
+    diet: `BCS ${ctx.bcs}/9 기준 체중 감량이 필요해 저칼로리·고단백 처방식이 적합해요.`,
+    joint: `관절/슬개골 케어플랜에 맞춰 글루코사민·오메가3가 강화된 제품이에요.`,
+    kidney: `신장 케어플랜에 맞춰 저인·저나트륨으로 설계된 처방식이에요.`,
+    pancreas: `췌장 케어플랜에 맞춰 초저지방으로 설계된 처방식이에요.`,
+    senior: `${ctx.ageYear || ''}세 노령견 기준 소화 흡수가 쉬운 제품이에요.`,
+  };
+  const mealSlots = buildMealTimeline(ctx.planId, ctx.dailyFoodG);
+  return `
+    <div class="surface-2 rounded-xl p-4 mb-3">
+      <p class="text-xs font-bold mb-1">🍽️ 아이 맞춤 추천 사료</p>
+      <p class="text-sm font-bold mb-1">${rec.brand} ${rec.product}</p>
+      <p class="text-xs text-muted mb-3">${reasonMap[ctx.planId] || reasonMap.diet}</p>
+      <div class="grid grid-cols-2 gap-2">
+        <div class="rounded-lg p-2 text-center" style="background:#fff; border:1px solid #e5e5e5;">
+          <p class="text-[10px] text-muted">⚖️ 1일 총 급여량</p>
+          <p class="font-display font-bold text-lg" style="color:#1d1d1f;">${Math.round(ctx.dailyFoodG)}g<span class="text-xs font-medium text-muted">/일</span></p>
+        </div>
+        <div class="rounded-lg p-2 text-center" style="background:#fff; border:1px solid #e5e5e5;">
+          <p class="text-[10px] text-muted">🥣 권장 급여 횟수</p>
+          <p class="font-display font-bold text-lg" style="color:#1d1d1f;">하루 ${mealSlots.length}회<span class="text-xs font-medium text-muted"> · 1회 ${mealSlots[0].grams}g</span></p>
+        </div>
+      </div>
+    </div>`;
+}
+function buildSupplementRoutineHtml(supplements){
+  if(!supplements || !supplements.length) return '';
+  const catLabel = id => (SUPPLEMENT_CATEGORIES.find(c=>c.id===id)||{}).label || id;
+  const isAM = timing => /아침|공복/.test(timing||'');
+  const amItems = supplements.filter(s=>isAM(SUPPLEMENT_INFO[s.category]?.timing));
+  const pmItems = supplements.filter(s=>!isAM(SUPPLEMENT_INFO[s.category]?.timing));
+  return `
+    <div class="surface-2 rounded-xl p-4 mb-3">
+      <p class="text-xs font-bold mb-2">💊 영양제 최적 조합 &amp; 아침/저녁 섭취 루틴</p>
+      <div class="grid grid-cols-2 gap-2">
+        <div class="rounded-lg p-2" style="background:#fff; border:1px solid #e5e5e5;">
+          <p class="text-[11px] font-bold mb-1">☀️ 아침</p>
+          ${amItems.length ? amItems.map(s=>`<p class="text-[11px] text-muted">${catLabel(s.category)} 급여</p>`).join('') : `<p class="text-[11px] text-muted">해당 없음</p>`}
+        </div>
+        <div class="rounded-lg p-2" style="background:#fff; border:1px solid #e5e5e5;">
+          <p class="text-[11px] font-bold mb-1">🌙 저녁</p>
+          ${pmItems.length ? pmItems.map(s=>`<p class="text-[11px] text-muted">${catLabel(s.category)} 급여</p>`).join('') : `<p class="text-[11px] text-muted">해당 없음</p>`}
+        </div>
+      </div>
+      <p class="text-[10px] text-muted mt-2">아침/저녁으로 나눠 급여하면 주요 성분 중복 흡수를 방지하고 체내 흡수율을 높일 수 있어요.</p>
+    </div>`;
+}
 function buildSupplementGuideHtml(supplements, planId){
   if(!supplements || !supplements.length){
     return `<div class="tooltip-box p-4 text-xs text-muted">복용 중인 영양제가 없어요. Step4에서 추가하면 급여 타이밍과 성분 중복 체크를 볼 수 있어요.</div>`;
@@ -2932,8 +2990,8 @@ function drawFreeReportRadarChart(scores, canvasId){
   });
 }
 /* 연령/BCS/케어플랜 기준 추천 사료 브랜드 2~3종 (경량 큐레이션 — 정밀 분석은 프리미엄에서) */
-function recommendFoodBrands(planId, bcs){
-  const isSenior = (dog.ageYear||0) >= 7;
+function recommendFoodBrands(planId, bcs, ageYear){
+  const isSenior = (ageYear ?? dog.ageYear ?? 0) >= 7;
   const isHeavy = bcs >= 6;
   const pool = FOOD_PRESETS.filter(f=>f.id!=='custom');
   let picks;
@@ -2953,7 +3011,6 @@ function recommendFoodBrands(planId, bcs){
   return pool.filter(f=>picks.includes(f.id)).sort((a,b)=>picks.indexOf(a.id)-picks.indexOf(b.id)).slice(0,3)
     .map(f=>({ label:f.label, blurb: blurbs[f.id] || '' }));
 }
-
 
 function nutritionReportHtml(r){
   const healthScore = computeHealthScore(r);
@@ -3351,6 +3408,35 @@ const DEMO_PREVIEW_CONTENT = {
         <p class="text-xs font-bold mb-1">🍳 맞춤 레시피 카드</p>
         <p class="text-xs text-muted mb-1">닭가슴살 &amp; 양배추 다이어트 화식 <span class="text-muted">(하루 40g 토핑 전용 레시피)</span></p>
         <p class="text-[11px] text-muted">고단백 저지방 조합으로 포만감은 높이고 칼로리는 낮췄어요.</p>
+      </div>
+      <div class="surface-2 rounded-xl p-4">
+        <p class="text-xs font-bold mb-1">🍽️ 아이 맞춤 추천 사료</p>
+        <p class="text-sm font-bold mb-1">힐스 처방식 메타볼릭(Metabolic)</p>
+        <p class="text-xs text-muted mb-3">BCS 7/9 기준 체중 감량이 필요해 저칼로리·고단백 처방식이 적합해요.</p>
+        <div class="grid grid-cols-2 gap-2">
+          <div class="rounded-lg p-2 text-center" style="background:#fff; border:1px solid #e5e5e5;">
+            <p class="text-[10px] text-muted">⚖️ 1일 총 급여량</p>
+            <p class="font-display font-bold text-lg" style="color:#1d1d1f;">62g<span class="text-xs font-medium text-muted">/일</span></p>
+          </div>
+          <div class="rounded-lg p-2 text-center" style="background:#fff; border:1px solid #e5e5e5;">
+            <p class="text-[10px] text-muted">🥣 권장 급여 횟수</p>
+            <p class="font-display font-bold text-lg" style="color:#1d1d1f;">하루 3회<span class="text-xs font-medium text-muted"> · 1회 21g</span></p>
+          </div>
+        </div>
+      </div>
+      <div class="surface-2 rounded-xl p-4">
+        <p class="text-xs font-bold mb-2">💊 영양제 최적 조합 &amp; 아침/저녁 섭취 루틴</p>
+        <div class="grid grid-cols-2 gap-2">
+          <div class="rounded-lg p-2" style="background:#fff; border:1px solid #e5e5e5;">
+            <p class="text-[11px] font-bold mb-1">☀️ 아침</p>
+            <p class="text-[11px] text-muted">유산균 1포 토핑</p>
+          </div>
+          <div class="rounded-lg p-2" style="background:#fff; border:1px solid #e5e5e5;">
+            <p class="text-[11px] font-bold mb-1">🌙 저녁</p>
+            <p class="text-[11px] text-muted">관절 영양제 1정 급여</p>
+          </div>
+        </div>
+        <p class="text-[10px] text-muted mt-2">아침/저녁으로 나눠 급여해 성분 중복 흡수를 막고 흡수율을 높여요.</p>
       </div>
       <div class="surface-2 rounded-xl p-4">
         <p class="text-xs font-bold mb-2">🔍 사료 &amp; 영양제 교차 분석</p>
@@ -3843,6 +3929,8 @@ function renderPremiumReportHtml(ctx, canvasId){
       <h2 class="font-display font-bold text-xl mb-4">사료·영양제 성분 심층 교차 분석</h2>
       ${buildBrandDmTableHtml(ctx)}
       <div class="mt-4">
+        ${buildRecommendedFoodCard(ctx)}
+        ${buildSupplementRoutineHtml(ctx.supplements || [])}
         <p class="text-xs font-bold mb-2">복용 중인 영양제 × 임상 징후 적합도 평가</p>
         ${buildSupplementGuideHtml(ctx.supplements || [], ctx.planId)}
       </div>
