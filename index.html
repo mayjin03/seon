@@ -833,6 +833,9 @@
           <label class="block text-xs font-semibold mb-1.5" style="color:#2C241F;">체중 <span id="insWeightLabel" style="color:#3A5A40;">10.0kg</span></label>
           <input type="range" min="1.0" max="40.0" step="0.1" value="10.0" id="insWeightSlider" class="w-full mb-4">
 
+          <label class="block text-xs font-semibold mb-1.5" style="color:#2C241F;">나이 <span id="insAgeMonthsLabel" style="color:#3A5A40;">12개월</span></label>
+          <input type="range" min="1" max="240" step="1" value="12" id="insAgeMonthsSlider" class="w-full mb-4">
+
           <label class="block text-xs font-semibold mb-2" style="color:#2C241F;">BCS 단계</label>
           <div class="grid grid-cols-9 gap-1 mb-4" id="insBcsGroup"></div>
 
@@ -906,7 +909,7 @@
           <div class="p-5" style="background:#fff;">
             <div class="grid grid-cols-2 gap-x-4 gap-y-1.5 text-[11px] mb-4">
               <p style="color:#333;"><span style="color:#999;">품종</span> · <span id="insPassportBreed">말티즈</span></p>
-              <p style="color:#333;"><span style="color:#999;">체중 / BCS</span> · <span id="insPassportWeightBcs">10.0kg / 5</span></p>
+              <p style="color:#333;"><span style="color:#999;">체중 / BCS / 나이</span> · <span id="insPassportWeightBcs">10.0kg / 5</span></p>
               <p style="color:#333;"><span style="color:#999;">종합 건강 스코어</span> · <span id="insPassportScore">92 / 100 (A등급)</span></p>
               <p style="color:#333;"><span style="color:#999;">검진표 첨부</span> · <span id="insPassportVetStatus">미첨부</span></p>
             </div>
@@ -1176,11 +1179,13 @@ const SUPABASE_TABLE = "user_analytics"; // 진단 데이터를 저장/조회할
      breed         text,
      weight        numeric,
      bcs           text,
+     age_months    numeric not null default 12, -- 나이(개월). 앱에서 항상 값을 채워 보내지만, 안전하게 기본값도 둬요.
      health_score  numeric,
      extra_data    jsonb,   -- 파행/배변/피부 상태, 위험지수(%), 할인율, 검진표 첨부여부 등
      created_at    timestamptz default now()
    );
    alter table public.pet_health_scores add column if not exists extra_data jsonb;
+   alter table public.pet_health_scores add column if not exists age_months numeric default 12;
 
    -- alter table public.pet_health_scores enable row level security;
    -- create policy "anon insert" on public.pet_health_scores for insert to anon with check (true);
@@ -5659,7 +5664,7 @@ function initMixCalcPage(){
    — DB 저장 없이도 동작하지만, 제출 시 Supabase pet_health_scores 테이블에 인서트해요.
 ============================================================ */
 const petInsurance = {
-  breed: BREEDS[0], weight: 10.0, bcs: 5,
+  breed: BREEDS[0], weight: 10.0, ageMonths: 12, bcs: 5,
   limp: "none", stool: "normal", skin: "good",
   vetUploaded: false,
 };
@@ -5701,6 +5706,7 @@ function updateInsuranceOutputs(){
   const r = computeInsuranceScores();
 
   document.getElementById('insWeightLabel').textContent = petInsurance.weight.toFixed(1) + 'kg';
+  document.getElementById('insAgeMonthsLabel').textContent = petInsurance.ageMonths + '개월';
   document.getElementById('insScoreNum').textContent = r.score;
   document.getElementById('insGradeLabel').textContent = r.grade;
   document.getElementById('insGradeVerdict').textContent = r.verdict;
@@ -5730,7 +5736,7 @@ function updateInsuranceOutputs(){
 
   // Seon Health Passport 동기화
   document.getElementById('insPassportBreed').textContent = petInsurance.breed;
-  document.getElementById('insPassportWeightBcs').textContent = `${petInsurance.weight.toFixed(1)}kg / ${petInsurance.bcs}`;
+  document.getElementById('insPassportWeightBcs').textContent = `${petInsurance.weight.toFixed(1)}kg / BCS ${petInsurance.bcs} / ${petInsurance.ageMonths}개월`;
   document.getElementById('insPassportScore').textContent = `${r.score} / 100 (${r.grade})`;
   document.getElementById('insPassportVetStatus').textContent = petInsurance.vetUploaded ? '✅ 첨부됨' : '미첨부';
   document.getElementById('insPassportDiscount').textContent = r.discountRate + '%';
@@ -5786,6 +5792,8 @@ async function submitPetHealthScore(){
     weight: petInsurance.weight,
     bcs: String(petInsurance.bcs),
     health_score: r.score,
+    // age_months는 DB에서 NOT NULL 제약이 걸려있어, 어떤 경우에도 값이 비어있지 않도록 확실히 보장해요.
+    age_months: (Number.isFinite(petInsurance.ageMonths) && petInsurance.ageMonths > 0) ? petInsurance.ageMonths : 12,
   };
   const extra = {
     limp: petInsurance.limp, stool: petInsurance.stool, skin: petInsurance.skin,
@@ -5831,6 +5839,10 @@ function initInsurancePage(){
 
   document.getElementById('insWeightSlider').addEventListener('input', e=>{
     petInsurance.weight = parseFloat(e.target.value);
+    updateInsuranceOutputs();
+  });
+  document.getElementById('insAgeMonthsSlider').addEventListener('input', e=>{
+    petInsurance.ageMonths = parseInt(e.target.value) || 12;
     updateInsuranceOutputs();
   });
 
