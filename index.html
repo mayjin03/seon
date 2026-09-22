@@ -219,28 +219,23 @@
     body.print-mode-premium .pdf-page .surface-2, body.print-mode-premium .pdf-page .tooltip-box{ break-inside:avoid; }
     body.print-mode-premium .pdf-page .grid{ break-inside:avoid; }
 
-    /* ---- B-2) 펫보험 Health Passport 인쇄 (body.print-mode-insurance) ---- */
-    body.print-mode-insurance *{ visibility:hidden !important; }
-    body.print-mode-insurance #insurancePassportPrint, body.print-mode-insurance #insurancePassportPrint *{ visibility:visible !important; }
-    body.print-mode-insurance #insurancePassportPrint{ position:absolute; left:0; top:0; width:100%; color:#000 !important; }
-
-    /* ---- C) 유저 결과 페이지(대시보드) 인쇄 — 관리자/프리미엄/보험 모드가 아닐 때 기본값 ---- */
-    body:not(.print-mode-admin):not(.print-mode-premium):not(.print-mode-insurance) #sidebarNav,
-    body:not(.print-mode-admin):not(.print-mode-premium):not(.print-mode-insurance) #topHeader,
-    body:not(.print-mode-admin):not(.print-mode-premium):not(.print-mode-insurance) #userWidget,
-    body:not(.print-mode-admin):not(.print-mode-premium):not(.print-mode-insurance) #studioFabBtn,
-    body:not(.print-mode-admin):not(.print-mode-premium):not(.print-mode-insurance) #studioDrawer,
-    body:not(.print-mode-admin):not(.print-mode-premium):not(.print-mode-insurance) #studioBackdrop,
-    body:not(.print-mode-admin):not(.print-mode-premium):not(.print-mode-insurance) #modalRoot,
-    body:not(.print-mode-admin):not(.print-mode-premium):not(.print-mode-insurance) #formSection,
-    body:not(.print-mode-admin):not(.print-mode-premium):not(.print-mode-insurance) footer,
-    body:not(.print-mode-admin):not(.print-mode-premium):not(.print-mode-insurance) #restartBtn,
-    body:not(.print-mode-admin):not(.print-mode-premium):not(.print-mode-insurance) #savePdfBtn,
-    body:not(.print-mode-admin):not(.print-mode-premium):not(.print-mode-insurance) #challengeScrollBtn{
+    /* ---- C) 유저 결과 페이지(대시보드) 인쇄 — 관리자/프리미엄 모드가 아닐 때 기본값 ---- */
+    body:not(.print-mode-admin):not(.print-mode-premium) #sidebarNav,
+    body:not(.print-mode-admin):not(.print-mode-premium) #topHeader,
+    body:not(.print-mode-admin):not(.print-mode-premium) #userWidget,
+    body:not(.print-mode-admin):not(.print-mode-premium) #studioFabBtn,
+    body:not(.print-mode-admin):not(.print-mode-premium) #studioDrawer,
+    body:not(.print-mode-admin):not(.print-mode-premium) #studioBackdrop,
+    body:not(.print-mode-admin):not(.print-mode-premium) #modalRoot,
+    body:not(.print-mode-admin):not(.print-mode-premium) #formSection,
+    body:not(.print-mode-admin):not(.print-mode-premium) footer,
+    body:not(.print-mode-admin):not(.print-mode-premium) #restartBtn,
+    body:not(.print-mode-admin):not(.print-mode-premium) #savePdfBtn,
+    body:not(.print-mode-admin):not(.print-mode-premium) #challengeScrollBtn{
       display:none !important;
     }
-    body:not(.print-mode-admin):not(.print-mode-premium):not(.print-mode-insurance) #dashboardSection{ display:block !important; }
-    body:not(.print-mode-admin):not(.print-mode-premium):not(.print-mode-insurance) .surface, body:not(.print-mode-admin):not(.print-mode-premium):not(.print-mode-insurance) .surface-2, body:not(.print-mode-admin):not(.print-mode-premium):not(.print-mode-insurance) .tooltip-box{ break-inside:avoid; }
+    body:not(.print-mode-admin):not(.print-mode-premium) #dashboardSection{ display:block !important; }
+    body:not(.print-mode-admin):not(.print-mode-premium) .surface, body:not(.print-mode-admin):not(.print-mode-premium) .surface-2, body:not(.print-mode-admin):not(.print-mode-premium) .tooltip-box{ break-inside:avoid; }
   }
 
   /* ---- 프리미엄 PDF 미리보기 (화면상 A4 매거진 스타일) ---- */
@@ -336,7 +331,7 @@
       <div class="inline-flex bg-primary-light rounded-full p-1 gap-1">
         <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="home">🏠 홈 / 진단</button>
         <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="mixcalc">🥣 1g 믹스 계산기</button>
-        <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="insurance">🛡️ 펫보험 스코어링</button>
+        <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="insurance">🧬 DNI-Chrono Matrix</button>
         <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="bcs">📸 멍생스컷 BCS 테스트</button>
       </div>
     </div>
@@ -811,21 +806,21 @@
       </div>
     </div>
 
-    <!-- ===================== INSURANCE PAGE: 펫보험 스코어링 ===================== -->
+    <!-- ===================== DNI-CHRONO PAGE: 약물-영양소 상극 감지 & 시간대별 1g 스케줄러 ===================== -->
     <div id="insurancePage" class="hidden">
       <div class="text-center mb-8">
         <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full mb-4" style="background:#3A5A401A; color:#3A5A40;">
-          <span>🛡️</span><span class="text-xs font-bold">Pet Insurance Health Scoring</span>
+          <span>🧬</span><span class="text-xs font-bold">Drug-Nutrient Interaction × Chrono Scheduling</span>
         </div>
-        <h1 class="font-display font-bold mb-2" style="font-size:clamp(1.4rem,4vw,2rem); color:#2C241F;">펫보험 스코어링</h1>
-        <p class="text-sm" style="color:#6b6259;">건강 상태를 입력하면 보험 제출용 등급과 예상 할인율을 계산해드려요</p>
+        <h1 class="font-display font-bold mb-2" style="font-size:clamp(1.4rem,4vw,2rem); color:#2C241F;">DNI-Chrono Matrix</h1>
+        <p class="text-sm" style="color:#6b6259;">복용 약물과 영양제 간 상극을 감지하고, 시간대별 1g 급여·투약 스케줄을 만들어드려요</p>
       </div>
 
       <div class="grid lg:grid-cols-2 gap-5 max-w-5xl mx-auto">
 
         <!-- 입력 패널 -->
         <div class="rounded-[var(--radius-card)] p-6" style="background:#FFFFFF; border:1px solid #3A5A401f;">
-          <p class="font-bold text-sm mb-4" style="color:#2C241F;">① 기본 정보 &amp; 문진</p>
+          <p class="font-bold text-sm mb-4" style="color:#2C241F;">① 기본 정보</p>
 
           <label class="block text-xs font-semibold mb-1.5" style="color:#2C241F;">아이 이름</label>
           <input type="text" id="insPetName" placeholder="예: 초코" class="w-full rounded-xl px-3 py-2.5 mb-4 text-sm" style="border:1px solid #3A5A4033;">
@@ -840,100 +835,47 @@
           <input type="range" min="1" max="240" step="1" value="12" id="insAgeMonthsSlider" class="w-full mb-4">
 
           <label class="block text-xs font-semibold mb-2" style="color:#2C241F;">BCS 단계</label>
-          <div class="grid grid-cols-9 gap-1 mb-4" id="insBcsGroup"></div>
+          <div class="grid grid-cols-9 gap-1 mb-5" id="insBcsGroup"></div>
 
-          <label class="block text-xs font-semibold mb-2" style="color:#2C241F;">파행(절뚝거림) 여부</label>
-          <div class="grid grid-cols-3 gap-2 mb-4" id="insLimpGroup">
-            <button data-val="none" class="mc-chip rounded-xl py-2.5 text-xs">없음</button>
-            <button data-val="sometimes" class="mc-chip rounded-xl py-2.5 text-xs">가끔</button>
-            <button data-val="often" class="mc-chip rounded-xl py-2.5 text-xs">자주</button>
+          <div class="pt-4" style="border-top:1px dashed #3A5A4033;">
+            <p class="font-bold text-sm mb-3" style="color:#2C241F;">② 복용 중인 약물</p>
+            <div class="grid grid-cols-3 gap-2 mb-1" id="dniMedGroup">
+              <button data-val="diuretic" class="mc-chip rounded-xl py-2.5 text-xs">💧 이뇨제</button>
+              <button data-val="antibiotic" class="mc-chip rounded-xl py-2.5 text-xs">💊 항생제</button>
+              <button data-val="steroid" class="mc-chip rounded-xl py-2.5 text-xs">🧪 스테로이드</button>
+              <button data-val="joint_med" class="mc-chip rounded-xl py-2.5 text-xs">🦴 관절약</button>
+              <button data-val="none" class="mc-chip rounded-xl py-2.5 text-xs col-span-2">복용 안 함</button>
+            </div>
+            <p class="text-[11px] mt-2 mb-4" style="color:#6b6259;">중복 선택 가능해요 (복용 중인 약물이 없으면 '복용 안 함'을 선택해주세요)</p>
+
+            <p class="font-bold text-sm mb-3" style="color:#2C241F;">③ 복용 중인 영양제</p>
+            <div class="grid grid-cols-3 gap-2" id="dniSuppGroup">
+              <button data-val="joint" class="mc-chip rounded-xl py-2.5 text-xs">관절</button>
+              <button data-val="gut" class="mc-chip rounded-xl py-2.5 text-xs">유산균</button>
+              <button data-val="skin" class="mc-chip rounded-xl py-2.5 text-xs">피부</button>
+              <button data-val="multivitamin" class="mc-chip rounded-xl py-2.5 text-xs">종합영양제</button>
+              <button data-val="none" class="mc-chip rounded-xl py-2.5 text-xs col-span-2">복용 안 함</button>
+            </div>
           </div>
-
-          <label class="block text-xs font-semibold mb-2" style="color:#2C241F;">배변 상태</label>
-          <div class="grid grid-cols-3 gap-2 mb-4" id="insStoolGroup">
-            <button data-val="normal" class="mc-chip rounded-xl py-2.5 text-xs">정상</button>
-            <button data-val="soft" class="mc-chip rounded-xl py-2.5 text-xs">무른변/설사</button>
-            <button data-val="fatty" class="mc-chip rounded-xl py-2.5 text-xs">지방변</button>
-          </div>
-
-          <label class="block text-xs font-semibold mb-2" style="color:#2C241F;">피부 상태</label>
-          <div class="grid grid-cols-3 gap-2 mb-4" id="insSkinGroup">
-            <button data-val="good" class="mc-chip rounded-xl py-2.5 text-xs">양호</button>
-            <button data-val="itchy" class="mc-chip rounded-xl py-2.5 text-xs">가려움/긁음</button>
-            <button data-val="flaky" class="mc-chip rounded-xl py-2.5 text-xs">비듬/탈모</button>
-          </div>
-
-          <button type="button" id="insVetUploadBtn" class="w-full rounded-xl py-2.5 text-xs font-bold mb-2" style="background:#FAF9F5; border:1.5px dashed #3A5A4055; color:#3A5A40;">📎 수의사 검진표 업로드 (선택)</button>
-          <p id="insVetUploadStatus" class="text-[11px] text-center min-h-[16px]" style="color:#3A5A40;"></p>
         </div>
 
         <!-- 출력 패널 -->
         <div class="rounded-[var(--radius-card)] p-6" style="background:#FFFFFF; border:1px solid #3A5A401f;">
-          <p class="font-bold text-sm mb-4" style="color:#2C241F;">② 보호자용 건강 등급 리포트</p>
-
-          <div class="flex items-center gap-4 mb-4">
-            <div class="relative inline-flex items-center justify-center shrink-0" style="width:100px;height:100px;">
-              <svg width="100" height="100" viewBox="0 0 140 140">
-                <circle cx="70" cy="70" r="60" fill="none" stroke="#FAF9F5" stroke-width="14"/>
-                <circle id="insScoreArc" cx="70" cy="70" r="60" fill="none" stroke="#3A5A40" stroke-width="14" stroke-linecap="round" transform="rotate(-90 70 70)"/>
-              </svg>
-              <div class="absolute inset-0 flex flex-col items-center justify-center">
-                <p class="font-display font-bold text-2xl" id="insScoreNum" style="color:#2C241F;">92</p>
-                <p class="text-[9px]" style="color:#6b6259;">/ 100</p>
-              </div>
-            </div>
-            <div>
-              <p class="font-display font-bold text-lg" id="insGradeLabel" style="color:#3A5A40;">A등급</p>
-              <p class="text-xs" style="color:#6b6259;" id="insGradeVerdict">아주 건강한 상태예요</p>
-            </div>
-          </div>
-
-          <p class="text-xs font-bold mb-2" style="color:#2C241F;">3대 질환 위험 지수</p>
-          <div class="space-y-2 mb-4" id="insRiskBars"></div>
-
-          <div class="rounded-xl p-4 text-center" style="background:#3A5A400d;">
-            <p class="text-xs font-semibold mb-1" style="color:#3A5A40;">💰 예상 보험료 할인율</p>
-            <p class="font-display font-bold text-2xl" style="color:#2C241F;"><span id="insDiscountRate">15</span>%</p>
-          </div>
+          <p class="font-bold text-sm mb-3" style="color:#2C241F;">🚨 DNI Warning Banner</p>
+          <div id="dniWarningBanner" class="space-y-2 mb-2"></div>
+          <p id="dniNoWarningText" class="text-xs" style="color:#3A5A40;">현재 등록된 약물·영양제 조합에서 상극이 감지되지 않았어요.</p>
         </div>
       </div>
 
-      <!-- Seon Health Passport -->
+      <!-- 1일 Chrono 타임라인 카드 -->
       <div class="max-w-5xl mx-auto mt-5">
-        <div class="flex items-center justify-between mb-2">
-          <p class="font-bold text-sm" style="color:#2C241F;">③ Seon Health Passport (펫보험사 제출용)</p>
-          <button type="button" id="insPrintBtn" class="rounded-lg px-3 py-1.5 text-xs font-bold" style="background:#3A5A40; color:#fff;">📥 PDF로 저장</button>
-        </div>
-        <div id="insurancePassportPrint" class="rounded-lg overflow-hidden" style="border:1.5px solid #1d1d1f;">
-          <div class="px-5 py-3 flex items-center justify-between" style="background:#1d1d1f;">
-            <p class="text-sm font-bold" style="color:#fff;">Seon Health Passport</p>
-            <p class="text-[10px]" style="color:rgba(255,255,255,.6);" id="insPassportNo">SEON-0000000000000</p>
-          </div>
-          <div class="p-5" style="background:#fff;">
-            <div class="grid grid-cols-2 gap-x-4 gap-y-1.5 text-[11px] mb-4">
-              <p style="color:#333;"><span style="color:#999;">이름</span> · <span id="insPassportName">이름없음</span></p>
-              <p style="color:#333;"><span style="color:#999;">품종</span> · <span id="insPassportBreed">말티즈</span></p>
-              <p style="color:#333;"><span style="color:#999;">체중 / BCS / 나이</span> · <span id="insPassportWeightBcs">10.0kg / 5</span></p>
-              <p style="color:#333;"><span style="color:#999;">종합 건강 스코어</span> · <span id="insPassportScore">92 / 100 (A등급)</span></p>
-              <p style="color:#333;"><span style="color:#999;">검진표 첨부</span> · <span id="insPassportVetStatus">미첨부</span></p>
-            </div>
-            <table class="w-full text-[11px] mb-3" style="border-collapse:collapse;">
-              <thead><tr style="border-bottom:1.5px solid #1d1d1f;">
-                <th class="text-left py-1" style="color:#333;">위험 항목</th><th class="text-right py-1" style="color:#333;">위험 지수</th>
-              </tr></thead>
-              <tbody id="insPassportRiskTable"></tbody>
-            </table>
-            <div class="rounded-lg p-3 text-center" style="background:#FAF9F5;">
-              <p class="text-[10px]" style="color:#999;">예상 보험료 할인율</p>
-              <p class="font-display font-bold text-lg" style="color:#3A5A40;" id="insPassportDiscount">15%</p>
-            </div>
-            <p class="text-[9px] mt-3" style="color:#999;">본 인증서는 보호자가 입력한 정보를 바탕으로 자동 산출된 참고 자료이며, 실제 보험 심사 기준과 다를 수 있습니다.</p>
-          </div>
-        </div>
+        <p class="font-bold text-sm mb-1" style="color:#2C241F;">📅 1일 Chrono 타임라인</p>
+        <p class="text-xs mb-3" style="color:#6b6259;">'🥣 1g 믹스 계산기'의 급여량과 연동해 시간대별로 정밀 분정했어요.</p>
+        <div class="grid sm:grid-cols-4 gap-3" id="dniChronoTimeline"></div>
       </div>
 
       <div class="max-w-5xl mx-auto mt-5 text-center">
-        <button type="button" id="insSubmitBtn" class="rounded-xl px-6 py-3 text-sm font-bold" style="background:#3A5A40; color:#fff;">✅ 건강 스코어 제출하기</button>
+        <button type="button" id="insSubmitBtn" class="rounded-xl px-6 py-3 text-sm font-bold" style="background:#3A5A40; color:#fff;">✅ DNI 체크 &amp; Chrono 스케줄 저장하기</button>
       </div>
     </div>
 
@@ -1174,22 +1116,28 @@ const SUPABASE_TABLE = "user_analytics"; // 진단 데이터를 저장/조회할
 ============================================================ */
 
 /* ============================================================
-   🛡️ 펫보험 스코어링 테이블 (Supabase 대시보드 → SQL Editor에서 실행)
+   🧬 DNI-Chrono Matrix 테이블 (Supabase 대시보드 → SQL Editor에서 실행)
    ------------------------------------------------------------
    user_analytics와 동일하게 "핵심 컬럼 + extra_data(JSONB)" 구조를 써요.
 
    create table if not exists public.pet_health_scores (
-     id            bigint generated always as identity primary key,
-     breed         text,
-     weight        numeric,
-     bcs           text,
-     age_months    numeric not null default 12, -- 나이(개월). 앱에서 항상 값을 채워 보내지만, 안전하게 기본값도 둬요.
-     health_score  numeric,
-     extra_data    jsonb,   -- 파행/배변/피부 상태, 위험지수(%), 할인율, 검진표 첨부여부 등
-     created_at    timestamptz default now()
+     id                     bigint generated always as identity primary key,
+     pet_name               text,
+     breed                  text,
+     weight                 numeric,
+     bcs                    text,
+     age_months             numeric not null default 12, -- 나이(개월). 앱에서 항상 값을 채워 보내지만, 안전하게 기본값도 둬요.
+     active_medications     jsonb,   -- 복용 중인 약물 목록
+     dni_warnings           jsonb,   -- 감지된 약물-영양소 상극(CONFLICT)/영양고갈(DEPLETION) 경고 목록
+     daily_chrono_schedule  jsonb,   -- 시간대별(오전/점심/저녁/야간) 1g 급여·투약 타임라인
+     extra_data             jsonb,   -- 폼 입력 전체 및 계산 결과 백업
+     created_at             timestamptz default now()
    );
    alter table public.pet_health_scores add column if not exists extra_data jsonb;
    alter table public.pet_health_scores add column if not exists age_months numeric default 12;
+   alter table public.pet_health_scores add column if not exists active_medications jsonb;
+   alter table public.pet_health_scores add column if not exists dni_warnings jsonb;
+   alter table public.pet_health_scores add column if not exists daily_chrono_schedule jsonb;
 
    -- alter table public.pet_health_scores enable row level security;
    -- create policy "anon insert" on public.pet_health_scores for insert to anon with check (true);
@@ -5678,96 +5626,131 @@ function initMixCalcPage(){
 
 
 /* ============================================================
-   🛡️ 펫보험 스코어링 (Pet Insurance Health Scoring)
+   🧬 DNI-Chrono Matrix (약물-영양소 상극 감지 & 시간대별 1g 스케줄러)
    — DB 저장 없이도 동작하지만, 제출 시 Supabase pet_health_scores 테이블에 인서트해요.
 ============================================================ */
 const petInsurance = {
   name: "", breed: BREEDS[0], weight: 10.0, ageMonths: 12, bcs: 5,
-  limp: "none", stool: "normal", skin: "good",
-  vetUploaded: false,
-  passportNo: "SEON-" + Date.now(), // 발급 시점에 한 번만 생성해 값이 계속 바뀌지 않도록 고정
 };
 
-/* 소형 견종은 슬개골 탈구 위험이 통계적으로 더 높다고 알려진 대표 품종군 */
-const PATELLA_PRONE_BREEDS = ["말티즈","토이/미니어처 푸들","포메라니안","치와와","요크셔테리어"];
+const MEDICATIONS = [
+  {id:"diuretic",   label:"이뇨제"},
+  {id:"antibiotic", label:"항생제"},
+  {id:"steroid",    label:"스테로이드"},
+  {id:"joint_med",  label:"관절약"},
+];
+const dniMatrix = {
+  medications: ["none"],  // 선택된 약물 id 배열 ('none' 포함 시 나머지와 배타)
+  supplements: ["none"],  // 선택된 영양제 id 배열
+};
 
-function computeInsuranceScores(){
-  let score = 100;
-  score -= Math.abs(petInsurance.bcs - 5) * 8; // 이상 체형에서 멀수록 감점
-  if(petInsurance.limp === 'sometimes') score -= 10;
-  if(petInsurance.limp === 'often') score -= 22;
-  if(petInsurance.stool === 'soft') score -= 8;
-  if(petInsurance.stool === 'fatty') score -= 15;
-  if(petInsurance.skin === 'itchy') score -= 8;
-  if(petInsurance.skin === 'flaky') score -= 12;
-  score = Math.max(10, Math.min(100, Math.round(score)));
+/* 약물 × 영양제 상극(CONFLICT)/영양 고갈(DEPLETION) 규칙 테이블 */
+const DNI_RULES = [
+  { medId:"diuretic",   suppId:"joint",        type:"DEPLETION", isolationHours:2,
+    message:"이뇨제는 칼륨·마그네슘 배출을 촉진해, 관절 영양제의 미네랄 흡수 효율이 떨어질 수 있어요." },
+  { medId:"antibiotic", suppId:"gut",          type:"CONFLICT",  isolationHours:3,
+    message:"항생제는 유산균(프로바이오틱스)까지 함께 사멸시켜 효과를 크게 떨어뜨려요." },
+  { medId:"steroid",    suppId:"multivitamin", type:"DEPLETION", isolationHours:2,
+    message:"스테로이드 장기 복용은 칼슘·비타민D 대사를 방해해 종합영양제의 흡수를 저해할 수 있어요." },
+  { medId:"joint_med",  suppId:"joint",        type:"CONFLICT",  isolationHours:1,
+    message:"관절약과 관절 영양제(오메가/글루코사민)를 동시에 급여하면 위장관 자극이 중복될 수 있어요." },
+];
 
-  // 3대 질환 위험 지수(%) — 문진 결과 + 품종/체형 기반 보정
-  const patellaBase = PATELLA_PRONE_BREEDS.includes(petInsurance.breed) ? 25 : 10;
-  const patellaRisk = Math.min(95, patellaBase
-    + (petInsurance.limp==='sometimes'?25:petInsurance.limp==='often'?50:0)
-    + Math.max(0, (petInsurance.bcs-5))*4);
+function detectDniWarnings(){
+  const meds = dniMatrix.medications.filter(m=>m!=='none');
+  const supps = dniMatrix.supplements.filter(s=>s!=='none');
+  const warnings = [];
+  meds.forEach(medId=>{
+    supps.forEach(suppId=>{
+      const rule = DNI_RULES.find(r=>r.medId===medId && r.suppId===suppId);
+      if(rule){
+        warnings.push({
+          medId, suppId, type: rule.type, isolationHours: rule.isolationHours,
+          medLabel: MEDICATIONS.find(m=>m.id===medId)?.label || medId,
+          suppLabel: SUPPLEMENT_CATEGORIES.find(c=>c.id===suppId)?.label || suppId,
+          message: rule.message,
+        });
+      }
+    });
+  });
+  return warnings;
+}
 
-  const digestiveRisk = Math.min(95, 10
-    + (petInsurance.stool==='soft'?30:petInsurance.stool==='fatty'?55:0));
+function renderDniWarningBanner(warnings){
+  const banner = document.getElementById('dniWarningBanner');
+  const noWarningText = document.getElementById('dniNoWarningText');
+  if(!warnings.length){
+    banner.innerHTML = '';
+    noWarningText.classList.remove('hidden');
+    return;
+  }
+  noWarningText.classList.add('hidden');
+  banner.innerHTML = warnings.map(w=>`
+    <div class="rounded-xl p-3" style="background:${w.type==='CONFLICT' ? '#C0473A14' : '#D89A1E14'}; border:1.5px solid ${w.type==='CONFLICT' ? '#C0473A44' : '#D89A1E44'};">
+      <p class="text-xs font-bold mb-1" style="color:${w.type==='CONFLICT' ? '#C0473A' : '#D89A1E'};">
+        ${w.type==='CONFLICT' ? '⚠️ 상극(CONFLICT)' : '🧪 영양 고갈(DEPLETION)'} · ${w.medLabel} × ${w.suppLabel}
+      </p>
+      <p class="text-xs" style="color:#2C241F;">${w.message}</p>
+      <p class="text-[11px] mt-1 font-semibold" style="color:${w.type==='CONFLICT' ? '#C0473A' : '#D89A1E'};">⏱️ 최소 ${w.isolationHours}시간 이상 간격을 두고 급여해주세요.</p>
+    </div>`).join('');
+}
 
-  const skinRisk = Math.min(95, 10
-    + (petInsurance.skin==='itchy'?30:petInsurance.skin==='flaky'?45:0));
+function buildDniChronoSchedule(warnings){
+  const kcalPer100g = mixCalcCurrentKcalPer100g();
+  const targetKcal = mixCalcTargetKcal();
+  const treatCat = MIXCALC_TREAT_CATEGORIES.find(c=>c.id===mixCalc.treatCategoryId) || MIXCALC_TREAT_CATEGORIES[0];
+  const wetCat = MIXCALC_WET_CATEGORIES.find(c=>c.id===mixCalc.wetCategoryId) || MIXCALC_WET_CATEGORIES[0];
+  const treatKcal = mixCalc.treatG * (treatCat.kcal/100);
+  const wetKcal = mixCalc.wetG * (wetCat.kcal/100);
+  const remainingKcal = Math.max(0, targetKcal - treatKcal - wetKcal);
+  const finalFoodG = Math.round((remainingKcal / kcalPer100g) * 100);
 
-  const grade = score>=90?'A등급':score>=75?'B등급':score>=60?'C등급':'D등급';
-  const verdict = score>=90?'아주 건강한 상태예요':score>=75?'양호한 상태, 가벼운 관리가 필요해요':score>=60?'적극적인 관리가 필요해요':'수의사 상담을 꼭 받아보세요';
-  const discountRate = score>=90?15:score>=75?10:score>=60?5:0;
+  const conflictedSuppIds = new Set(warnings.map(w=>w.suppId));
+  const slots = [
+    { time:"08:00", label:"오전", foodG: Math.round(finalFoodG*0.4), items:[] },
+    { time:"13:00", label:"점심", foodG: Math.round(finalFoodG*0.2), items:[] },
+    { time:"19:00", label:"저녁", foodG: Math.round(finalFoodG*0.4), items:[] },
+    { time:"22:00", label:"야간", foodG: 0, items:[] },
+  ];
 
-  return { score, grade, verdict, patellaRisk: Math.round(patellaRisk), digestiveRisk: Math.round(digestiveRisk), skinRisk: Math.round(skinRisk), discountRate };
+  dniMatrix.medications.filter(m=>m!=='none').forEach(medId=>{
+    const label = MEDICATIONS.find(m=>m.id===medId)?.label || medId;
+    slots[0].items.push(`💊 ${label}`);
+  });
+  dniMatrix.supplements.filter(s=>s!=='none').forEach(suppId=>{
+    const label = SUPPLEMENT_CATEGORIES.find(c=>c.id===suppId)?.label || suppId;
+    if(conflictedSuppIds.has(suppId)){
+      slots[1].items.push(`💊(격리) ${label} 영양제`);
+    } else {
+      slots[2].items.push(`💊 ${label} 영양제`);
+    }
+  });
+  if(mixCalc.treatG > 0) slots[1].items.push(`🍖 ${treatCat.label} ${mixCalc.treatG}g`);
+  if(mixCalc.wetG > 0) slots[1].items.push(`🥫 ${wetCat.label} ${mixCalc.wetG}g`);
+
+  return slots;
+}
+
+function renderDniChronoTimeline(slots){
+  const wrap = document.getElementById('dniChronoTimeline');
+  wrap.innerHTML = slots.map(s=>`
+    <div class="rounded-xl p-3" style="background:#FAF9F5; border:1px solid #3A5A4022;">
+      <p class="text-[11px] font-bold mb-1" style="color:#3A5A40;">${s.label} · ${s.time}</p>
+      <p class="font-display font-bold text-lg mb-1.5" style="color:#2C241F;">${s.foodG}g<span class="text-[10px] font-medium" style="color:#6b6259;"> 사료</span></p>
+      ${s.items.length ? s.items.map(it=>`<p class="text-[11px]" style="color:#2C241F;">${it}</p>`).join('') : `<p class="text-[11px]" style="color:#999;">일반 급여</p>`}
+    </div>`).join('');
 }
 
 function updateInsuranceOutputs(){
-  const r = computeInsuranceScores();
-
   document.getElementById('insWeightLabel').textContent = petInsurance.weight.toFixed(1) + 'kg';
   document.getElementById('insAgeMonthsLabel').textContent = petInsurance.ageMonths + '개월';
-  document.getElementById('insScoreNum').textContent = r.score;
-  document.getElementById('insGradeLabel').textContent = r.grade;
-  document.getElementById('insGradeVerdict').textContent = r.verdict;
-  document.getElementById('insDiscountRate').textContent = r.discountRate;
 
-  const circumference = 2*Math.PI*60;
-  const arc = document.getElementById('insScoreArc');
-  arc.setAttribute('stroke-dasharray', circumference.toFixed(1));
-  arc.setAttribute('stroke-dashoffset', (circumference*(1-r.score/100)).toFixed(1));
+  const warnings = detectDniWarnings();
+  renderDniWarningBanner(warnings);
+  const schedule = buildDniChronoSchedule(warnings);
+  renderDniChronoTimeline(schedule);
 
-  const risks = [
-    { label:'슬개골/관절', value:r.patellaRisk },
-    { label:'소화기', value:r.digestiveRisk },
-    { label:'피부', value:r.skinRisk },
-  ];
-  const barColor = v => v>=50 ? '#C0473A' : v>=25 ? '#D89A1E' : '#3A5A40';
-  document.getElementById('insRiskBars').innerHTML = risks.map(item=>`
-    <div>
-      <div class="flex items-center justify-between mb-1">
-        <span class="text-[11px]" style="color:#2C241F;">${item.label}</span>
-        <span class="text-[11px] font-bold" style="color:${barColor(item.value)};">${item.value}%</span>
-      </div>
-      <div class="w-full rounded-full overflow-hidden" style="height:6px; background:#FAF9F5;">
-        <div style="width:${item.value}%; height:100%; background:${barColor(item.value)}; border-radius:9999px;"></div>
-      </div>
-    </div>`).join('');
-
-  // Seon Health Passport 동기화
-  document.getElementById('insPassportName').textContent = petInsurance.name.trim() || '이름없음';
-  document.getElementById('insPassportNo').textContent = petInsurance.passportNo;
-  document.getElementById('insPassportBreed').textContent = petInsurance.breed;
-  document.getElementById('insPassportWeightBcs').textContent = `${petInsurance.weight.toFixed(1)}kg / BCS ${petInsurance.bcs} / ${petInsurance.ageMonths}개월`;
-  document.getElementById('insPassportScore').textContent = `${r.score} / 100 (${r.grade})`;
-  document.getElementById('insPassportVetStatus').textContent = petInsurance.vetUploaded ? '✅ 첨부됨' : '미첨부';
-  document.getElementById('insPassportDiscount').textContent = r.discountRate + '%';
-  document.getElementById('insPassportRiskTable').innerHTML = risks.map(item=>`
-    <tr style="border-bottom:1px solid #e5e5e5;">
-      <td class="py-1" style="color:#555;">${item.label}</td>
-      <td class="text-right py-1 font-bold" style="color:#1d1d1f;">${item.value}%</td>
-    </tr>`).join('');
-
-  return r;
+  return { warnings, schedule };
 }
 
 function buildInsuranceBcsButtons(){
@@ -5788,73 +5771,37 @@ function buildInsuranceBcsButtons(){
   }
 }
 
-function openVetUploadModal(){
-  mountModal(`
-    <p class="text-xs font-bold mb-1" style="color:#3A5A40;">수의사 검진표 업로드</p>
-    <h3 class="font-display text-xl font-bold mb-3">검진표 파일을 첨부해주세요</h3>
-    <div class="rounded-xl p-6 text-center mb-4" style="background:#FAF9F5; border:1.5px dashed #3A5A4055;">
-      <input type="file" id="insVetFileInput" accept="image/*,.pdf" class="text-xs">
-      <p class="text-[11px] mt-2" style="color:#6b6259;">JPG, PNG, PDF 파일을 올려주세요 (데모 화면이라 실제 업로드는 되지 않아요)</p>
-    </div>
-    <button id="insVetUploadConfirmBtn" class="btn-primary w-full rounded-xl py-3 text-sm">업로드 완료 처리</button>
-  `);
-  document.getElementById('insVetUploadConfirmBtn').addEventListener('click', ()=>{
-    petInsurance.vetUploaded = true;
-    document.getElementById('insVetUploadStatus').textContent = '✅ 수의사 검진표가 첨부됐어요';
-    updateInsuranceOutputs();
-    closeModal();
-  });
-}
-
 async function submitPetHealthScore(){
-  const r = computeInsuranceScores();
+  const { warnings, schedule } = updateInsuranceOutputs();
 
-  // ---- 폼/계산값을 우리 쪽 변수명으로 꺼내둬요 (아래 payload 매핑에서 명확히 보이도록) ----
+  // ---- 폼 값을 우리 쪽 변수명으로 꺼내둬요 (아래 payload 매핑에서 명확히 보이도록) ----
   const petName = petInsurance.name;
   const breed = petInsurance.breed;
   const ageMonths = petInsurance.ageMonths;
   const weight = petInsurance.weight;
   const weightKg = petInsurance.weight;
   const bcsScore = petInsurance.bcs;
-  const hasLimping = petInsurance.limp !== 'none';
-  const stoolCondition = petInsurance.stool;
-  const scratchFreq = petInsurance.skin === 'good' ? 'none' : petInsurance.skin === 'itchy' ? 'frequent' : 'occasional';
-  const healthScore = r.score;
-  const patellaRisk = r.patellaRisk;
-  const digestiveRisk = r.digestiveRisk;
-  const skinRisk = r.skinRisk;
-  const healthGrade = r.grade;
-  const discountRate = r.discountRate;
-  const passportNo = petInsurance.passportNo;
+  const activeMedications = dniMatrix.medications.filter(m=>m!=='none').map(id=>MEDICATIONS.find(m=>m.id===id)?.label || id);
+  const activeSupplements = dniMatrix.supplements.filter(s=>s!=='none').map(id=>SUPPLEMENT_CATEGORIES.find(c=>c.id===id)?.label || id);
 
-  // ---- 컬럼명이 다를 수 있는 경우(weight vs weight_kg, bcs vs bcs_score, health_score vs seon_health_score)를
-  //      모두 커버하고, 값이 undefined/null이어도 절대 비어있지 않도록 전부 fallback 기본값을 둬요. ----
+  // ---- 컬럼명이 다를 수 있는 경우(weight vs weight_kg, bcs vs bcs_score)를 모두 커버하고,
+  //      값이 undefined/null이어도 절대 비어있지 않도록 전부 fallback 기본값을 둬요. ----
   const payload = {
     pet_name: petName || '이름없음',
     breed: breed || '요크셔테리어',
     age_months: Number(ageMonths) || 12,
     weight: Number(weight || weightKg) || 3.2,
-    weight_kg: Number(weight || weightKg) || 3.2, // weight와 weight_kg 컬럼 둘 다 대응
-    bcs: String(bcsScore || '5'),                 // bcs와 bcs_score 컬럼 둘 다 대응
+    weight_kg: Number(weight || weightKg) || 3.2,
+    bcs: String(bcsScore || '5'),
     bcs_score: Number(bcsScore) || 5,
-    has_limping: Boolean(hasLimping),
-    stool_condition: stoolCondition || 'normal',
-    scratch_frequency: scratchFreq || 'none',
-    seon_health_score: Number(healthScore) || 80,
-    health_score: Number(healthScore) || 80,      // seon_health_score와 health_score 컬럼 둘 다 대응
-    patella_risk_percent: Number(patellaRisk) || 20,
-    digestive_risk_percent: Number(digestiveRisk) || 20,
-    skin_risk_percent: Number(skinRisk) || 20,
-    health_grade: healthGrade || 'AA 등급',
-    discount_rate_percent: Number(discountRate) || 10,
-    passport_issue_number: passportNo || `SEON-${Date.now()}`,
+    active_medications: JSON.stringify(activeMedications),
+    dni_warnings: JSON.stringify(warnings),
+    daily_chrono_schedule: JSON.stringify(schedule),
 
-    // 폼 입력 원본 전체 및 3대 질환 위험도 데이터를 JSONB로 백업 보존 (컬럼이 다르거나 빠져도 데이터는 항상 남아요)
+    // 폼 입력 원본 전체 및 계산 결과를 JSONB로 백업 보존 (컬럼이 다르거나 빠져도 데이터는 항상 남아요)
     extra_data: JSON.stringify({
-      petName, breed, ageMonths, weight, bcsScore, hasLimping,
-      stoolCondition, scratchFreq, healthScore, patellaRisk,
-      digestiveRisk, skinRisk, healthGrade, discountRate,
-      vetUploaded: petInsurance.vetUploaded, passportNo,
+      petName, breed, ageMonths, weight, bcsScore,
+      activeMedications, activeSupplements, warnings, schedule,
       savedAt: new Date().toISOString(),
     }),
   };
@@ -5874,16 +5821,16 @@ async function submitPetHealthScore(){
     const { error, usedMinimalFallback } = await insertWithSchemaFallback('pet_health_scores', payload, minimalFallbackPayload);
     if(error){
       console.error('CRITICAL_INSERT_ERROR:', JSON.stringify(error, null, 2));
-      alert('건강 스코어 저장 중 오류가 발생했습니다.\n\n' + JSON.stringify(error, null, 2));
+      alert('DNI 체크 데이터 저장 중 오류가 발생했습니다.\n\n' + JSON.stringify(error, null, 2));
     } else {
       if(usedMinimalFallback){
         console.warn('[seon] 전체 컬럼 저장에 실패해, extra_data 중심의 최소 페이로드로 2차 저장에 성공했어요.');
       }
-      alert("🎉 건강 스코어 및 Passport 데이터가 Supabase DB에 저장되었습니다!");
+      alert("🎉 DNI 상극 체크 완료! 맞춤 Chrono 영양 타임라인이 저장되었습니다.");
     }
   }catch(err){
     console.error('CRITICAL_INSERT_ERROR:', safeStringifyError(err));
-    alert('건강 스코어 저장 중 오류가 발생했습니다.\n\n' + safeStringifyError(err));
+    alert('DNI 체크 데이터 저장 중 오류가 발생했습니다.\n\n' + safeStringifyError(err));
   }
 }
 
@@ -5916,26 +5863,19 @@ function initInsurancePage(){
     updateInsuranceOutputs();
   });
 
-  bindSingleSelectGroup('insLimpGroup', v=>{ petInsurance.limp = v; updateInsuranceOutputs(); });
-  bindSingleSelectGroup('insStoolGroup', v=>{ petInsurance.stool = v; updateInsuranceOutputs(); });
-  bindSingleSelectGroup('insSkinGroup', v=>{ petInsurance.skin = v; updateInsuranceOutputs(); });
-  // 기본값 버튼에 active 클래스 부여
-  document.querySelector('#insLimpGroup button[data-val="none"]').classList.add('active');
-  document.querySelector('#insStoolGroup button[data-val="normal"]').classList.add('active');
-  document.querySelector('#insSkinGroup button[data-val="good"]').classList.add('active');
+  bindExclusiveMultiGroup('dniMedGroup', dniMatrix.medications);
+  bindExclusiveMultiGroup('dniSuppGroup', dniMatrix.supplements);
+  document.querySelector('#dniMedGroup button[data-val="none"]').classList.add('active');
+  document.querySelector('#dniSuppGroup button[data-val="none"]').classList.add('active');
+  // 배타적 다중 선택 그룹이 바뀔 때마다 DNI 재계산이 즉시 반영되도록 별도 위임 바인딩
+  document.getElementById('dniMedGroup').addEventListener('click', ()=>updateInsuranceOutputs());
+  document.getElementById('dniSuppGroup').addEventListener('click', ()=>updateInsuranceOutputs());
 
-  document.getElementById('insVetUploadBtn').addEventListener('click', openVetUploadModal);
   document.getElementById('insSubmitBtn').addEventListener('click', submitPetHealthScore);
-  document.getElementById('insPrintBtn').addEventListener('click', ()=>{
-    document.body.classList.add('print-mode-insurance');
-    const cleanup = ()=> document.body.classList.remove('print-mode-insurance');
-    window.addEventListener('afterprint', cleanup, {once:true});
-    window.print();
-    setTimeout(cleanup, 2000);
-  });
 
   updateInsuranceOutputs();
 }
+
 
 
 /* ============================================================
