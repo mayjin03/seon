@@ -896,19 +896,27 @@
           <p class="font-bold text-sm mb-3" style="color:#2C241F;">🚨 DNI Warning Banner</p>
           <div id="dniWarningBanner" class="space-y-2 mb-2"></div>
           <p id="dniNoWarningText" class="text-xs" style="color:#3A5A40;">현재 등록된 약물·영양제 조합에서 상극이 감지되지 않았어요.</p>
+
+          <div id="dniActionSentenceWrap" class="hidden mt-4 pt-4" style="border-top:1px dashed #3A5A4033;">
+            <p class="text-xs font-bold mb-2" style="color:#2C241F;">✅ 이렇게 급여해주세요</p>
+            <div id="dniActionSentences" class="space-y-2"></div>
+          </div>
         </div>
       </div>
 
-      <!-- 1일 Chrono 타임라인 카드 -->
-      <div class="max-w-5xl mx-auto mt-5">
-        <p class="font-bold text-sm mb-1" style="color:#2C241F;">📅 1일 Chrono 타임라인</p>
-        <p class="text-xs mb-3" style="color:#6b6259;">'🥣 1g 믹스 계산기'의 급여량과 연동해 시간대별로 정밀 분정했어요.</p>
-        <div class="grid sm:grid-cols-4 gap-3" id="dniChronoTimeline"></div>
-      </div>
-
-      <div class="max-w-5xl mx-auto mt-5 text-center">
-        <button type="button" id="insSubmitBtn" class="rounded-xl px-6 py-3 text-sm font-bold" style="background:#3A5A40; color:#fff;">✅ DNI 체크 &amp; Chrono 스케줄 저장하기</button>
-        <button type="button" id="insViewReportBtn" class="rounded-xl px-6 py-3 text-sm font-bold ml-2" style="background:#FAF9F5; border:1.5px solid #3A5A4055; color:#3A5A40;">📄 정밀 메디컬 리포트 보기</button>
+      <!-- 최종 결과물 대시보드 패널: Chrono 타임라인 + 액션 버튼 통합 -->
+      <div class="max-w-5xl mx-auto mt-5 rounded-2xl overflow-hidden" style="background:#FFFFFF; border:1.5px solid #3A5A4022; box-shadow:0 8px 28px rgba(44,36,31,.08);">
+        <div class="px-6 pt-6 pb-5" style="background:linear-gradient(160deg,#3A5A40,#2C4732);">
+          <p class="font-bold text-sm mb-1" style="color:#fff;">📅 1일 Chrono 타임라인</p>
+          <p class="text-xs" style="color:rgba(255,255,255,.75);">'🥣 1g 믹스 계산기'의 급여량과 연동해 시간대별로 정밀 분정했어요.</p>
+        </div>
+        <div class="p-6">
+          <div class="grid sm:grid-cols-4 gap-3 mb-6" id="dniChronoTimeline"></div>
+          <div class="flex flex-wrap items-center justify-center gap-2 pt-5" style="border-top:1px dashed #3A5A4033;">
+            <button type="button" id="insSubmitBtn" class="rounded-xl px-6 py-3 text-sm font-bold" style="background:#3A5A40; color:#fff;">✅ DNI 체크 &amp; Chrono 스케줄 저장하기</button>
+            <button type="button" id="insViewReportBtn" class="rounded-xl px-6 py-3 text-sm font-bold" style="background:#FAF9F5; border:1.5px solid #3A5A4055; color:#3A5A40;">📄 정밀 메디컬 리포트 보기 (무료)</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -6022,6 +6030,91 @@ function detectDniWarnings(){
   return warnings;
 }
 
+/* ---- 시각적 컴포넌트: 분 단위 타임라인을 텍스트 나열 대신 연결된 스텝 플로우로 표현 ---- */
+function renderDniStepFlowHtml(chronoMatrix){
+  if(!chronoMatrix.length) return `<p class="text-xs text-muted">등록된 약물·영양제·간식이 없어요.</p>`;
+  const typeStyle = {
+    '약물':        { color:'#3A5A40', bg:'#3A5A401A' },
+    '영양제':      { color:'#2FBF9F', bg:'#2FBF9F1A' },
+    '영양제(격리)': { color:'#C0473A', bg:'#C0473A1A' },
+    '간식':        { color:'#D89A1E', bg:'#D89A1E1A' },
+    '토핑':        { color:'#D89A1E', bg:'#D89A1E1A' },
+  };
+  return `<div class="relative pl-8">
+    <div class="absolute top-1 bottom-1 w-0.5" style="left:11px; background:#3A5A4022;"></div>
+    ${chronoMatrix.map(it=>{
+      const style = typeStyle[it.type] || { color:'#3A5A40', bg:'#3A5A401A' };
+      return `
+      <div class="relative mb-4 last:mb-0">
+        <div class="absolute rounded-full flex items-center justify-center" style="left:-32px; top:0; width:24px; height:24px; background:${style.color}; box-shadow:0 0 0 4px #fff;"></div>
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="font-display font-bold text-sm" style="color:${style.color};">${it.time}</span>
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" style="background:${style.bg}; color:${style.color};">${it.type}</span>
+        </div>
+        <p class="text-xs mt-0.5" style="color:#2C241F;">${it.label}</p>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+/* ---- 시각적 컴포넌트: DNI 경고를 표(table)로 정리 ---- */
+function renderDniWarningTableHtml(warnings){
+  if(!warnings.length) return `<p class="text-xs" style="color:#2FBF9F;">✅ 감지된 상극/고갈 위험이 없어요.</p>`;
+  return `
+  <table class="w-full text-xs" style="border-collapse:collapse;">
+    <thead>
+      <tr style="border-bottom:1.5px solid #2C241F;">
+        <th class="text-left py-1.5 pr-2">상태</th>
+        <th class="text-left py-1.5 pr-2">조합</th>
+        <th class="text-center py-1.5 pr-2">격리</th>
+        <th class="text-left py-1.5">권장 조치</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${warnings.map(w=>`
+        <tr style="border-bottom:1px solid #2C241F14;">
+          <td class="py-2 pr-2"><span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block" style="background:${w.interaction_type==='CONFLICT'?'#C0473A1A':'#D89A1E1A'}; color:${w.interaction_type==='CONFLICT'?'#C0473A':'#D89A1E'};">${w.interaction_type==='CONFLICT'?'🚫 상극':'⚠️ 고갈'}</span></td>
+          <td class="py-2 pr-2" style="color:#2C241F;">${w.molecule} × ${w.nutrient}</td>
+          <td class="py-2 pr-2 text-center font-bold" style="color:#2C241F;">${w.isolation_hours}h</td>
+          <td class="py-2" style="color:#6b6259;">${w.dosage_flag ? '용량 입력 시 더 정확해져요' : '타이밍 매트릭스대로 급여'}</td>
+        </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+
+/* ---- 시각적 컴포넌트: 사료/간식/토핑 비율을 컬러 스택 바로 표현 ---- */
+function renderMicroMixRatioBarHtml(mix){
+  const dryKcal = Math.max(0, parseFloat(mix.targetKcal) - parseFloat(mix.treatKcal) - parseFloat(mix.wetKcal));
+  const total = dryKcal + parseFloat(mix.treatKcal) + parseFloat(mix.wetKcal) || 1;
+  const segs = [
+    { label:'건식 사료', g:mix.dryFoodG, kcal:dryKcal, color:'#3A5A40' },
+    { label:mix.treatLabel, g:mix.treatG, kcal:parseFloat(mix.treatKcal), color:'#D89A1E' },
+    { label:mix.wetLabel, g:mix.wetG, kcal:parseFloat(mix.wetKcal), color:'#2FBF9F' },
+  ].filter(s=>s.kcal > 0 || s.label==='건식 사료');
+  return `
+    <div class="flex w-full rounded-full overflow-hidden mb-3" style="height:14px;">
+      ${segs.map(s=>`<div style="width:${(s.kcal/total*100).toFixed(1)}%; background:${s.color};"></div>`).join('')}
+    </div>
+    <div class="grid grid-cols-3 gap-2">
+      ${segs.map(s=>`
+        <div class="flex items-center gap-1.5">
+          <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background:${s.color};"></span>
+          <div>
+            <p class="text-[10px] text-muted leading-tight">${s.label}</p>
+            <p class="text-xs font-bold leading-tight">${s.g}g <span class="font-normal text-muted">(${(s.kcal/total*100).toFixed(0)}%)</span></p>
+          </div>
+        </div>`).join('')}
+    </div>`;
+}
+
+/* 약리학 용어 대신 보호자가 바로 행동할 수 있는 직관적인 한 문장으로 변환해요. */
+function plainLanguageWarningHeadline(w){
+  if(w.interaction_type === 'CONFLICT'){
+    return `🚫 같이 먹이면 흡수가 안 돼요! ${w.isolation_hours}시간 격리가 필요해요.`;
+  }
+  return `⚠️ 이 약을 먹이면 ${w.nutrient}가 몸에서 빠져나가요. 꼭 챙겨서 보충해주세요.`;
+}
+
 function renderDniWarningBanner(warnings){
   const banner = document.getElementById('dniWarningBanner');
   const noWarningText = document.getElementById('dniNoWarningText');
@@ -6033,12 +6126,9 @@ function renderDniWarningBanner(warnings){
   noWarningText.classList.add('hidden');
   banner.innerHTML = warnings.map(w=>`
     <div class="rounded-xl p-3" style="background:${w.interaction_type==='CONFLICT' ? '#C0473A14' : '#D89A1E14'}; border:1.5px solid ${w.interaction_type==='CONFLICT' ? '#C0473A44' : '#D89A1E44'};">
-      <p class="text-xs font-bold mb-1" style="color:${w.interaction_type==='CONFLICT' ? '#C0473A' : '#D89A1E'};">
-        ${w.interaction_type==='CONFLICT' ? '⚠️ 상극(CONFLICT)' : '🧪 영양 고갈(DEPLETION)'} · ${w.molecule}(${w.route_of_administration}) × ${w.nutrient}
-      </p>
-      <p class="text-xs mb-1" style="color:#2C241F;">${w.recommendation_note}</p>
-      ${w.dosage_flag ? `<p class="text-[10px] font-semibold mb-1" style="color:${w.interaction_type==='CONFLICT' ? '#C0473A' : '#D89A1E'};">🚩 용량(Dosage) 미입력 — 위 문구는 조건부 가이드예요. 정확한 용량을 입력하면 더 구체적인 안내를 받을 수 있어요.</p>` : ''}
-      <p class="text-[10px] mt-1.5 inline-block px-2 py-0.5 rounded-full" style="background:#2C241F0d; color:#6b6259;">📚 출처: ${w.clinical_reference}</p>
+      <p class="text-sm font-bold mb-1" style="color:${w.interaction_type==='CONFLICT' ? '#C0473A' : '#D89A1E'};">${plainLanguageWarningHeadline(w)}</p>
+      ${w.dosage_flag ? `<p class="text-[11px] font-semibold mb-1" style="color:${w.interaction_type==='CONFLICT' ? '#C0473A' : '#D89A1E'};">🚩 정확한 용량을 입력하면 더 구체적인 안내를 받을 수 있어요.</p>` : ''}
+      <p class="text-[10px] mt-1.5" style="color:#6b6259;">${w.molecule}(${w.route_of_administration}) × ${w.nutrient} · 📚 ${w.clinical_reference}</p>
     </div>`).join('');
 }
 
@@ -6083,12 +6173,24 @@ function buildDniChronoSchedule(warnings){
 
 function renderDniChronoTimeline(slots){
   const wrap = document.getElementById('dniChronoTimeline');
-  wrap.innerHTML = slots.map(s=>`
-    <div class="rounded-xl p-3" style="background:#FAF9F5; border:1px solid #3A5A4022;">
-      <p class="text-[11px] font-bold mb-1" style="color:#3A5A40;">${s.label} · ${s.time}</p>
-      <p class="font-display font-bold text-lg mb-1.5" style="color:#2C241F;">${s.foodG}g<span class="text-[10px] font-medium" style="color:#6b6259;"> 사료</span></p>
-      ${s.items.length ? s.items.map(it=>`<p class="text-[11px]" style="color:#2C241F;">${it}</p>`).join('') : `<p class="text-[11px]" style="color:#999;">일반 급여</p>`}
-    </div>`).join('');
+  const SLOT_STYLE = {
+    '오전': { emoji:'🌅', accent:'#F2C14E' },
+    '점심': { emoji:'🌞', accent:'#3A5A40' },
+    '저녁': { emoji:'🌆', accent:'#D89A1E' },
+    '야간': { emoji:'🌙', accent:'#5B6B7A' },
+  };
+  wrap.innerHTML = slots.map(s=>{
+    const style = SLOT_STYLE[s.label] || { emoji:'⏰', accent:'#3A5A40' };
+    return `
+    <div class="rounded-2xl p-4 relative overflow-hidden" style="background:#FFFFFF; border:1.5px solid #3A5A4022; box-shadow:0 2px 8px rgba(44,36,31,.05);">
+      <div style="position:absolute; top:0; left:0; right:0; height:5px; background:${style.accent};"></div>
+      <p class="text-xs font-bold mb-1 mt-1" style="color:${style.accent};">${style.emoji} ${s.label} · ${s.time}</p>
+      <p class="font-display font-bold text-2xl mb-2" style="color:#2C241F;">${s.foodG}g<span class="text-[11px] font-medium ml-1" style="color:#6b6259;">사료</span></p>
+      <div class="space-y-1">
+        ${s.items.length ? s.items.map(it=>`<p class="text-xs font-medium" style="color:#2C241F;">${it}</p>`).join('') : `<p class="text-xs" style="color:#999;">일반 급여</p>`}
+      </div>
+    </div>`;
+  }).join('');
 }
 
 /* ---- 기왕력 태그 입력 ---- */
@@ -6234,10 +6336,27 @@ function updateInsuranceOutputs(){
 
   const warnings = detectDniWarnings();
   renderDniWarningBanner(warnings);
+  renderDniActionSentences(warnings);
   const schedule = buildDniChronoSchedule(warnings);
   renderDniChronoTimeline(schedule);
 
   return { warnings, schedule };
+}
+
+function renderDniActionSentences(warnings){
+  const wrap = document.getElementById('dniActionSentenceWrap');
+  const list = document.getElementById('dniActionSentences');
+  const sentences = buildChronoActionSentences(warnings);
+  if(!sentences.length){
+    wrap.classList.add('hidden');
+    list.innerHTML = '';
+    return;
+  }
+  wrap.classList.remove('hidden');
+  list.innerHTML = sentences.map(s=>`
+    <div class="rounded-xl p-3" style="background:#3A5A400d;">
+      <p class="text-xs font-semibold" style="color:#3A5A40;">${s}</p>
+    </div>`).join('');
 }
 
 function buildInsuranceBcsButtons(){
@@ -6684,10 +6803,9 @@ function initInsurancePage(){
 
 
 /* ============================================================
-   📄 Premium Chrono-DNI Medical Report (8-Page)
-   — Free/Paid 게이팅: dniMatrix.paymentStatus ('FREE' | 'PAID' | 'VERIFIED')
+   📄 Premium Chrono-DNI Medical Report (7-Page, 4대 핵심 섹션)
+   — 결제 벽 없이 누구나 전체 리포트를 무료로 열람·인쇄할 수 있어요.
 ============================================================ */
-if(dniMatrix.paymentStatus === undefined) dniMatrix.paymentStatus = 'FREE';
 
 function computeBcsSignal(){
   const bcs = petInsurance.bcs;
@@ -6698,8 +6816,39 @@ function computeBcsSignal(){
   return { bcs, light, label: info.label, tone: info.tone, insight: info.insight, verdict };
 }
 
+/* "오전 10:30" 형태의 한글 시간 표기 — 보호자가 그대로 따라 할 수 있는 자연스러운 문장에 사용해요. */
+function formatKoreanTime(totalMinutes){
+  const h24 = Math.floor(totalMinutes/60) % 24;
+  const m = totalMinutes % 60;
+  const period = h24 < 12 ? '오전' : '오후';
+  let h12 = h24 % 12; if(h12 === 0) h12 = 12;
+  return `${period} ${h12}:${String(m).padStart(2,'0')}`;
+}
+/* 약물 최소 격리시간에 30분의 실생활 여유(버퍼)를 더해, 보호자가 정확히 그 분에 맞추지 못해도
+   안전하게 상극을 피할 수 있도록 목표 시각을 계산해요. */
+function computeIsolationTargetMinutes(baseMinutes, isolationHours){
+  return baseMinutes + isolationHours*60 + 30;
+}
+/* "아침 08:00 [약물] 복용 ➔ [영양소]은(는) 오전 10:30으로 격리해서 급여해주세요." 형태의
+   보호자용 행동 문장을 만들어요. 같은 영양제가 여러 약물과 겹치면 가장 긴 격리시간을 기준으로 안내해요. */
+function buildChronoActionSentences(warnings){
+  const baseMedTime = 8*60;
+  const conflictWarnings = warnings.filter(w=>w.interaction_type==='CONFLICT');
+  if(!conflictWarnings.length) return [];
+  const bySupp = {};
+  conflictWarnings.forEach(w=>{
+    if(!bySupp[w.suppCategory] || w.isolation_hours > bySupp[w.suppCategory].isolation_hours){
+      bySupp[w.suppCategory] = w;
+    }
+  });
+  return Object.values(bySupp).map(w=>{
+    const isolatedMinutes = computeIsolationTargetMinutes(baseMedTime, w.isolation_hours);
+    return `아침 ${formatKoreanTime(baseMedTime)} ${w.molecule} 복용 ➔ ${w.nutrient}은(는) ${formatKoreanTime(isolatedMinutes)}으로 격리해서 급여해주세요.`;
+  });
+}
+
 /* 정확한 분(minute) 단위로 약물·영양제·간식·토핑 투여 시각을 전부 계산해요.
-   상극(CONFLICT)이 감지된 영양제는 해당 약물 투여시각 + 격리시간(hour) 만큼 뒤로 밀어서 배치해요. */
+   상극(CONFLICT)이 감지된 영양제는 해당 약물 투여시각 + 격리시간(hour) + 30분 안전여유만큼 뒤로 밀어서 배치해요. */
 function buildMinuteLevelChronoMatrix(warnings){
   const items = [];
   const baseMedTime = 8*60;   // 08:00
@@ -6724,7 +6873,7 @@ function buildMinuteLevelChronoMatrix(warnings){
     const detail = dniMatrix.supplementDetails[cat] || {};
     const label = `🥣 ${ingredient}${detail.productName ? ` (${detail.productName})` : ''}`;
     if(isolationByCategory[cat]){
-      const t = baseMedTime + isolationByCategory[cat]*60;
+      const t = computeIsolationTargetMinutes(baseMedTime, isolationByCategory[cat]);
       items.push({ minutes: t, label: `${label} — 상극 회피를 위해 격리 배치`, type:'영양제(격리)' });
     } else {
       items.push({ minutes: dinnerTime, label, type:'영양제' });
@@ -6764,40 +6913,43 @@ function build1gMicroMixingData(){
   };
 }
 
-function buildDniVetPreClinicSummaryHtml(warnings){
-  const meds = dniMatrix.medicationEntries.map(e=>`${resolveEntryMolecule(e)}${e.dosage?` (${e.dosage}, ${routeInfo(e.route).label})`:` (${routeInfo(e.route).label})`}`);
-  const supps = dniMatrix.supplements.filter(s=>s!=='none').map(cat=>{
-    const detail = dniMatrix.supplementDetails[cat] || {};
-    const ingredient = resolveSupplementIngredient(cat);
-    return detail.productName ? `${ingredient} (${detail.productName})` : ingredient;
-  });
-  const bcsSignal = computeBcsSignal();
-  const mix = build1gMicroMixingData();
-  return `
-    <div class="rounded-lg overflow-hidden" style="border:1.5px solid #1d1d1f;">
-      <div class="px-4 py-2.5 flex items-center justify-between" style="background:#1d1d1f;">
-        <p class="text-xs font-bold" style="color:#fff;">환자 기본 정보</p>
-        <p class="text-[10px]" style="color:rgba(255,255,255,.6);">동물병원 제출용 예진표</p>
-      </div>
-      <div class="p-4" style="background:#fff;">
-        <div class="grid grid-cols-2 gap-x-4 gap-y-1.5 text-[11px] mb-3">
-          <p style="color:#333;"><span class="text-muted">이름</span> · ${petInsurance.name || '이름없음'} (${petInsurance.breed})</p>
-          <p style="color:#333;"><span class="text-muted">체중 / BCS</span> · ${petInsurance.weight.toFixed(1)}kg · BCS ${bcsSignal.bcs}/9 (${bcsSignal.label})</p>
-          <p style="color:#333;"><span class="text-muted">성별/중성화</span> · ${GENDER_NEUTERED_OPTIONS[petInsurance.genderNeutered] || '-'}</p>
-          <p style="color:#333;"><span class="text-muted">일일 권장 칼로리</span> · ${mix.targetKcal}kcal</p>
-        </div>
-        <p class="text-[10px] font-bold mb-1" style="color:#333;">복용 약물 성분(Drug Molecule)</p>
-        <p class="text-[11px] mb-2" style="color:#555;">${meds.length ? meds.join(', ') : '복용 중인 약물 없음'}</p>
-        <p class="text-[10px] font-bold mb-1" style="color:#333;">복용 영양제 주성분</p>
-        <p class="text-[11px] mb-2" style="color:#555;">${supps.length ? supps.join(', ') : '복용 중인 영양제 없음'}</p>
-        <p class="text-[10px] font-bold mb-1" style="color:#333;">기왕력/수술 이력</p>
-        <p class="text-[11px] mb-3" style="color:#555;">${petInsurance.medicalHistory.length ? petInsurance.medicalHistory.join(', ') : '없음'}</p>
-        <p class="text-[10px] font-bold mb-1" style="color:#333;">DNI 위험도 평가</p>
-        <p class="text-[11px]" style="color:${warnings.length ? '#C0473A' : '#2FBF9F'};">${warnings.length ? `⚠️ ${warnings.length}건의 약물-영양소 상극/고갈 위험이 감지됨 (상세는 Page 7 참조)` : '✅ 감지된 약물-영양소 상극/고갈 위험 없음'}</p>
-      </div>
-    </div>`;
+/* 복용 중인 약물 카테고리를 기준으로 질환 대사에 맞는 배합 비율 코멘트를 제공해요. */
+function buildDiseaseAdjustedRatioNote(){
+  const cats = new Set(dniMatrix.medicationEntries.map(e=>e.category));
+  if(cats.has('cardiac')) return { tag:'심장/혈압 관리', note:'나트륨 함량이 낮은 토핑 위주로 배합했어요. 육수·양념·시판 간식은 최소화해주세요.' };
+  if(cats.has('gi')) return { tag:'위장관 관리', note:'사료 비중을 높이고 기름진 토핑은 줄였어요. 소량씩 자주 나눠 급여하는 게 좋아요.' };
+  if(cats.has('hormone')) return { tag:'호르몬/내분비 관리', note:'급여 시간과 양을 매일 일정하게 유지하는 게 중요해요. 변동 폭을 최소화했어요.' };
+  if(cats.has('anticonvulsant')) return { tag:'항경련 관리', note:'저혈당을 예방하기 위해 규칙적인 시간에 나눠 급여하도록 배합했어요.' };
+  if(petInsurance.bcs >= 6) return { tag:'체중 관리', note:'저칼로리 토핑 비중을 높이고 사료량을 표준보다 약간 낮춰 배합했어요.' };
+  return { tag:'표준 관리', note:'특별한 대사 제약이 없어 표준 배합 비율을 적용했어요.' };
 }
 
+/* 복용 중인 영양제가 왜 필요한지(Why)와 흡수율을 극대화하는 급여법(How)을 안내해요. */
+const SUPPLEMENT_WHY_HOW = {
+  joint: { why:'관절 연골 재생과 염증 완화를 도와 관절 질환의 진행을 늦추는 데 도움이 돼요.', how:'지용성 성분이 많아 사료(식후)와 함께 급여하면 흡수율이 높아져요.' },
+  gut:   { why:'장내 유익균 균형을 맞춰 소화 기능과 면역력을 함께 지원해요.', how:'공복 상태(식전 30분)에 급여하면 위산에 덜 파괴돼 생존율이 높아져요.' },
+  skin:  { why:'피부 장벽을 강화하고 염증을 줄여 가려움·탈모 개선에 도움이 돼요.', how:'지방과 함께 섭취해야 흡수가 잘 되니 식후에 사료와 함께 급여해주세요.' },
+  multivitamin: { why:'전반적인 대사·면역·뼈 건강을 보조하는 기초 영양소를 보충해줘요.', how:'미네랄 성분은 공복보다 식후 흡수율이 높아 사료와 함께 급여하는 게 좋아요.' },
+};
+function buildSupplementWhyHowHtml(warnings){
+  const activeCats = dniMatrix.supplements.filter(s=>s!=='none');
+  if(!activeCats.length) return `<p class="text-xs text-muted">현재 등록된 영양제가 없어요.</p>`;
+  const conflictedCats = new Set(warnings.filter(w=>w.interaction_type==='CONFLICT').map(w=>w.suppCategory));
+  return `<div class="space-y-3">${activeCats.map(cat=>{
+    const info = SUPPLEMENT_WHY_HOW[cat] || { why:'전반적인 건강 관리를 보조해요.', how:'사료와 함께 급여해주세요.' };
+    const catLabel = SUPPLEMENT_CATEGORIES.find(c=>c.id===cat)?.label || cat;
+    const ingredient = resolveSupplementIngredient(cat);
+    const isConflicted = conflictedCats.has(cat);
+    return `
+      <div class="rounded-xl p-3" style="background:#FAF9F5;">
+        <p class="text-xs font-bold mb-1.5" style="color:#3A5A40;">${catLabel} · ${ingredient}</p>
+        <p class="text-xs mb-1"><b>Why —</b> ${info.why}</p>
+        <p class="text-xs">${'How —'} ${info.how}${isConflicted ? ' (단, 복용 중인 약물과 상극이 있어 Section 1의 격리 시각을 꼭 지켜주세요.)' : ''}</p>
+      </div>`;
+  }).join('')}</div>`;
+}
+
+/* 오늘의 레시피 + 알약 급여 팁 + 간단한 주간 급여 가이드를 함께 제공해요. */
 function buildDniCustomRecipeHtml(warnings){
   const bcs = petInsurance.bcs;
   const isOverweight = bcs >= 6;
@@ -6828,72 +6980,52 @@ function buildDniCustomRecipeHtml(warnings){
       <p class="text-xs" style="color:#6b6259;">${note}</p>
     </div>`;
 }
+function buildPillAdministrationTipsHtml(){
+  if(!dniMatrix.medicationEntries.length) return '';
+  const hasOral = dniMatrix.medicationEntries.some(e=>e.route==='oral_tablet');
+  const tips = [
+    '알약을 츄르나 습식캔에 살짝 감싸서 급여하면 거부감 없이 잘 먹어요.',
+    '알약을 강제로 먹일 땐 입을 살짝 벌려 혀 뒤쪽에 놓고 목을 부드럽게 쓸어주면 삼키기 쉬워요.',
+    '복용 후 물을 조금 급여하면 식도에 알약이 걸리는 걸 방지할 수 있어요.',
+  ];
+  return hasOral ? `
+    <div class="rounded-xl p-4 mt-3" style="background:#3A5A400d;">
+      <p class="text-xs font-bold mb-2" style="color:#3A5A40;">💊 알약 급여 팁</p>
+      ${tips.map(t=>`<p class="text-xs mb-1" style="color:#2C241F;">· ${t}</p>`).join('')}
+    </div>` : '';
+}
+function buildWeeklyFeedingGuideHtml(){
+  const mix = build1gMicroMixingData();
+  const days = ['월','화','수','목','금','토','일'];
+  return `
+    <div class="mt-3">
+      <p class="text-xs font-bold mb-2" style="color:#2C241F;">📆 주간 급여 가이드</p>
+      <div class="grid grid-cols-7 gap-1">
+        ${days.map(d=>`
+          <div class="rounded-lg p-2 text-center" style="background:#FAF9F5;">
+            <p class="text-[10px] font-bold" style="color:#3A5A40;">${d}</p>
+            <p class="text-[9px] text-muted">사료 ${mix.dryFoodG}g</p>
+          </div>`).join('')}
+      </div>
+      <p class="text-[10px] text-muted mt-1.5">매일 같은 시간·같은 양을 유지하는 게 DNI 상극 예방과 체중 관리에 가장 중요해요. 체중 변화가 있으면 재진단을 통해 급여량을 다시 계산해주세요.</p>
+    </div>`;
+}
 
 function renderChronoDniReportHtml(){
-  const paymentStatus = dniMatrix.paymentStatus;
-  const isPaid = paymentStatus === 'PAID' || paymentStatus === 'VERIFIED';
+  // 프리미엄 Chrono-DNI 메디컬 리포트는 결제 벽 없이 누구나 무료로 전체 열람·인쇄할 수 있어요.
   const warnings = detectDniWarnings();
   const bcsSignal = computeBcsSignal();
   const today = new Date().toLocaleDateString('ko-KR');
   const petName = petInsurance.name || '이름없음';
 
-  const lockedTeaser = (title, previewText) => `
-    <div class="rounded-xl p-4 relative overflow-hidden" style="background:linear-gradient(160deg,#2B241F,#4A3F38);">
-      <p class="text-xs font-bold mb-2" style="color:#F97A3D;">🔒 ${title}</p>
-      <div class="relative">
-        <p class="text-xs" style="color:#fff; filter:blur(4px); user-select:none;">${previewText}</p>
-        <div class="absolute inset-0 flex items-center justify-center"><span class="text-lg">🔒</span></div>
-      </div>
-    </div>`;
-
-  if(!isPaid){
-    // ---- FREE 미리보기: Executive Summary + Basic DNI Conflict Scan + General BCS Visual Signal ----
-    return `
-    <div class="pdf-report-root" style="max-width:720px; margin:0 auto;">
-      <div class="pdf-page" style="background:#fff; padding:32px;">
-        <p class="text-xs font-bold text-primary-dark mb-1">seon · Chrono-DNI Medical Report (무료 미리보기)</p>
-        <h2 class="font-display font-bold text-xl mb-4">${petName}의 건강 신호 대시보드</h2>
-
-        <div class="tooltip-box p-4 mb-4">
-          <p class="text-xs font-bold mb-1">Executive Summary</p>
-          <p class="text-xs text-muted">${petName}(${petInsurance.breed}, ${petInsurance.weight.toFixed(1)}kg, BCS ${bcsSignal.bcs}/9)는 현재 약물 ${dniMatrix.medicationEntries.length}건, 영양제 ${dniMatrix.supplements.filter(s=>s!=='none').length}건을 복용 중이에요.</p>
-        </div>
-
-        <div class="flex items-center gap-4 mb-4">
-          <div class="shrink-0">${bcsSilhouette(bcsSignal.bcs, 56)}</div>
-          <div>
-            <p class="font-display font-bold text-lg">BCS ${bcsSignal.bcs}/9 · <span style="color:${bcsSignal.tone};">${bcsSignal.label}</span></p>
-            <p class="text-xs text-muted">${bcsSignal.verdict}</p>
-            <div class="flex gap-1.5 mt-1">${['green','yellow','red'].map(k=>`<span style="opacity:${k===bcsSignal.light?'1':'.25'};">${k==='green'?'🟢':k==='yellow'?'🟡':'🔴'}</span>`).join('')}</div>
-          </div>
-        </div>
-
-        <div class="tooltip-box p-4 mb-5">
-          <p class="text-xs font-bold mb-1">기본 DNI 상극 스캔</p>
-          <p class="text-xs" style="color:${warnings.length ? '#C0473A' : '#2FBF9F'};">${warnings.length ? `⚠️ ${warnings.length}건의 약물-영양소 상극/고갈이 감지됐어요.` : '✅ 감지된 상극이 없어요.'}</p>
-        </div>
-
-        <p class="text-xs font-bold text-muted mb-2">🔒 프리미엄에서 잠금 해제되는 항목</p>
-        <div class="space-y-3 mb-5">
-          ${lockedTeaser('정밀 Chrono-DNI 매트릭스', '08:00 Enrofloxacin · 11:00 킬레이트 칼슘(격리) · 19:00 프로바이오틱스 ...')}
-          ${lockedTeaser('1g 마이크로 믹싱 스케줄', `건식 사료 ${build1gMicroMixingData().dryFoodG}g · 간식 ${mixCalc.treatG}g · 습식 ${mixCalc.wetG}g ...`)}
-          ${lockedTeaser('동물병원 제출용 예진표', '환자 기본정보 · 복용약물 성분 · DNI 위험도 평가 ...')}
-        </div>
-
-        <div class="rounded-xl p-5 text-center" style="background:linear-gradient(135deg,#2B241F,#4A3F38);">
-          <p class="font-display font-bold text-base mb-2" style="color:#fff;">8페이지 전체 정밀 리포트를 확인해보세요</p>
-          <button type="button" id="chronoDniUnlockBtn" class="btn-primary rounded-xl px-6 py-3 text-sm font-bold">⭐ 프리미엄 리포트 잠금 해제</button>
-          <button type="button" id="chronoDniDemoUnlockBtn" class="block mx-auto mt-2 text-[11px] underline" style="color:rgba(255,255,255,.6);">(테스트용) 결제완료로 미리보기</button>
-        </div>
-      </div>
-    </div>`;
-  }
-
-  // ---- PAID/VERIFIED: 전체 8페이지 ----
   const chronoMatrix = buildMinuteLevelChronoMatrix(warnings);
+  const actionSentences = buildChronoActionSentences(warnings);
   const mix = build1gMicroMixingData();
-  const vetSummary = buildDniVetPreClinicSummaryHtml(warnings);
+  const ratioNote = buildDiseaseAdjustedRatioNote();
+  const supplementWhyHow = buildSupplementWhyHowHtml(warnings);
   const recipe = buildDniCustomRecipeHtml(warnings);
+  const pillTips = buildPillAdministrationTipsHtml();
+  const weeklyGuide = buildWeeklyFeedingGuideHtml();
 
   return `
   <div class="pdf-report-root">
@@ -6902,7 +7034,7 @@ function renderChronoDniReportHtml(){
       <h1 class="font-display font-bold my-4" style="font-size:2rem;">${petName}</h1>
       <p class="text-sm text-muted">${petInsurance.breed} · ${petInsurance.weight.toFixed(1)}kg · BCS ${bcsSignal.bcs}/9</p>
       <p class="text-xs text-muted mt-6">발급일: ${today}</p>
-      <span class="pdf-page-num">1 / 8</span>
+      <span class="pdf-page-num">1 / 7</span>
     </div>
 
     <div class="pdf-page">
@@ -6913,6 +7045,7 @@ function renderChronoDniReportHtml(){
         <div>
           <p class="font-display font-bold text-lg">BCS ${bcsSignal.bcs}/9 · <span style="color:${bcsSignal.tone};">${bcsSignal.label}</span></p>
           <p class="text-xs text-muted">${bcsSignal.insight}</p>
+          <div class="flex gap-1.5 mt-1">${['green','yellow','red'].map(k=>`<span style="opacity:${k===bcsSignal.light?'1':'.25'};">${k==='green'?'🟢':k==='yellow'?'🟡':'🔴'}</span>`).join('')}</div>
         </div>
       </div>
       <div class="grid grid-cols-3 gap-2 mb-4">
@@ -6920,69 +7053,72 @@ function renderChronoDniReportHtml(){
         ${metricCard('건식 사료', mix.dryFoodG+'g', '0.1g 정밀 계산', 'bone')}
         ${metricCard('DNI 경고', warnings.length+'건', warnings.length?'주의 필요':'안전', 'info')}
       </div>
-      <div class="tooltip-box p-3 text-xs text-muted">${petName}는 약물 ${dniMatrix.medicationEntries.length}건, 영양제 ${dniMatrix.supplements.filter(s=>s!=='none').length}건을 복용 중이며, 아래 페이지에서 시간대별 정밀 스케줄과 임상 근거를 확인할 수 있어요.</div>
-      <span class="pdf-page-num">2 / 8</span>
+      <div class="tooltip-box p-3 text-xs text-muted">${petName}는 약물 ${dniMatrix.medicationEntries.length}건, 영양제 ${dniMatrix.supplements.filter(s=>s!=='none').length}건을 복용 중이에요. 다음 페이지부터 보호자가 바로 실천할 수 있는 4대 핵심 가이드를 확인해보세요.</div>
+      <span class="pdf-page-num">2 / 7</span>
     </div>
 
     <div class="pdf-page">
-      <p class="pdf-kicker mb-1">PAGE 3 · PRECISE CHRONO-DNI MATRIX</p>
-      <h2 class="font-display font-bold text-xl mb-4">분 단위 정밀 투약·급여 매트릭스</h2>
-      <div class="space-y-2">
-        ${chronoMatrix.length ? chronoMatrix.map(it=>`
-          <div class="flex items-center gap-3 tooltip-box p-2.5">
-            <span class="font-display font-bold text-sm" style="min-width:52px;">${it.time}</span>
-            <span class="text-xs font-semibold px-2 py-0.5 rounded-full surface-2">${it.type}</span>
-            <span class="text-xs">${it.label}</span>
-          </div>`).join('') : `<p class="text-xs text-muted">등록된 약물·영양제·간식이 없어요.</p>`}
-      </div>
-      <span class="pdf-page-num">3 / 8</span>
+      <p class="pdf-kicker mb-1">SECTION 1 · CHRONO-DNI TIMING MATRIX</p>
+      <h2 class="font-display font-bold text-xl mb-1">분 단위 맞춤 투약 &amp; 영양제 타이밍 매트릭스</h2>
+      <p class="text-xs text-muted mb-4">상극을 완벽히 피할 수 있도록, 그대로 따라 하기만 하면 되는 시간 흐름표예요.</p>
+
+      ${actionSentences.length ? `
+        <div class="space-y-2 mb-4">
+          ${actionSentences.map(s=>`<div class="rounded-xl p-3" style="background:#3A5A400d;"><p class="text-xs font-semibold" style="color:#3A5A40;">✅ ${s}</p></div>`).join('')}
+        </div>` : ''}
+
+      <p class="text-xs font-bold text-muted mb-3">⏱️ 오늘의 타임라인</p>
+      ${renderDniStepFlowHtml(chronoMatrix)}
+
+      <p class="text-xs font-bold text-muted mb-2 mt-5">📋 상극·고갈 비교표</p>
+      ${renderDniWarningTableHtml(warnings)}
+      <span class="pdf-page-num">3 / 7</span>
     </div>
 
     <div class="pdf-page">
-      <p class="pdf-kicker mb-1">PAGE 4 · 1G MICRO-MIXING SCALER</p>
-      <h2 class="font-display font-bold text-xl mb-4">1g 단위 정밀 믹싱 스케일러</h2>
+      <p class="pdf-kicker mb-1">SECTION 2 · 0.1G MICRO-MIXING & NUTRITION RATIO</p>
+      <h2 class="font-display font-bold text-xl mb-1">질환 맞춤형 마이크로 믹싱 &amp; 영양 배합 가이드</h2>
+      <p class="text-xs text-muted mb-4">RER/MER 기준으로 0.1g 단위까지 정밀 계산했고, 복용 중인 약물의 대사 특성을 반영했어요.</p>
+
+      <p class="text-xs font-bold text-muted mb-2">🥣 배합 비율</p>
+      <div class="tooltip-box p-3 mb-4">${renderMicroMixRatioBarHtml(mix)}</div>
+
       <div class="grid grid-cols-2 gap-3 mb-4">
         ${metricCard('건식 사료(Dry Food)', mix.dryFoodG+'g', '', 'bone')}
         ${metricCard('간식(Treats)', mix.treatG+'g', mix.treatLabel+' · '+mix.treatKcal+'kcal', 'cookie')}
         ${metricCard('토핑/습식(Wet Food)', mix.wetG+'g', mix.wetLabel+' · '+mix.wetKcal+'kcal', 'drumstick')}
         ${metricCard('일일 목표 칼로리', mix.targetKcal+'kcal', 'RER×BCS계수×목표계수', 'flame')}
       </div>
-      <p class="text-xs text-muted">모든 수치는 선택하신 사료의 kcal/100g 밀도를 기준으로 0.1g 단위까지 정밀 계산됐어요.</p>
-      <span class="pdf-page-num">4 / 8</span>
+      <div class="tooltip-box p-3">
+        <p class="text-xs font-bold mb-1" style="color:#3A5A40;">🩺 ${ratioNote.tag} 맞춤 배합</p>
+        <p class="text-xs text-muted">${ratioNote.note}</p>
+      </div>
+      <span class="pdf-page-num">4 / 7</span>
     </div>
 
     <div class="pdf-page">
-      <p class="pdf-kicker mb-1">PAGE 5 · VETERINARY PRE-CLINIC SUMMARY</p>
-      <h2 class="font-display font-bold text-xl mb-4">동물병원 제출용 예진표</h2>
-      ${vetSummary}
-      <span class="pdf-page-num">5 / 8</span>
+      <p class="pdf-kicker mb-1">SECTION 3 · SUPPLEMENT WHY & HOW</p>
+      <h2 class="font-display font-bold text-xl mb-1">질환 케어 목적 영양제 맞춤 복용 솔루션</h2>
+      <p class="text-xs text-muted mb-3">왜 이 영양제가 필요한지, 어떻게 급여해야 흡수율이 극대화되는지 알려드려요.</p>
+      ${supplementWhyHow}
+      <span class="pdf-page-num">5 / 7</span>
     </div>
 
     <div class="pdf-page">
-      <p class="pdf-kicker mb-1">PAGE 6 · CUSTOM HOMEMADE RECIPE</p>
-      <h2 class="font-display font-bold text-xl mb-4">맞춤 수제 레시피</h2>
+      <p class="pdf-kicker mb-1">SECTION 4 · CUSTOM RECIPE & WEEKLY GUIDE</p>
+      <h2 class="font-display font-bold text-xl mb-1">질환 맞춤 수제 레시피 &amp; 주간 급여 가이드</h2>
       ${recipe}
-      <span class="pdf-page-num">6 / 8</span>
+      ${pillTips}
+      ${weeklyGuide}
+      <span class="pdf-page-num">6 / 7</span>
     </div>
 
     <div class="pdf-page">
-      <p class="pdf-kicker mb-1">PAGE 7 · DNI WARNING DETAIL</p>
-      <h2 class="font-display font-bold text-xl mb-4">약물-영양소 상극/고갈 상세 근거</h2>
-      ${warnings.length ? `<div class="space-y-2">${warnings.map(w=>`
-        <div class="rounded-xl p-3" style="background:${w.interaction_type==='CONFLICT'?'#C0473A14':'#D89A1E14'}; border:1.5px solid ${w.interaction_type==='CONFLICT'?'#C0473A44':'#D89A1E44'};">
-          <p class="text-xs font-bold mb-1" style="color:${w.interaction_type==='CONFLICT'?'#C0473A':'#D89A1E'};">${w.interaction_type} · ${w.molecule} × ${w.nutrient}</p>
-          <p class="text-xs mb-1">${w.recommendation_note}</p>
-          <p class="text-[10px] px-2 py-0.5 rounded-full inline-block" style="background:#2C241F0d; color:#6b6259;">📚 ${w.clinical_reference}</p>
-        </div>`).join('')}</div>` : `<p class="text-xs text-muted">감지된 상극/고갈 위험이 없어요.</p>`}
-      <span class="pdf-page-num">7 / 8</span>
-    </div>
-
-    <div class="pdf-page">
-      <p class="pdf-kicker mb-1">PAGE 8 · DISCLAIMER</p>
+      <p class="pdf-kicker mb-1">PAGE 7 · DISCLAIMER</p>
       <h2 class="font-display font-bold text-xl mb-4">안내 사항</h2>
       <p class="text-xs text-muted mb-2">본 리포트는 보호자가 입력한 정보를 바탕으로 자동 산출된 참고 자료이며, 실제 수의학적 진단·처방을 대체하지 않습니다.</p>
       <p class="text-xs text-muted">약물 변경, 용량 조절, 새로운 영양제 급여 전에는 반드시 담당 수의사와 상담해주세요.</p>
-      <span class="pdf-page-num">8 / 8</span>
+      <span class="pdf-page-num">7 / 7</span>
     </div>
   </div>`;
 }
@@ -6995,7 +7131,7 @@ function openChronoDniReport(){
   overlay.className = 'pdf-report-overlay';
   overlay.innerHTML = `
     <div class="pdf-toolbar surface flex items-center justify-between px-4 py-3 mb-2">
-      <p class="text-sm font-bold">📄 ${petInsurance.name || '이름없음'}의 Chrono-DNI 메디컬 리포트</p>
+      <p class="text-sm font-bold">📄 ${petInsurance.name || '이름없음'}의 Chrono-DNI 메디컬 리포트 <span class="text-[10px] font-normal" style="color:#2FBF9F;">무료 전체 열람</span></p>
       <div class="flex gap-2">
         <button id="chronoDniPrintBtn" class="btn-primary rounded-xl px-4 py-2 text-xs">📥 PDF 다운로드 / 인쇄</button>
         <button id="chronoDniCloseBtn" class="btn-ghost rounded-xl px-4 py-2 text-xs">닫기</button>
@@ -7005,8 +7141,6 @@ function openChronoDniReport(){
   `;
   document.body.appendChild(overlay);
 
-  // 툴바 버튼(닫기/인쇄)은 오버레이 생성 시 한 번만 바인딩해요 — 본문(chronoDniReportBody)만 재렌더링되므로
-  // 재바인딩 시 중복 리스너가 쌓이지 않도록 콘텐츠 전용 바인딩과 분리했어요.
   document.getElementById('chronoDniCloseBtn').addEventListener('click', ()=>document.getElementById('chronoDniReportOverlay').remove());
   document.getElementById('chronoDniPrintBtn').addEventListener('click', ()=>{
     document.body.classList.add('print-mode-premium');
@@ -7015,17 +7149,10 @@ function openChronoDniReport(){
     window.print();
     setTimeout(cleanup, 2000);
   });
+}
 
-  bindChronoDniContentEvents();
-}
-function bindChronoDniContentEvents(){
-  document.getElementById('chronoDniUnlockBtn')?.addEventListener('click', ()=>openPremiumModal('pdf'));
-  document.getElementById('chronoDniDemoUnlockBtn')?.addEventListener('click', ()=>{
-    dniMatrix.paymentStatus = 'PAID'; // 데모/테스트 전용 — 실제 결제 연동은 openPremiumModal('pdf')의 결제 안내 플로우를 따라요.
-    document.getElementById('chronoDniReportBody').innerHTML = renderChronoDniReportHtml();
-    bindChronoDniContentEvents();
-  });
-}
+
+
 
 
 
