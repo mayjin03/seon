@@ -1,11 +1,8 @@
 /**
  * api/analyze-prescription.js
- * -----------------------------------------------------------------------
- * 처방전/약봉투 사진을 Claude 3.5 Sonnet Vision으로 분석하는 백엔드 프록시.
  */
 
 const ANTHROPIC_MESSAGES_URL = "https://api.anthropic.com/v1/messages";
-// Anthropic 정식 검증 모델명으로 고정 (HTTP 404 방지)
 const CLAUDE_VISION_MODEL = "claude-3-5-sonnet-20240620";
 
 export default async function handler(req, res) {
@@ -14,7 +11,6 @@ export default async function handler(req, res) {
     return;
   }
 
-  // ---- 1) API Key 확인 ----
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     res.status(500).json({
@@ -23,7 +19,6 @@ export default async function handler(req, res) {
     return;
   }
 
-  // ---- 2) 프론트엔드가 보낸 값 확인 ----
   const { image, system, instruction } = req.body || {};
   if (!image || typeof image !== "string") {
     res.status(400).json({ error: "분석할 이미지(base64)가 전달되지 않았습니다." });
@@ -43,7 +38,6 @@ export default async function handler(req, res) {
     "이 처방전/약봉투 이미지에서 모든 처방 약물 성분(drug_molecule), 카테고리(category), 용량(dosage), 투여경로(route_of_administration), 상품명(trade_name)을 추출하여 JSON 스키마 규격대로만 반환해 주세요.";
 
   try {
-    // ---- 3) Claude 3.5 Sonnet Vision 실제 호출 ----
     const anthropicRes = await fetch(ANTHROPIC_MESSAGES_URL, {
       method: "POST",
       headers: {
@@ -52,6 +46,7 @@ export default async function handler(req, res) {
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
+        // 프론트엔드가 넘기는 model 파라미터를 무시하고 백엔드의 검증된 모델명으로 고정
         model: CLAUDE_VISION_MODEL,
         max_tokens: 2048,
         system: system,
@@ -109,7 +104,6 @@ export default async function handler(req, res) {
       return;
     }
 
-    // ---- 4) 표준 스키마 반환 ----
     res.status(200).json({
       hospital_name: parsed.hospital_name || "",
       extracted_medications: parsed.extracted_medications,
