@@ -851,6 +851,15 @@
           </div>
           <div class="flex flex-wrap gap-1.5 mb-5" id="insMedicalHistoryTags"></div>
 
+          <label class="block text-xs font-semibold mb-2" style="color:#2C241F;">🎯 아이의 건강 목표</label>
+          <div class="grid grid-cols-2 gap-2 mb-5" id="insHealthGoalGroup">
+            <button data-val="cardio" class="mc-chip rounded-xl py-2.5 text-xs">❤️ 심혈관 케어</button>
+            <button data-val="renal" class="mc-chip rounded-xl py-2.5 text-xs">🫘 신장 케어</button>
+            <button data-val="joint" class="mc-chip rounded-xl py-2.5 text-xs">🦴 관절 케어</button>
+            <button data-val="prevention" class="mc-chip rounded-xl py-2.5 text-xs">🛡️ 질병 예방</button>
+            <button data-val="immunity" class="mc-chip rounded-xl py-2.5 text-xs col-span-2">✨ 면역/활력 케어</button>
+          </div>
+
           <div class="pt-4" style="border-top:1px dashed #3A5A4033;">
             <p class="font-bold text-sm mb-2" style="color:#2C241F;">② 복용 중인 약물 <span class="font-normal text-[11px]" style="color:#6b6259;">(Drug Molecule 기반)</span></p>
 
@@ -5849,6 +5858,12 @@ const petInsurance = {
   name: "", breed: BREEDS[0], weight: 10.0, ageMonths: 12, bcs: 5,
   genderNeutered: "male",
   medicalHistory: [], // 기왕력/수술 히스토리 태그 배열
+  healthGoal: "immunity", // 아이의 건강 목표 (cardio | renal | joint | prevention | immunity)
+};
+
+const HEALTH_GOAL_LABELS = {
+  cardio: "❤️ 심혈관 케어", renal: "🫘 신장 케어", joint: "🦴 관절 케어",
+  prevention: "🛡️ 질병 예방", immunity: "✨ 면역/활력 케어",
 };
 
 const GENDER_NEUTERED_OPTIONS = {
@@ -6696,7 +6711,7 @@ async function submitDniChronoData(){
     // 전체 폼 상태 및 계산 결과를 JSONB로 백업 보존 (컬럼이 다르거나 빠져도 데이터는 항상 남아요)
     extra_data: JSON.stringify({
       petName, breed, weight, bcs, genderNeutered, medicalHistory,
-      ageMonths: petInsurance.ageMonths,
+      ageMonths: petInsurance.ageMonths, healthGoal: petInsurance.healthGoal,
       activeMedicationDetails, activeSupplementDetails, warnings, schedule,
       medicationInputMode: dniMatrix.medicationInputMode,
       usedPrescriptionScan: dniMatrix.usedPrescriptionScan,
@@ -6765,6 +6780,9 @@ function initInsurancePage(){
 
   bindSingleSelectGroup('insGenderGroup', v=>{ petInsurance.genderNeutered = v; });
   document.querySelector('#insGenderGroup button[data-val="male"]').classList.add('active');
+
+  bindSingleSelectGroup('insHealthGoalGroup', v=>{ petInsurance.healthGoal = v; updateInsuranceOutputs(); });
+  document.querySelector(`#insHealthGoalGroup button[data-val="${petInsurance.healthGoal}"]`).classList.add('active');
 
   document.getElementById('insMedicalHistoryInput').addEventListener('keydown', e=>{
     if(e.key === 'Enter'){
@@ -6898,6 +6916,11 @@ function buildMinuteLevelChronoMatrix(warnings){
    선택한 사료의 kcal/100g 밀도로 환산해 0.1g 단위까지 정밀 계산해요. */
 function build1gMicroMixingData(){
   const kcalPer100g = mixCalcCurrentKcalPer100g();
+  const rerBasisWeight = mixCalcIdealWeight();
+  const RER = 70 * Math.pow(rerBasisWeight, 0.75);
+  const bcsCoef = mixCalc.bcs<=3 ? 1.1 : mixCalc.bcs<=5 ? 1.0 : mixCalc.bcs<=7 ? 0.95 : 0.85;
+  const baseFactor = 1.6;
+  const goalCoef = mixCalc.goal==='loss' ? baseFactor*0.825 : mixCalc.goal==='gain' ? baseFactor*1.2 : baseFactor;
   const targetKcal = mixCalcTargetKcal();
   const treatCat = MIXCALC_TREAT_CATEGORIES.find(c=>c.id===mixCalc.treatCategoryId) || MIXCALC_TREAT_CATEGORIES[0];
   const wetCat = MIXCALC_WET_CATEGORIES.find(c=>c.id===mixCalc.wetCategoryId) || MIXCALC_WET_CATEGORIES[0];
@@ -6910,6 +6933,8 @@ function build1gMicroMixingData(){
     dryFoodG: dryG.toFixed(1),
     treatG: mixCalc.treatG.toFixed(1), treatLabel: treatCat.label, treatKcal: treatKcal.toFixed(1),
     wetG: mixCalc.wetG.toFixed(1), wetLabel: wetCat.label, wetKcal: wetKcal.toFixed(1),
+    rerBasisWeight: rerBasisWeight.toFixed(1), RER: RER.toFixed(1), bcsCoef, goalCoef: goalCoef.toFixed(2),
+    kcalPer100g,
   };
 }
 
@@ -6947,6 +6972,91 @@ function buildSupplementWhyHowHtml(warnings){
         <p class="text-xs">${'How —'} ${info.how}${isConflicted ? ' (단, 복용 중인 약물과 상극이 있어 Section 1의 격리 시각을 꼭 지켜주세요.)' : ''}</p>
       </div>`;
   }).join('')}</div>`;
+}
+
+/* 건강 목표별 추가 추천 영양제 — 성분/기대효과/근거를 함께 제공해요. */
+const TARGETED_SUPPLEMENTS_BY_GOAL = {
+  cardio: [
+    { name:'오메가3(피쉬오일)', ingredient:'오메가3(EPA/DHA)', effect:'혈관 염증을 줄이고 혈액 점도를 낮춰 심장 부담을 완화하는 데 도움이 돼요.', evidence:'심장 질환 보조요법으로 EPA/DHA 급여를 권고하는 임상 자료가 다수 있어요.' },
+    { name:'코엔자임Q10', ingredient:'코엔자임Q10', effect:'심근 세포의 에너지(ATP) 생성을 도와 심장 수축 기능을 보조해요.', evidence:'심부전 보조제로 널리 쓰이는 항산화·에너지대사 보조 성분이에요.' },
+    { name:'타우린', ingredient:'타우린', effect:'심근 수축력을 유지하고 확장성 심근병증 위험을 낮추는 데 도움이 돼요.', evidence:'일부 견종의 타우린 결핍성 심장질환 예방에 활용돼요.' },
+  ],
+  renal: [
+    { name:'오메가3(피쉬오일)', ingredient:'오메가3(EPA/DHA)', effect:'신장 사구체 내 압력을 낮춰 신장 기능 저하 속도를 늦추는 데 도움을 줘요.', evidence:'만성신장질환(CKD) 관리 가이드라인에서 널리 권고돼요.' },
+    { name:'인 흡착 보조제', ingredient:'키토산', effect:'장내에서 인을 흡착해 혈중 인 수치를 낮춰 신장 부담을 줄여줘요.', evidence:'신장 처방식과 함께 병용되는 대표적인 보조 성분이에요.' },
+  ],
+  joint: [
+    { name:'글루코사민/콘드로이친', ingredient:'글루코사민', effect:'관절 연골 재생을 돕고 관절액 점도를 높여 통증을 완화해요.', evidence:'퇴행성 관절염 보조요법으로 가장 널리 쓰이는 성분 조합이에요.' },
+    { name:'초록입홍합(GLM)', ingredient:'초록입홍합(GLM)', effect:'천연 오메가3와 글리코사미노글리칸이 풍부해 관절 염증을 줄여줘요.', evidence:'뉴질랜드산 초록입홍합 추출물의 항염 효과가 다수 연구로 뒷받침돼요.' },
+  ],
+  prevention: [
+    { name:'종합 비타민/미네랄', ingredient:'종합비타민', effect:'기초 면역력과 대사 균형을 지켜 전반적인 질병 예방에 도움을 줘요.', evidence:'기초 영양소 결핍 예방 목적의 표준 보조제예요.' },
+    { name:'프로바이오틱스', ingredient:'프로바이오틱스(유산균)', effect:'장내 미생물 균형을 맞춰 전신 면역력과 소화 기능을 함께 높여줘요.', evidence:'장-면역 축(Gut-Immune Axis) 연구에서 예방적 효과가 보고돼요.' },
+  ],
+  immunity: [
+    { name:'베타글루칸', ingredient:'베타글루칸', effect:'대식세포·NK세포 등 면역세포 활성을 도와 전반적인 컨디션과 활력을 높여줘요.', evidence:'효모/버섯 유래 베타글루칸의 면역 조절 효과가 널리 보고돼요.' },
+    { name:'프로바이오틱스', ingredient:'프로바이오틱스(유산균)', effect:'장 건강을 통해 면역력과 소화 기능을 함께 개선해줘요.', evidence:'장내 유익균 비율과 전신 면역 반응의 상관관계가 잘 알려져 있어요.' },
+  ],
+};
+
+/* 추천 성분이 현재 복용 중인 약물과 DNI 상극이 있는지 확인하고, 있다면 안전한 격리 타이밍을 함께 제공해요. */
+function checkRecommendationDniSafety(ingredient){
+  for(const e of dniMatrix.medicationEntries){
+    const molecule = resolveEntryMolecule(e);
+    const rule = DNI_MOLECULE_RULES.find(r=>r.molecule===molecule && r.nutrient===ingredient);
+    if(rule){
+      const dosageFlag = !e.dosage;
+      const isolatedMinutes = computeIsolationTargetMinutes(8*60, rule.isolationHours);
+      return {
+        safe: false, molecule, type: rule.type, isolationHours: rule.isolationHours,
+        timingNote: rule.type === 'CONFLICT'
+          ? `${molecule}과 함께 복용 시 흡수가 저하돼요. 아침 ${formatKoreanTime(8*60)} ${molecule} 복용 후 ${formatKoreanTime(isolatedMinutes)}에 급여해주세요.`
+          : `${molecule} 복용 중에는 체내에서 빠져나가기 쉬운 성분이라, 챙겨서 꾸준히 보충해주시는 게 좋아요.${dosageFlag ? ' (정확한 용량을 입력하면 더 구체적인 안내를 받을 수 있어요.)' : ''}`,
+      };
+    }
+  }
+  return { safe: true };
+}
+
+/* Section 3 확장: 건강 목표를 달성하기 위해 추가로 복용하면 좋은 맞춤 영양제를 추천해요.
+   이미 복용 중인 성분은 제외하고, DNI 상극이 있으면 안전한 타이밍까지 함께 안내해요. */
+function buildTargetedRecommendationHtml(){
+  const goal = petInsurance.healthGoal;
+  const goalLabel = HEALTH_GOAL_LABELS[goal] || '건강 관리';
+  const pool = TARGETED_SUPPLEMENTS_BY_GOAL[goal] || [];
+  const activeIngredients = new Set(
+    dniMatrix.supplements.filter(s=>s!=='none').map(cat=>resolveSupplementIngredient(cat))
+  );
+  const candidates = pool.filter(item=>!activeIngredients.has(item.ingredient));
+
+  if(!candidates.length){
+    return `
+      <div class="rounded-xl p-4" style="background:#3A5A400d;">
+        <p class="text-xs font-bold mb-1" style="color:#3A5A40;">🎯 ${goalLabel} 목표 달성을 위한 추가 추천</p>
+        <p class="text-xs text-muted">이미 ${goalLabel} 관련 핵심 영양제를 잘 챙기고 계세요! 지금 조합을 꾸준히 유지해주세요.</p>
+      </div>`;
+  }
+
+  return `
+    <div class="mb-2">
+      <p class="text-xs font-bold mb-1" style="color:#3A5A40;">🎯 ${goalLabel} 목표 달성을 위한 추가 추천 영양제</p>
+      <p class="text-xs text-muted mb-3">현재 복용 중인 영양제 외에, 선택하신 건강 목표를 위해 추가로 고려해볼 만한 성분이에요.</p>
+    </div>
+    <div class="space-y-3">
+      ${candidates.map(item=>{
+        const safety = checkRecommendationDniSafety(item.ingredient);
+        return `
+        <div class="rounded-xl p-3" style="background:#FAF9F5; border:1.5px solid #3A5A4022;">
+          <div class="flex items-center justify-between mb-1.5">
+            <p class="text-xs font-bold" style="color:#2C241F;">${item.name} <span class="text-[10px] font-normal text-muted">(${item.ingredient})</span></p>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" style="background:${safety.safe ? '#2FBF9F1A' : '#D89A1E1A'}; color:${safety.safe ? '#2FBF9F' : '#D89A1E'};">${safety.safe ? '✅ 상극 없음' : '⚠️ 타이밍 주의'}</span>
+          </div>
+          <p class="text-xs mb-1"><b>기대 효과 —</b> ${item.effect}</p>
+          <p class="text-[11px] text-muted mb-1">${item.evidence}</p>
+          ${!safety.safe ? `<p class="text-[11px] font-semibold mt-1" style="color:#D89A1E;">⏱️ ${safety.timingNote}</p>` : ''}
+        </div>`;
+      }).join('')}
+    </div>`;
 }
 
 /* 오늘의 레시피 + 알약 급여 팁 + 간단한 주간 급여 가이드를 함께 제공해요. */
@@ -7023,6 +7133,7 @@ function renderChronoDniReportHtml(){
   const mix = build1gMicroMixingData();
   const ratioNote = buildDiseaseAdjustedRatioNote();
   const supplementWhyHow = buildSupplementWhyHowHtml(warnings);
+  const targetedRecommendation = buildTargetedRecommendationHtml();
   const recipe = buildDniCustomRecipeHtml(warnings);
   const pillTips = buildPillAdministrationTipsHtml();
   const weeklyGuide = buildWeeklyFeedingGuideHtml();
@@ -7048,12 +7159,31 @@ function renderChronoDniReportHtml(){
           <div class="flex gap-1.5 mt-1">${['green','yellow','red'].map(k=>`<span style="opacity:${k===bcsSignal.light?'1':'.25'};">${k==='green'?'🟢':k==='yellow'?'🟡':'🔴'}</span>`).join('')}</div>
         </div>
       </div>
+
+      <div class="rounded-xl p-3 mb-4" style="background:#3A5A400d;">
+        <p class="text-xs font-bold mb-0.5" style="color:#3A5A40;">🎯 이번 리포트의 건강 목표: ${HEALTH_GOAL_LABELS[petInsurance.healthGoal] || '건강 관리'}</p>
+        <p class="text-[11px] text-muted">Section 3에서 이 목표를 달성하기 위한 맞춤 영양제 추가 추천을 확인할 수 있어요.</p>
+      </div>
+
+      <table class="w-full text-[11px] mb-4" style="border-collapse:collapse;">
+        <tbody>
+          <tr style="border-bottom:1px solid #2C241F14;"><td class="py-1.5 text-muted" style="width:35%;">품종 / 성별</td><td class="py-1.5 font-semibold">${petInsurance.breed} · ${GENDER_NEUTERED_OPTIONS[petInsurance.genderNeutered] || '-'}</td></tr>
+          <tr style="border-bottom:1px solid #2C241F14;"><td class="py-1.5 text-muted">체중 / 나이</td><td class="py-1.5 font-semibold">${petInsurance.weight.toFixed(1)}kg · ${petInsurance.ageMonths}개월</td></tr>
+          <tr style="border-bottom:1px solid #2C241F14;"><td class="py-1.5 text-muted">기왕력</td><td class="py-1.5 font-semibold">${petInsurance.medicalHistory.length ? petInsurance.medicalHistory.join(', ') : '없음'}</td></tr>
+          <tr><td class="py-1.5 text-muted">복용 현황</td><td class="py-1.5 font-semibold">약물 ${dniMatrix.medicationEntries.length}건 · 영양제 ${dniMatrix.supplements.filter(s=>s!=='none').length}건</td></tr>
+        </tbody>
+      </table>
+
       <div class="grid grid-cols-3 gap-2 mb-4">
         ${metricCard('일일 권장 칼로리', mix.targetKcal+'kcal', 'RER/MER 기준', 'flame')}
         ${metricCard('건식 사료', mix.dryFoodG+'g', '0.1g 정밀 계산', 'bone')}
         ${metricCard('DNI 경고', warnings.length+'건', warnings.length?'주의 필요':'안전', 'info')}
       </div>
-      <div class="tooltip-box p-3 text-xs text-muted">${petName}는 약물 ${dniMatrix.medicationEntries.length}건, 영양제 ${dniMatrix.supplements.filter(s=>s!=='none').length}건을 복용 중이에요. 다음 페이지부터 보호자가 바로 실천할 수 있는 4대 핵심 가이드를 확인해보세요.</div>
+      <div class="tooltip-box p-3 text-xs text-muted leading-relaxed">
+        ${petName}는 현재 BCS ${bcsSignal.bcs}/9(${bcsSignal.label}) 체형으로, 약물 ${dniMatrix.medicationEntries.length}건과 영양제 ${dniMatrix.supplements.filter(s=>s!=='none').length}건을 함께 복용 중이에요.
+        ${warnings.length ? `이 중 ${warnings.length}건의 약물-영양소 상호작용이 감지되어, Section 1의 정밀 타이밍 매트릭스를 반드시 확인해주세요.` : '현재 조합에서는 상극이 감지되지 않았지만, 새로운 약물이나 영양제를 추가할 때는 다시 확인해주세요.'}
+        선택하신 '${HEALTH_GOAL_LABELS[petInsurance.healthGoal] || '건강 관리'}' 목표에 맞춰 Section 2의 배합 비율과 Section 3의 맞춤 영양제 추천을 함께 참고하시면, 더 촘촘한 케어가 가능해요.
+      </div>
       <span class="pdf-page-num">2 / 7</span>
     </div>
 
@@ -7083,8 +7213,18 @@ function renderChronoDniReportHtml(){
       <p class="text-xs font-bold text-muted mb-2">🥣 배합 비율</p>
       <div class="tooltip-box p-3 mb-4">${renderMicroMixRatioBarHtml(mix)}</div>
 
+      <p class="text-xs font-bold text-muted mb-2">🧮 계산 근거</p>
+      <table class="w-full text-[11px] mb-4" style="border-collapse:collapse;">
+        <tbody>
+          <tr style="border-bottom:1px solid #2C241F14;"><td class="py-1.5 text-muted" style="width:40%;">RER (기초대사에너지)</td><td class="py-1.5 font-semibold">70 × ${mix.rerBasisWeight}^0.75 = ${mix.RER}kcal</td></tr>
+          <tr style="border-bottom:1px solid #2C241F14;"><td class="py-1.5 text-muted">BCS 보정 계수</td><td class="py-1.5 font-semibold">× ${mix.bcsCoef}</td></tr>
+          <tr style="border-bottom:1px solid #2C241F14;"><td class="py-1.5 text-muted">목표 계수</td><td class="py-1.5 font-semibold">× ${mix.goalCoef}</td></tr>
+          <tr><td class="py-1.5 text-muted">일일 목표 칼로리(MER)</td><td class="py-1.5 font-bold" style="color:#3A5A40;">${mix.targetKcal}kcal</td></tr>
+        </tbody>
+      </table>
+
       <div class="grid grid-cols-2 gap-3 mb-4">
-        ${metricCard('건식 사료(Dry Food)', mix.dryFoodG+'g', '', 'bone')}
+        ${metricCard('건식 사료(Dry Food)', mix.dryFoodG+'g', mix.kcalPer100g+'kcal/100g 밀도 기준', 'bone')}
         ${metricCard('간식(Treats)', mix.treatG+'g', mix.treatLabel+' · '+mix.treatKcal+'kcal', 'cookie')}
         ${metricCard('토핑/습식(Wet Food)', mix.wetG+'g', mix.wetLabel+' · '+mix.wetKcal+'kcal', 'drumstick')}
         ${metricCard('일일 목표 칼로리', mix.targetKcal+'kcal', 'RER×BCS계수×목표계수', 'flame')}
@@ -7100,7 +7240,13 @@ function renderChronoDniReportHtml(){
       <p class="pdf-kicker mb-1">SECTION 3 · SUPPLEMENT WHY & HOW</p>
       <h2 class="font-display font-bold text-xl mb-1">질환 케어 목적 영양제 맞춤 복용 솔루션</h2>
       <p class="text-xs text-muted mb-3">왜 이 영양제가 필요한지, 어떻게 급여해야 흡수율이 극대화되는지 알려드려요.</p>
+
+      <p class="text-xs font-bold text-muted mb-2">💊 현재 복용 중인 영양제 분석</p>
       ${supplementWhyHow}
+
+      <div class="mt-5 pt-4" style="border-top:1px dashed #3A5A4033;">
+        ${targetedRecommendation}
+      </div>
       <span class="pdf-page-num">5 / 7</span>
     </div>
 
