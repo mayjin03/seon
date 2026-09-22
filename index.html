@@ -136,6 +136,18 @@
   .sticker-palette-btn:hover{ border-color:var(--c-primary); transform:translateY(-2px); }
   .sticker-palette-btn.is-text{ font-size:11px; font-weight:700; padding:8px 10px; white-space:nowrap; }
 
+  /* ---- 1g 믹스 계산기: Clinical Sage & Warm Cream 테마 ---- */
+  .mc-chip{ background:#FAF9F5; border:1.5px solid #3A5A4033; color:#2C241F; transition:all .15s ease; font-weight:600; }
+  .mc-chip.active{ background:#3A5A40; border-color:#3A5A40; color:#fff; }
+  .mc-bcs-btn{ background:#FAF9F5; border:1.5px solid #3A5A4033; color:#2C241F; border-radius:8px; padding:6px 0; font-size:11px; font-weight:700; text-align:center; cursor:pointer; }
+  .mc-bcs-btn.active{ background:#3A5A40; border-color:#3A5A40; color:#fff; }
+  #mixCalcPage input[type="range"]{ accent-color:#3A5A40; }
+  .mc-cat-btn{ background:#FAF9F5; border:1.5px solid #3A5A4033; color:#2C241F; border-radius:10px; padding:6px 2px; text-align:center; cursor:pointer; transition:all .15s ease; }
+  .mc-cat-btn.active{ background:#3A5A40; border-color:#3A5A40; color:#fff; }
+  .mc-cat-btn .mc-cat-emoji{ font-size:15px; display:block; }
+  .mc-cat-btn .mc-cat-label{ font-size:9px; font-weight:700; display:block; margin-top:1px; line-height:1.25; }
+  .mc-cat-btn .mc-cat-kcal{ font-size:8px; opacity:.75; display:block; }
+
   .plan-card{border:1.5px solid var(--border); background:var(--surface); cursor:pointer; transition:all .15s ease;}
   .plan-card:hover{border-color:var(--c-primary);}
   .plan-card.active{border-color:var(--c-primary); background:var(--c-primary-light); box-shadow:0 0 0 3px color-mix(in srgb, var(--c-primary) 18%, transparent);}
@@ -318,6 +330,7 @@
     <div class="flex justify-center mb-6">
       <div class="inline-flex bg-primary-light rounded-full p-1 gap-1">
         <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="home">🏠 홈 / 진단</button>
+        <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="mixcalc">🥣 1g 믹스 계산기</button>
         <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="bcs">📸 멍생스컷 BCS 테스트</button>
       </div>
     </div>
@@ -691,6 +704,106 @@
     <section id="dashboardSection" class="hidden"></section>
 
     </div><!-- /homePage -->
+
+    <!-- ===================== MIX CALC PAGE: 1g 실시간 믹스 계산기 ===================== -->
+    <div id="mixCalcPage" class="hidden">
+      <div class="text-center mb-8">
+        <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full mb-4" style="background:#3A5A401A; color:#3A5A40;">
+          <span>🥣</span><span class="text-xs font-bold">Dynamic Meal Prep &amp; Scaling Calculator</span>
+        </div>
+        <h1 class="font-display font-bold mb-2" style="font-size:clamp(1.4rem,4vw,2rem); color:#2C241F;">1g 실시간 믹스 계산기</h1>
+        <p class="text-sm" style="color:#6b6259;">간식·토핑을 조절하면 사료량이 실시간으로 계산돼요</p>
+      </div>
+
+      <div class="grid lg:grid-cols-2 gap-5 max-w-5xl mx-auto">
+
+        <!-- 좌측: 프로필 & 목표 입력 -->
+        <div class="rounded-[var(--radius-card)] p-6" style="background:#FFFFFF; border:1px solid #3A5A401f;">
+          <p class="font-bold text-sm mb-4" style="color:#2C241F;">① 기본 프로필 &amp; 목표</p>
+
+          <label class="block text-xs font-semibold mb-1.5" style="color:#2C241F;">체중 <span id="mcWeightLabel" style="color:#3A5A40;">10.0kg</span></label>
+          <input type="range" min="1.0" max="25.0" step="0.1" value="10.0" id="mcWeightSlider" class="w-full mb-5">
+
+          <label class="block text-xs font-semibold mb-2" style="color:#2C241F;">BCS 단계</label>
+          <div class="grid grid-cols-9 gap-1 mb-5" id="mcBcsGroup"></div>
+
+          <label class="block text-xs font-semibold mb-2" style="color:#2C241F;">체중 관리 목표</label>
+          <div class="grid grid-cols-3 gap-2 mb-3" id="mcGoalGroup">
+            <button data-val="maintain" class="mc-chip rounded-xl py-2.5 text-xs">⚡ 체중 유지</button>
+            <button data-val="loss" class="mc-chip rounded-xl py-2.5 text-xs">📉 감량</button>
+            <button data-val="gain" class="mc-chip rounded-xl py-2.5 text-xs">📈 증량</button>
+          </div>
+
+          <div id="mcTargetChangeWrap" class="hidden mb-5">
+            <label class="block text-xs font-semibold mb-1.5" style="color:#2C241F;">
+              <span id="mcTargetChangeLabel">목표 감량 체중</span> <span id="mcTargetChangeValue" style="color:#3A5A40;">0.5kg</span>
+            </label>
+            <input type="range" min="0.1" max="5.0" step="0.1" value="0.5" id="mcTargetChangeSlider" class="w-full">
+            <p class="text-[11px] mt-1" style="color:#6b6259;">이상 체중 약 <b id="mcIdealWeightOut">9.5</b>kg 기준으로 정밀 계산돼요.</p>
+          </div>
+
+          <label class="block text-xs font-semibold mb-1.5" style="color:#2C241F;">주식 사료</label>
+          <select id="mcFoodPreset" class="w-full rounded-xl px-3 py-2.5 mb-2 text-sm" style="border:1px solid #3A5A4033;"></select>
+          <div class="relative mb-4" id="mcCustomKcalWrap">
+            <input type="number" id="mcCustomKcal" value="360" min="150" max="600" class="w-full rounded-xl px-3 py-2.5 text-sm" style="border:1px solid #3A5A4033;">
+            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs" style="color:#6b6259;">kcal / 100g</span>
+          </div>
+
+          <div class="rounded-xl p-4 text-center" style="background:#3A5A400d;">
+            <p class="text-xs font-semibold mb-1" style="color:#3A5A40;">🥣 하루 목표 에너짓량</p>
+            <p class="font-display font-bold text-xl" style="color:#2C241F;">약 <span id="mcTargetKcal">320</span>kcal</p>
+            <p class="text-xs mt-1" style="color:#6b6259;">권장 건식 사료 약 <b id="mcBaseFoodG">88</b>g</p>
+          </div>
+        </div>
+
+        <!-- 우측: 실시간 토핑/믹스 계산기 -->
+        <div class="rounded-[var(--radius-card)] p-6" style="background:#FFFFFF; border:1px solid #3A5A401f;">
+          <p class="font-bold text-sm mb-4" style="color:#2C241F;">② 오늘의 토핑·간식 믹스</p>
+
+          <label class="block text-xs font-semibold mb-2" style="color:#2C241F;">🍖 간식(Treats) 카테고리</label>
+          <div class="grid grid-cols-4 gap-1.5 mb-3" id="mcTreatCatGroup"></div>
+          <label class="block text-xs font-semibold mb-1.5" style="color:#2C241F;">급여량 <span id="mcTreatLabel" style="color:#3A5A40;">0g</span></label>
+          <input type="range" min="0" max="100" step="1" value="0" id="mcTreatSlider" class="w-full mb-1">
+          <p id="mcTreatWarning" class="text-[11px] font-semibold mb-4 min-h-[16px]" style="color:#C0473A;"></p>
+
+          <label class="block text-xs font-semibold mb-2" style="color:#2C241F;">🥫 습식/화식 토핑 카테고리</label>
+          <div class="grid grid-cols-4 gap-1.5 mb-3" id="mcWetCatGroup"></div>
+          <label class="block text-xs font-semibold mb-1.5" style="color:#2C241F;">급여량 <span id="mcWetLabel" style="color:#3A5A40;">0g</span></label>
+          <input type="range" min="0" max="150" step="1" value="0" id="mcWetSlider" class="w-full mb-5">
+
+          <div class="rounded-xl p-4 mb-4" style="background:#3A5A40; color:#fff;">
+            <p class="text-xs font-bold mb-2 opacity-90">💡 실시간 계산 결과</p>
+            <p class="text-sm leading-relaxed" id="mcLiveOutputText">오늘은 추가하신 간식·토핑이 없어요! 건식 사료 <b>88g</b>을 그대로 담아주세요.</p>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2 text-center">
+            <div class="rounded-lg p-2.5" style="background:#FAF9F5;">
+              <p class="text-[10px]" style="color:#6b6259;">간식 kcal</p>
+              <p class="font-display font-bold text-sm" id="mcTreatKcalOut">0</p>
+            </div>
+            <div class="rounded-lg p-2.5" style="background:#FAF9F5;">
+              <p class="text-[10px]" style="color:#6b6259;">토핑 kcal</p>
+              <p class="font-display font-bold text-sm" id="mcWetKcalOut">0</p>
+            </div>
+            <div class="rounded-lg p-2.5" style="background:#FAF9F5;">
+              <p class="text-[10px]" style="color:#6b6259;">건식 사료</p>
+              <p class="font-display font-bold text-sm" style="color:#3A5A40;" id="mcFinalFoodG">88g</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 3: 오늘의 맞춤 추천 수제 레시피 -->
+      <div class="rounded-[var(--radius-card)] p-6 max-w-5xl mx-auto mt-5" style="background:#FFFFFF; border:1px solid #3A5A401f;">
+        <p class="font-bold text-sm mb-1" style="color:#2C241F;">👩‍🍳 오늘 저녁은 이 수제 토핑 레시피를 시도해보세요!</p>
+        <p class="text-xs mb-4" style="color:#6b6259;">체중·BCS·목표에 맞춰 자동으로 조정된 레시피예요.</p>
+        <div class="rounded-xl p-4" style="background:#FAF9F5;">
+          <p class="font-bold text-sm mb-2" id="mcRecipeName" style="color:#2C241F;">황태 오이 쿨링 토핑 <span class="text-xs font-normal" style="color:#6b6259;">(체중 조절 및 관절 케어용)</span></p>
+          <p class="text-xs mb-2" style="color:#3A5A40;"><b>재료:</b> <span id="mcRecipeIngredients">염분 뺀 황태채 5g + 얇게 썬 오이 10g</span></p>
+          <p class="text-xs" style="color:#6b6259;" id="mcRecipeInstructions">황태채를 20분간 물에 우려 염분을 완전히 뺀 뒤, 오이와 함께 살짝 데쳐 사료 위에 토핑으로 올려주세요. (오늘 사료량에서 약 8g 차감 반영됨)</p>
+        </div>
+      </div>
+    </div>
 
     <!-- ===================== BCS PAGE: 멍생스컷 BCS 테스트 & 카드 생성기 ===================== -->
     <div id="bcsPage" class="hidden">
@@ -5157,9 +5270,242 @@ function bindStudioTabEvents(){
 function switchMainTab(tab){
   document.querySelectorAll('.main-tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
   document.getElementById('homePage').classList.toggle('hidden', tab!=='home');
+  document.getElementById('mixCalcPage').classList.toggle('hidden', tab!=='mixcalc');
   document.getElementById('bcsPage').classList.toggle('hidden', tab!=='bcs');
   window.scrollTo({top:0, behavior:'smooth'});
 }
+
+/* ============================================================
+   1g 실시간 믹스 계산기 (Dynamic Meal Prep & Scaling Calculator)
+   — DB 저장 없이 순수 프론트엔드 상태로만 동작해요.
+============================================================ */
+const MIXCALC_FOOD_PRESETS = [
+  {id:"rc_mini",         label:"로얄캐닌 미니 어덜트",           kcal:384},
+  {id:"rc_light",        label:"로얄캐닌 체중조절/라이트",        kcal:323},
+  {id:"hills_adult",     label:"힐스 사이언스 다이어트 어덜트",     kcal:365},
+  {id:"hills_metabolic", label:"힐스 처방식 메타볼릭",           kcal:310},
+  {id:"now_small",       label:"나우 프레시 스몰브리드 어덜트",     kcal:369},
+  {id:"orijen_small",    label:"오리젠 스몰브리드",              kcal:390},
+  {id:"custom",          label:"직접 입력 (Custom)",           kcal:null},
+];
+
+const MIXCALC_TREAT_CATEGORIES = [
+  {id:"veg_fruit",    emoji:"🥬", label:"야채/과일",   kcal:35},
+  {id:"churu_treat",  emoji:"🍗", label:"츄르/트릿",   kcal:150},
+  {id:"jerky",        emoji:"🥩", label:"육포/포류",   kcal:300},
+  {id:"dental_chew",  emoji:"🧀", label:"개껌/쿠키",   kcal:350},
+];
+const MIXCALC_WET_CATEGORIES = [
+  {id:"cooling_veg",  emoji:"🥒", label:"쿨링/야채퓨레", kcal:40},
+  {id:"wet_pouch",    emoji:"🥫", label:"습식 파우치/캔", kcal:90},
+  {id:"homemade",     emoji:"🍲", label:"수제 화식",     kcal:130},
+  {id:"freeze_dried", emoji:"🥩", label:"동결건조/생식",  kcal:420},
+];
+
+const mixCalc = {
+  weight: 10.0, bcs: 5, goal: "maintain", goalChangeKg: 0.5,
+  foodPresetId: "rc_mini", customKcal: 360,
+  treatCategoryId: "veg_fruit", wetCategoryId: "cooling_veg",
+  treatG: 0, wetG: 0,
+};
+
+function mixCalcIdealWeight(){
+  if(mixCalc.goal === 'loss') return Math.max(0.5, mixCalc.weight - mixCalc.goalChangeKg);
+  if(mixCalc.goal === 'gain') return mixCalc.weight + mixCalc.goalChangeKg;
+  return mixCalc.weight;
+}
+function mixCalcTargetKcal(){
+  // 감량/증량 목표가 설정되면, 현재 체중이 아닌 '이상 체중(목표 체중)' 기준으로 RER/MER을 정밀 계산해요.
+  const rerBasisWeight = mixCalcIdealWeight();
+  const RER = 70 * Math.pow(rerBasisWeight, 0.75);
+  const bcsCoef = mixCalc.bcs<=3 ? 1.1 : mixCalc.bcs<=5 ? 1.0 : mixCalc.bcs<=7 ? 0.95 : 0.85;
+  const baseFactor = 1.6; // 성견 유지 기준 표준 계수
+  const goalCoef = mixCalc.goal==='loss' ? baseFactor*0.825 // 약 17.5% 차감 (15~20% 범위)
+                  : mixCalc.goal==='gain' ? baseFactor*1.2
+                  : baseFactor;
+  return RER * bcsCoef * goalCoef;
+}
+function mixCalcCurrentKcalPer100g(){
+  if(mixCalc.foodPresetId === 'custom') return mixCalc.customKcal || 360;
+  const preset = MIXCALC_FOOD_PRESETS.find(f=>f.id===mixCalc.foodPresetId);
+  return preset ? preset.kcal : 360;
+}
+
+function buildMixCalcBcsButtons(){
+  const wrap = document.getElementById('mcBcsGroup');
+  wrap.innerHTML = '';
+  for(let n=1;n<=9;n++){
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'mc-bcs-btn' + (n===mixCalc.bcs ? ' active' : '');
+    btn.textContent = n;
+    btn.addEventListener('click', ()=>{
+      mixCalc.bcs = n;
+      wrap.querySelectorAll('.mc-bcs-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      updateMixCalcOutputs();
+    });
+    wrap.appendChild(btn);
+  }
+}
+
+function buildMixCalcCategoryButtons(containerId, categories, activeId, onSelect){
+  const wrap = document.getElementById(containerId);
+  wrap.innerHTML = '';
+  categories.forEach(cat=>{
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'mc-cat-btn' + (cat.id===activeId ? ' active' : '');
+    btn.innerHTML = `<span class="mc-cat-emoji">${cat.emoji}</span><span class="mc-cat-label">${cat.label}</span><span class="mc-cat-kcal">${cat.kcal}kcal/100g</span>`;
+    btn.addEventListener('click', ()=>{
+      wrap.querySelectorAll('.mc-cat-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      onSelect(cat.id);
+    });
+    wrap.appendChild(btn);
+  });
+}
+
+function updateMixCalcOutputs(){
+  const kcalPer100g = mixCalcCurrentKcalPer100g();
+  const targetKcal = mixCalcTargetKcal();
+  const baseFoodG = (targetKcal / kcalPer100g) * 100;
+
+  const treatCat = MIXCALC_TREAT_CATEGORIES.find(c=>c.id===mixCalc.treatCategoryId) || MIXCALC_TREAT_CATEGORIES[0];
+  const wetCat = MIXCALC_WET_CATEGORIES.find(c=>c.id===mixCalc.wetCategoryId) || MIXCALC_WET_CATEGORIES[0];
+  const treatKcal = mixCalc.treatG * (treatCat.kcal / 100);
+  const wetKcal = mixCalc.wetG * (wetCat.kcal / 100);
+  const remainingKcal = Math.max(0, targetKcal - treatKcal - wetKcal);
+  const finalFoodG = Math.round((remainingKcal / kcalPer100g) * 100);
+
+  document.getElementById('mcWeightLabel').textContent = mixCalc.weight.toFixed(1) + 'kg';
+  document.getElementById('mcTargetKcal').textContent = Math.round(targetKcal);
+  document.getElementById('mcBaseFoodG').textContent = Math.round(baseFoodG);
+  document.getElementById('mcTreatLabel').textContent = mixCalc.treatG + 'g';
+  document.getElementById('mcWetLabel').textContent = mixCalc.wetG + 'g';
+  document.getElementById('mcTreatKcalOut').textContent = Math.round(treatKcal);
+  document.getElementById('mcWetKcalOut').textContent = Math.round(wetKcal);
+  document.getElementById('mcFinalFoodG').textContent = finalFoodG + 'g';
+
+  // 목표 감량/증량 kg 세팅 UI 표시 여부 & 이상 체중 표기
+  const targetChangeWrap = document.getElementById('mcTargetChangeWrap');
+  targetChangeWrap.classList.toggle('hidden', mixCalc.goal === 'maintain');
+  document.getElementById('mcTargetChangeLabel').textContent = mixCalc.goal === 'gain' ? '목표 증량 체중' : '목표 감량 체중';
+  document.getElementById('mcTargetChangeValue').textContent = mixCalc.goalChangeKg.toFixed(1) + 'kg';
+  document.getElementById('mcIdealWeightOut').textContent = mixCalcIdealWeight().toFixed(1);
+
+  // 간식 칼로리가 하루 목표 칼로리의 10% 초과 시 경고
+  const treatWarningEl = document.getElementById('mcTreatWarning');
+  if(treatKcal > targetKcal * 0.10){
+    treatWarningEl.textContent = `⚠️ 간식 칼로리가 하루 목표의 10%를 초과했어요 (${Math.round(treatKcal/targetKcal*100)}%). 조금 줄여보세요.`;
+  } else {
+    treatWarningEl.textContent = '';
+  }
+
+  // 실시간 계산 결과 문구
+  const liveOutput = document.getElementById('mcLiveOutputText');
+  if(mixCalc.treatG===0 && mixCalc.wetG===0){
+    liveOutput.innerHTML = `오늘은 추가하신 간식·토핑이 없어요! 건식 사료 <b>${finalFoodG}g</b>을 그대로 담아주세요.`;
+  } else {
+    const parts = [];
+    if(mixCalc.wetG>0) parts.push(`${wetCat.label} [${mixCalc.wetG}g]`);
+    if(mixCalc.treatG>0) parts.push(`${treatCat.label} [${mixCalc.treatG}g]`);
+    liveOutput.innerHTML = `오늘 저녁엔 ${parts.join('과 ')}을 주시네요! 건식 사료는 정확히 <b>[${finalFoodG}g]</b>만 담아주세요.`;
+  }
+
+  updateMixCalcRecipe(targetKcal, kcalPer100g);
+}
+
+function updateMixCalcRecipe(targetKcal, kcalPer100g){
+  // 체중 기준으로 재료량을 스케일링해요 (기준: 체중 5kg당 황태채 2.5g / 오이 5g)
+  const scale = Math.max(0.5, mixCalc.weight / 5);
+  const hwangtaeG = Math.round(2.5 * scale);
+  const cucumberG = Math.round(5 * scale);
+  const recipeKcal = hwangtaeG * 1.8 + cucumberG * 0.13; // 황태채 ≈1.8kcal/g, 오이 ≈0.13kcal/g
+  const deductG = Math.round((recipeKcal / kcalPer100g) * 100);
+
+  const isJointOrDiet = mixCalc.goal === 'loss' || mixCalc.bcs >= 6;
+  const recipeName = isJointOrDiet
+    ? '황태 오이 쿨링 토핑 <span class="text-xs font-normal" style="color:#6b6259;">(체중 조절 및 관절 케어용)</span>'
+    : '황태 단호박 토핑 <span class="text-xs font-normal" style="color:#6b6259;">(기력 보충 및 기호성 강화용)</span>';
+  const ingredientsText = isJointOrDiet
+    ? `염분 뺀 황태채 ${hwangtaeG}g + 얇게 썬 오이 ${cucumberG}g`
+    : `염분 뺀 황태채 ${hwangtaeG}g + 삶은 단호박 ${cucumberG}g`;
+  const instructionsText = isJointOrDiet
+    ? `황태채를 20분간 물에 우려 염분을 완전히 뺀 뒤, 오이와 함께 살짝 데쳐 사료 위에 토핑으로 올려주세요. (오늘 사료량에서 약 ${deductG}g 차감 반영됨)`
+    : `황태채를 20분간 물에 우려 염분을 완전히 뺀 뒤, 부드럽게 삶은 단호박과 함께 으깨어 사료 위에 토핑으로 올려주세요. (오늘 사료량에서 약 ${deductG}g 차감 반영됨)`;
+
+  document.getElementById('mcRecipeName').innerHTML = recipeName;
+  document.getElementById('mcRecipeIngredients').textContent = ingredientsText;
+  document.getElementById('mcRecipeInstructions').textContent = instructionsText;
+}
+
+function initMixCalcPage(){
+  buildMixCalcBcsButtons();
+
+  const foodSelect = document.getElementById('mcFoodPreset');
+  MIXCALC_FOOD_PRESETS.forEach(f=>{
+    const opt = document.createElement('option');
+    opt.value = f.id;
+    opt.textContent = f.kcal!=null ? `${f.label} (${f.kcal} kcal / 100g)` : f.label;
+    foodSelect.appendChild(opt);
+  });
+  foodSelect.value = mixCalc.foodPresetId;
+
+  const customKcalWrap = document.getElementById('mcCustomKcalWrap');
+  const syncCustomKcalVisibility = ()=>{ customKcalWrap.classList.toggle('hidden', mixCalc.foodPresetId !== 'custom'); };
+  syncCustomKcalVisibility();
+
+  foodSelect.addEventListener('change', e=>{
+    mixCalc.foodPresetId = e.target.value;
+    syncCustomKcalVisibility();
+    updateMixCalcOutputs();
+  });
+  document.getElementById('mcCustomKcal').addEventListener('input', e=>{
+    mixCalc.customKcal = parseFloat(e.target.value) || 360;
+    updateMixCalcOutputs();
+  });
+
+  document.getElementById('mcWeightSlider').addEventListener('input', e=>{
+    mixCalc.weight = parseFloat(e.target.value);
+    updateMixCalcOutputs();
+  });
+
+  document.querySelectorAll('#mcGoalGroup button').forEach(btn=>{
+    if(btn.dataset.val === mixCalc.goal) btn.classList.add('active');
+    btn.addEventListener('click', ()=>{
+      mixCalc.goal = btn.dataset.val;
+      document.querySelectorAll('#mcGoalGroup button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      updateMixCalcOutputs();
+    });
+  });
+  document.getElementById('mcTargetChangeSlider').addEventListener('input', e=>{
+    mixCalc.goalChangeKg = parseFloat(e.target.value);
+    updateMixCalcOutputs();
+  });
+
+  buildMixCalcCategoryButtons('mcTreatCatGroup', MIXCALC_TREAT_CATEGORIES, mixCalc.treatCategoryId, id=>{
+    mixCalc.treatCategoryId = id;
+    updateMixCalcOutputs();
+  });
+  buildMixCalcCategoryButtons('mcWetCatGroup', MIXCALC_WET_CATEGORIES, mixCalc.wetCategoryId, id=>{
+    mixCalc.wetCategoryId = id;
+    updateMixCalcOutputs();
+  });
+
+  document.getElementById('mcTreatSlider').addEventListener('input', e=>{
+    mixCalc.treatG = parseInt(e.target.value);
+    updateMixCalcOutputs();
+  });
+  document.getElementById('mcWetSlider').addEventListener('input', e=>{
+    mixCalc.wetG = parseInt(e.target.value);
+    updateMixCalcOutputs();
+  });
+
+  updateMixCalcOutputs();
+}
+
 
 /* ============================================================
    멍생스컷 BCS 테스트 & 카드 생성기
@@ -5502,6 +5848,7 @@ async function saveBcsCardImage(){
 ============================================================ */
 init();
 initBcsTestPage();
+initMixCalcPage();
 switchMainTab('home');
 
 })();
