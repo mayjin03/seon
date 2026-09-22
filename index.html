@@ -827,6 +827,9 @@
         <div class="rounded-[var(--radius-card)] p-6" style="background:#FFFFFF; border:1px solid #3A5A401f;">
           <p class="font-bold text-sm mb-4" style="color:#2C241F;">① 기본 정보 &amp; 문진</p>
 
+          <label class="block text-xs font-semibold mb-1.5" style="color:#2C241F;">아이 이름</label>
+          <input type="text" id="insPetName" placeholder="예: 초코" class="w-full rounded-xl px-3 py-2.5 mb-4 text-sm" style="border:1px solid #3A5A4033;">
+
           <label class="block text-xs font-semibold mb-1.5" style="color:#2C241F;">품종</label>
           <select id="insBreed" class="w-full rounded-xl px-3 py-2.5 mb-4 text-sm" style="border:1px solid #3A5A4033;"></select>
 
@@ -904,10 +907,11 @@
         <div id="insurancePassportPrint" class="rounded-lg overflow-hidden" style="border:1.5px solid #1d1d1f;">
           <div class="px-5 py-3 flex items-center justify-between" style="background:#1d1d1f;">
             <p class="text-sm font-bold" style="color:#fff;">Seon Health Passport</p>
-            <p class="text-[10px]" style="color:rgba(255,255,255,.6);">펫보험 제출용 건강 스코어 인증서</p>
+            <p class="text-[10px]" style="color:rgba(255,255,255,.6);" id="insPassportNo">SEON-0000000000000</p>
           </div>
           <div class="p-5" style="background:#fff;">
             <div class="grid grid-cols-2 gap-x-4 gap-y-1.5 text-[11px] mb-4">
+              <p style="color:#333;"><span style="color:#999;">이름</span> · <span id="insPassportName">이름없음</span></p>
               <p style="color:#333;"><span style="color:#999;">품종</span> · <span id="insPassportBreed">말티즈</span></p>
               <p style="color:#333;"><span style="color:#999;">체중 / BCS / 나이</span> · <span id="insPassportWeightBcs">10.0kg / 5</span></p>
               <p style="color:#333;"><span style="color:#999;">종합 건강 스코어</span> · <span id="insPassportScore">92 / 100 (A등급)</span></p>
@@ -4706,12 +4710,19 @@ function decodeSingle(val, labelMap){
    문제가 된 컬럼만 골라내 payload에서 제거하고 자동으로 재시도해요.
    DB에 아직 없는 컬럼이 무엇이든, 수동으로 ALTER TABLE 하지 않아도 저장 자체는 항상 성공하도록 만드는
    프론트엔드 차원의 근본적인 방어 로직이에요. */
-async function insertWithSchemaFallback(table, payload){
+async function insertWithSchemaFallback(table, payload, minimalFallbackPayload){
   let attempt = { ...payload };
   const droppedColumns = [];
+  const tryMinimalFallback = async (reasonError)=>{
+    if(!minimalFallbackPayload) return null;
+    console.warn(`[seon] 전체 컬럼 저장이 실패해(${reasonError && (reasonError.code || reasonError.message)}), extra_data 중심의 최소 페이로드로 마지막 재시도를 해요.`);
+    const { error: fallbackError } = await supabaseClient.from(table).insert([minimalFallbackPayload]);
+    return { error: fallbackError || null, droppedColumns, finalPayload: minimalFallbackPayload, usedMinimalFallback: true };
+  };
+
   for(let i=0; i<12; i++){
     const { error } = await supabaseClient.from(table).insert([attempt]);
-    if(!error) return { error:null, droppedColumns, finalPayload:attempt };
+    if(!error) return { error:null, droppedColumns, finalPayload:attempt, usedMinimalFallback:false };
 
     const match = /Could not find the '([^']+)' column/i.exec(error.message || '');
     const missingCol = match && match[1];
@@ -4721,10 +4732,17 @@ async function insertWithSchemaFallback(table, payload){
       droppedColumns.push(missingCol);
       continue;
     }
-    // 컬럼 누락이 아닌 다른 종류의 오류(RLS 등)이거나, 더 이상 제거할 필드가 없으면 그대로 반환
-    return { error, droppedColumns, finalPayload:attempt };
+
+    // 컬럼 누락(PGRST204)이 아닌 다른 오류(NOT NULL 위반 23502 등)이거나 더 이상 제거할 필드가 없다면,
+    // extra_data 중심의 최소 안전 페이로드가 주어졌을 때 마지막으로 한 번 더 시도해요.
+    const fallbackResult = await tryMinimalFallback(error);
+    if(fallbackResult) return fallbackResult;
+    return { error, droppedColumns, finalPayload:attempt, usedMinimalFallback:false };
   }
-  return { error: { message:'반복적으로 컬럼 누락이 발생해 저장에 실패했습니다.', code:'SCHEMA_FALLBACK_EXCEEDED' }, droppedColumns, finalPayload:attempt };
+  // 반복적으로 컬럼 누락이 발생하는 극단적인 경우에도, 최소 페이로드가 있으면 마지막으로 시도해봐요.
+  const finalFallback = await tryMinimalFallback({ message:'반복적으로 컬럼 누락이 발생했습니다.', code:'SCHEMA_FALLBACK_EXCEEDED' });
+  if(finalFallback) return finalFallback;
+  return { error: { message:'반복적으로 컬럼 누락이 발생해 저장에 실패했습니다.', code:'SCHEMA_FALLBACK_EXCEEDED' }, droppedColumns, finalPayload:attempt, usedMinimalFallback:false };
 }
 
 /* update()에도 동일한 자동 적응 로직을 적용 (예: paid 상태 토글) */
@@ -5664,9 +5682,10 @@ function initMixCalcPage(){
    — DB 저장 없이도 동작하지만, 제출 시 Supabase pet_health_scores 테이블에 인서트해요.
 ============================================================ */
 const petInsurance = {
-  breed: BREEDS[0], weight: 10.0, ageMonths: 12, bcs: 5,
+  name: "", breed: BREEDS[0], weight: 10.0, ageMonths: 12, bcs: 5,
   limp: "none", stool: "normal", skin: "good",
   vetUploaded: false,
+  passportNo: "SEON-" + Date.now(), // 발급 시점에 한 번만 생성해 값이 계속 바뀌지 않도록 고정
 };
 
 /* 소형 견종은 슬개골 탈구 위험이 통계적으로 더 높다고 알려진 대표 품종군 */
@@ -5735,6 +5754,8 @@ function updateInsuranceOutputs(){
     </div>`).join('');
 
   // Seon Health Passport 동기화
+  document.getElementById('insPassportName').textContent = petInsurance.name.trim() || '이름없음';
+  document.getElementById('insPassportNo').textContent = petInsurance.passportNo;
   document.getElementById('insPassportBreed').textContent = petInsurance.breed;
   document.getElementById('insPassportWeightBcs').textContent = `${petInsurance.weight.toFixed(1)}kg / BCS ${petInsurance.bcs} / ${petInsurance.ageMonths}개월`;
   document.getElementById('insPassportScore').textContent = `${r.score} / 100 (${r.grade})`;
@@ -5787,34 +5808,81 @@ function openVetUploadModal(){
 
 async function submitPetHealthScore(){
   const r = computeInsuranceScores();
-  const corePayload = {
-    breed: petInsurance.breed,
-    weight: petInsurance.weight,
-    bcs: String(petInsurance.bcs),
-    health_score: r.score,
-    // age_months는 DB에서 NOT NULL 제약이 걸려있어, 어떤 경우에도 값이 비어있지 않도록 확실히 보장해요.
-    age_months: (Number.isFinite(petInsurance.ageMonths) && petInsurance.ageMonths > 0) ? petInsurance.ageMonths : 12,
+
+  // ---- 폼/계산값을 우리 쪽 변수명으로 꺼내둬요 (아래 payload 매핑에서 명확히 보이도록) ----
+  const petName = petInsurance.name;
+  const breed = petInsurance.breed;
+  const ageMonths = petInsurance.ageMonths;
+  const weight = petInsurance.weight;
+  const weightKg = petInsurance.weight;
+  const bcsScore = petInsurance.bcs;
+  const hasLimping = petInsurance.limp !== 'none';
+  const stoolCondition = petInsurance.stool;
+  const scratchFreq = petInsurance.skin === 'good' ? 'none' : petInsurance.skin === 'itchy' ? 'frequent' : 'occasional';
+  const healthScore = r.score;
+  const patellaRisk = r.patellaRisk;
+  const digestiveRisk = r.digestiveRisk;
+  const skinRisk = r.skinRisk;
+  const healthGrade = r.grade;
+  const discountRate = r.discountRate;
+  const passportNo = petInsurance.passportNo;
+
+  // ---- 컬럼명이 다를 수 있는 경우(weight vs weight_kg 등)를 모두 커버하고,
+  //      값이 undefined/null이어도 절대 비어있지 않도록 전부 fallback 기본값을 둬요. ----
+  const payload = {
+    pet_name: petName || '이름없음',
+    breed: breed || '요크셔테리어',
+    age_months: Number(ageMonths) || 12,
+    weight_kg: Number(weight || weightKg || 3.2), // weight와 weight_kg 컬럼 둘 다 대응
+    weight: Number(weight || weightKg || 3.2),
+    bcs_score: Number(bcsScore) || 5,
+    has_limping: Boolean(hasLimping),
+    stool_condition: stoolCondition || 'normal',
+    scratch_frequency: scratchFreq || 'none',
+    seon_health_score: Number(healthScore) || 80,
+    patella_risk_percent: Number(patellaRisk) || 20,
+    digestive_risk_percent: Number(digestiveRisk) || 20,
+    skin_risk_percent: Number(skinRisk) || 20,
+    health_grade: healthGrade || 'AA 등급',
+    discount_rate_percent: Number(discountRate) || 10,
+    passport_issue_number: passportNo || `SEON-${Date.now()}`,
+
+    // 폼 입력 원본 전체 및 3대 질환 위험도 데이터를 JSONB로 백업 보존 (컬럼이 다르거나 빠져도 데이터는 항상 남아요)
+    extra_data: JSON.stringify({
+      petName, breed, ageMonths, weight, bcsScore, hasLimping,
+      stoolCondition, scratchFreq, healthScore, patellaRisk,
+      digestiveRisk, skinRisk, healthGrade, discountRate,
+      vetUploaded: petInsurance.vetUploaded, passportNo,
+      savedAt: new Date().toISOString(),
+    }),
   };
-  const extra = {
-    limp: petInsurance.limp, stool: petInsurance.stool, skin: petInsurance.skin,
-    vet_uploaded: petInsurance.vetUploaded,
-    grade: r.grade, patella_risk: r.patellaRisk, digestive_risk: r.digestiveRisk, skin_risk: r.skinRisk,
-    discount_rate: r.discountRate,
-  };
-  const dbPayload = { ...corePayload, extra_data: JSON.stringify(extra) };
 
   if(!supabaseClient){
-    alert(`Supabase가 연결되지 않아 로컬에서만 계산됐어요.\n\n${JSON.stringify(dbPayload, null, 2)}`);
+    alert(`Supabase가 연결되지 않아 로컬에서만 계산됐어요.\n\n${JSON.stringify(payload, null, 2)}`);
     return;
   }
-  console.log('payload:', JSON.stringify(dbPayload, null, 2));
+  console.log('payload:', JSON.stringify(payload, null, 2));
   try{
-    const { error } = await insertWithSchemaFallback('pet_health_scores', dbPayload);
+    // 최후의 안전망: 위 payload가 스키마 불일치(컬럼 없음)나 NOT NULL 위반(23502) 등 어떤 이유로든 실패하면,
+    // extra_data + 가장 기본적인 컬럼만 담은 최소 페이로드로 자동 2차 시도해요.
+    const minimalFallbackPayload = {
+      pet_name: payload.pet_name,
+      breed: payload.breed,
+      weight: payload.weight,
+      bcs: String(payload.bcs_score),
+      health_score: payload.seon_health_score,
+      age_months: payload.age_months,
+      extra_data: payload.extra_data,
+    };
+    const { error, usedMinimalFallback } = await insertWithSchemaFallback('pet_health_scores', payload, minimalFallbackPayload);
     if(error){
       console.error('CRITICAL_INSERT_ERROR:', JSON.stringify(error, null, 2));
       alert('건강 스코어 저장 중 오류가 발생했습니다.\n\n' + JSON.stringify(error, null, 2));
     } else {
-      alert('✅ 건강 스코어가 제출됐어요! Seon Health Passport를 저장하거나 인쇄해 보험사에 제출해보세요.');
+      if(usedMinimalFallback){
+        console.warn('[seon] 전체 컬럼 저장에 실패해, extra_data 중심의 최소 페이로드로 2차 저장에 성공했어요.');
+      }
+      alert("🎉 건강 스코어 및 Passport 데이터가 Supabase DB에 저장되었습니다!");
     }
   }catch(err){
     console.error('CRITICAL_INSERT_ERROR:', safeStringifyError(err));
@@ -5823,6 +5891,11 @@ async function submitPetHealthScore(){
 }
 
 function initInsurancePage(){
+  document.getElementById('insPetName').addEventListener('input', e=>{
+    petInsurance.name = e.target.value;
+    updateInsuranceOutputs();
+  });
+
   const breedSelect = document.getElementById('insBreed');
   BREEDS.forEach(b=>{
     const opt = document.createElement('option');
