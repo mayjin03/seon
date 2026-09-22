@@ -1,115 +1,135 @@
 /**
  * api/analyze-prescription.js
+ * Anthropic Claude 3.5 Sonnet Vision 백엔드 프록시
  */
 
-const ANTHROPIC_MESSAGES_URL = "https://api.anthropic.com/v1/messages";
-const CLAUDE_VISION_MODEL = "claude-3-5-sonnet-20240620";
-
 export default async function handler(req, res) {
+  // CORS 및 HTTP Method 검증
   if (req.method !== "POST") {
-    res.status(405).json({ error: "허용되지 않은 메서드입니다. POST로 요청해주세요." });
-    return;
+    return res.status(405).json({ error: "Method Not Allowed" });
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  // 1) API Key 검증 (공백 제거)
+  const rawKey = process.env.ANTHROPIC_API_KEY || "";
+  const apiKey = rawKey.trim();
+
   if (!apiKey) {
-    res.status(500).json({
-      error: "API Key가 설정되지 않았습니다. 환경 변수에 ANTHROPIC_API_KEY를 등록해 주세요.",
+    return res.status(500).json({
+      error: "Vercel 환경 변수에 ANTHROPIC_API_KEY가 설정되지 않았습니다.",
     });
-    return;
   }
 
+  // 2) Body 데이터 검증
   const { image, system, instruction } = req.body || {};
   if (!image || typeof image !== "string") {
-    res.status(400).json({ error: "분석할 이미지(base64)가 전달되지 않았습니다." });
-    return;
+    return res.status(400).json({ error: "이미지(base64) 데이터가 누락되었습니다." });
   }
 
   const match = /^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/.exec(image);
   if (!match) {
-    res.status(400).json({ error: "이미지 형식이 올바르지 않습니다 (base64 DataURL이 아니에요)." });
-    return;
+    return res.status(400).json({ error: "올바른 Base64 DataURL 형식이 아닙니다." });
   }
+
   const mediaType = match[1];
   const base64Data = match[2];
 
-  const userInstruction =
+  const promptText =
     instruction ||
     "이 처방전/약봉투 이미지에서 모든 처방 약물 성분(drug_molecule), 카테고리(category), 용량(dosage), 투여경로(route_of_administration), 상품명(trade_name)을 추출하여 JSON 스키마 규격대로만 반환해 주세요.";
 
   try {
-    const anthropicRes = await fetch(ANTHROPIC_MESSAGES_URL, {
+    // 3) Anthropic Messages API 호출 (정확한 Endpoint URL 및 Header 지정)
+    const anthropicResponse = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
+        "Accept": "application/json",
         "Content-Type": "application/json",
         "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
+        "anthropic-version": "2023-06-01"
       },
       body: JSON.stringify({
-        // 프론트엔드가 넘기는 model 파라미터를 무시하고 백엔드의 검증된 모델명으로 고정
-        model: CLAUDE_VISION_MODEL,
+        model: "claude-3-5-sonnet-20240620",
         max_tokens: 2048,
-        system: system,
+        system: system || undefined,
         messages: [
           {
             role: "user",
             content: [
               {
                 type: "image",
-                source: { type: "base64", media_type: mediaType, data: base64Data },
+                source: {
+                  type: "base64",
+                  media_type: mediaType,
+                  data: base64Data
+                }
               },
-              { type: "text", text: userInstruction },
-            ],
-          },
-        ],
-      }),
+              {
+                type: "text",
+                text: promptText
+              }
+            ]
+          }
+        ]
+      })
     });
 
-    if (!anthropicRes.ok) {
-      let detail = "";
+    const resStatus = anthropicResponse.status;
+
+    if (!anthropicResponse.ok) {
+      let errorDetail = "";
       try {
-        const errBody = await anthropicRes.json();
-        detail = errBody?.error?.message || "";
-      } catch (_) {}
-      
-      const statusMsg =
-        anthropicRes.status === 401
-          ? "API Key가 유효하지 않습니다. ANTHROPIC_API_KEY 값을 다시 확인해 주세요."
-          : `Vision AI 분석 요청이 실패했습니다 (HTTP ${anthropicRes.status}).${detail ? " " + detail : ""}`;
-      res.status(anthropicRes.status === 401 ? 401 : 502).json({ error: statusMsg });
-      return;
+        const errJson = await anthropicResponse.json();
+        errorDetail = errJson?.error?.message || JSON.stringify(errJson);
+      } catch (_) {
+        errorDetail = await anthropicResponse.text();
+      }
+
+      return res.status(502).json({
+        error: `Vision AI 분석 요청이 실패했습니다 (HTTP ${resStatus}). ${errorDetail}`
+      });
     }
 
-    const anthropicJson = await anthropicRes.json();
-    const rawText = (anthropicJson.content || [])
+    const data = await anthropicResponse.json();
+    const rawText = (data.content || [])
       .filter((block) => block.type === "text")
       .map((block) => block.text)
       .join("\n")
       .trim();
 
-    const cleaned = rawText.replace(/^```json\s*/i, "").replace(/```\s*$/i, "").trim();
+    // Markdown Code Block (```json ... ```) 제거
+    const cleanedJsonText = rawText
+      .replace(/^```json\s*/i, "")
+      .replace(/^```\s*/i, "")
+      .replace(/```\s*$/i, "")
+      .trim();
 
-    let parsed;
+    let parsedResult;
     try {
-      parsed = JSON.parse(cleaned);
-    } catch (parseErr) {
-      res.status(502).json({
-        error: "Vision AI 응답을 JSON으로 해석하지 못했습니다. 프롬프트 또는 모델 응답을 확인해주세요.",
+      parsedResult = JSON.parse(cleanedJsonText);
+    } catch (parseError) {
+      return res.status(502).json({
+        error: "AI 응답을 JSON으로 파싱하지 못했습니다.",
+        rawText: rawText
       });
-      return;
     }
 
-    if (!parsed || !Array.isArray(parsed.extracted_medications)) {
-      res.status(502).json({ error: "Vision AI 응답 형식이 스키마와 일치하지 않습니다." });
-      return;
+    if (!parsedResult || !Array.isArray(parsedResult.extracted_medications)) {
+      return res.status(502).json({
+        error: "Vision AI 응답 형식이 추출 스키마와 일치하지 않습니다.",
+        parsedResult
+      });
     }
 
-    res.status(200).json({
-      hospital_name: parsed.hospital_name || "",
-      extracted_medications: parsed.extracted_medications,
+    // 4) 성공 응답 반환
+    return res.status(200).json({
+      hospital_name: parsedResult.hospital_name || "",
+      extracted_medications: parsedResult.extracted_medications
     });
+
   } catch (err) {
-    console.error("ANALYZE_PRESCRIPTION_ERROR:", err?.message || String(err));
-    res.status(500).json({ error: "Vision AI 분석 중 서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요." });
+    console.error("SERVER_ERROR:", err);
+    return res.status(500).json({
+      error: `서버 내부 오류가 발생했습니다: ${err?.message || String(err)}`
+    });
   }
 }
