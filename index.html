@@ -834,11 +834,25 @@
           <label class="block text-xs font-semibold mb-1.5" style="color:#2C241F;">나이 <span id="insAgeMonthsLabel" style="color:#3A5A40;">12개월</span></label>
           <input type="range" min="1" max="240" step="1" value="12" id="insAgeMonthsSlider" class="w-full mb-4">
 
-          <label class="block text-xs font-semibold mb-2" style="color:#2C241F;">BCS 단계</label>
+          <label class="block text-xs font-semibold mb-2" style="color:#2C241F;">BCS 단계 <span class="font-normal" style="color:#6b6259;">(체중·칼로리 정밀 계산용)</span></label>
           <div class="grid grid-cols-9 gap-1 mb-5" id="insBcsGroup"></div>
 
+          <label class="block text-xs font-semibold mb-2" style="color:#2C241F;">성별 및 중성화 여부</label>
+          <div class="grid grid-cols-2 gap-2 mb-5" id="insGenderGroup">
+            <button data-val="male" class="mc-chip rounded-xl py-2.5 text-xs">♂ 수컷</button>
+            <button data-val="male_neutered" class="mc-chip rounded-xl py-2.5 text-xs">♂ 중성화 수컷</button>
+            <button data-val="female" class="mc-chip rounded-xl py-2.5 text-xs">♀ 암컷</button>
+            <button data-val="female_neutered" class="mc-chip rounded-xl py-2.5 text-xs">♀ 중성화 암컷</button>
+          </div>
+
+          <label class="block text-xs font-semibold mb-1.5" style="color:#2C241F;">기왕력 &amp; 수술 히스토리 <span class="font-normal" style="color:#6b6259;">(선택 입력)</span></label>
+          <div class="flex gap-2 mb-2">
+            <input type="text" id="insMedicalHistoryInput" placeholder="입력 후 Enter (예: 슬개골 탈구 수술)" class="w-full rounded-xl px-3 py-2.5 text-sm" style="border:1px solid #3A5A4033;">
+          </div>
+          <div class="flex flex-wrap gap-1.5 mb-5" id="insMedicalHistoryTags"></div>
+
           <div class="pt-4" style="border-top:1px dashed #3A5A4033;">
-            <p class="font-bold text-sm mb-3" style="color:#2C241F;">② 복용 중인 약물</p>
+            <p class="font-bold text-sm mb-1" style="color:#2C241F;">② 복용 중인 약물 <span class="font-normal text-[11px]" style="color:#6b6259;">(Drug Molecule 기반)</span></p>
             <div class="grid grid-cols-3 gap-2 mb-1" id="dniMedGroup">
               <button data-val="diuretic" class="mc-chip rounded-xl py-2.5 text-xs">💧 이뇨제</button>
               <button data-val="antibiotic" class="mc-chip rounded-xl py-2.5 text-xs">💊 항생제</button>
@@ -846,9 +860,10 @@
               <button data-val="joint_med" class="mc-chip rounded-xl py-2.5 text-xs">🦴 관절약</button>
               <button data-val="none" class="mc-chip rounded-xl py-2.5 text-xs col-span-2">복용 안 함</button>
             </div>
-            <p class="text-[11px] mt-2 mb-4" style="color:#6b6259;">중복 선택 가능해요 (복용 중인 약물이 없으면 '복용 안 함'을 선택해주세요)</p>
+            <p class="text-[11px] mt-2 mb-3" style="color:#6b6259;">중복 선택 가능해요. 카테고리를 고르면 세부 성분명·용량 입력란이 나타나요.</p>
+            <div class="space-y-2 mb-4" id="dniMedDetailWrap"></div>
 
-            <p class="font-bold text-sm mb-3" style="color:#2C241F;">③ 복용 중인 영양제</p>
+            <p class="font-bold text-sm mb-1" style="color:#2C241F;">③ 복용 중인 영양제 <span class="font-normal text-[11px]" style="color:#6b6259;">(주성분 기반)</span></p>
             <div class="grid grid-cols-3 gap-2" id="dniSuppGroup">
               <button data-val="joint" class="mc-chip rounded-xl py-2.5 text-xs">관절</button>
               <button data-val="gut" class="mc-chip rounded-xl py-2.5 text-xs">유산균</button>
@@ -856,6 +871,7 @@
               <button data-val="multivitamin" class="mc-chip rounded-xl py-2.5 text-xs">종합영양제</button>
               <button data-val="none" class="mc-chip rounded-xl py-2.5 text-xs col-span-2">복용 안 함</button>
             </div>
+            <div class="space-y-2 mt-3" id="dniSuppDetailWrap"></div>
           </div>
         </div>
 
@@ -1121,21 +1137,25 @@ const SUPABASE_TABLE = "user_analytics"; // 진단 데이터를 저장/조회할
    user_analytics와 동일하게 "핵심 컬럼 + extra_data(JSONB)" 구조를 써요.
 
    create table if not exists public.pet_health_scores (
-     id                     bigint generated always as identity primary key,
-     pet_name               text,
-     breed                  text,
-     weight                 numeric,
-     bcs                    text,
-     active_medications     jsonb,   -- 복용 중인 약물 목록 (예: ['항생제', '이뇨제'])
-     active_supplements     jsonb,   -- 복용 중인 영양제 목록 (예: ['관절', '유산균'])
-     daily_chrono_schedule  jsonb,   -- 시간대별(오전/점심/저녁/야간) 1g 급여·투약 타임라인
-     dni_warnings           jsonb,   -- 감지된 약물-영양소 상극(CONFLICT)/영양고갈(DEPLETION) 경고 목록
-     extra_data             jsonb,   -- 폼 입력 전체 및 계산 결과 백업
-     created_at             timestamptz default now()
+     id                        bigint generated always as identity primary key,
+     pet_name                  text,
+     breed                     text,
+     weight                    numeric,
+     bcs                       text,
+     gender_neutered           text,   -- 성별/중성화 여부 (male/male_neutered/female/female_neutered)
+     medical_history           jsonb,  -- 기왕력·수술 히스토리 태그 목록
+     active_medication_details jsonb,  -- [{ category, drug_molecule, dosage_optional }]
+     active_supplement_details jsonb,  -- [{ category, ingredient_or_product_name }]
+     daily_chrono_schedule     jsonb,  -- 시간대별(오전/점심/저녁/야간) 1g 급여·투약 타임라인
+     dni_warnings              jsonb,  -- [{ molecule, nutrient, interaction_type, dosage_flag, clinical_reference, recommendation_note }]
+     extra_data                jsonb,  -- 폼 입력 전체 및 계산 결과 백업
+     created_at                timestamptz default now()
    );
    alter table public.pet_health_scores add column if not exists extra_data jsonb;
-   alter table public.pet_health_scores add column if not exists active_medications jsonb;
-   alter table public.pet_health_scores add column if not exists active_supplements jsonb;
+   alter table public.pet_health_scores add column if not exists gender_neutered text;
+   alter table public.pet_health_scores add column if not exists medical_history jsonb;
+   alter table public.pet_health_scores add column if not exists active_medication_details jsonb;
+   alter table public.pet_health_scores add column if not exists active_supplement_details jsonb;
    alter table public.pet_health_scores add column if not exists dni_warnings jsonb;
    alter table public.pet_health_scores add column if not exists daily_chrono_schedule jsonb;
 
@@ -5038,8 +5058,10 @@ async function loadDniRecordsFromDB(){
           breed: row.breed || extra.breed || '',
           weight: row.weight ?? extra.weight ?? null,
           bcs: row.bcs ?? extra.bcs ?? '',
-          active_medications: parseMaybeJson(row.active_medications, extra.activeMedications || []),
-          active_supplements: parseMaybeJson(row.active_supplements, extra.activeSupplements || []),
+          gender_neutered: row.gender_neutered || extra.genderNeutered || '',
+          medical_history: parseMaybeJson(row.medical_history, extra.medicalHistory || []),
+          active_medication_details: parseMaybeJson(row.active_medication_details, extra.activeMedicationDetails || []),
+          active_supplement_details: parseMaybeJson(row.active_supplement_details, extra.activeSupplementDetails || []),
           daily_chrono_schedule: parseMaybeJson(row.daily_chrono_schedule, extra.schedule || []),
           dni_warnings: parseMaybeJson(row.dni_warnings, extra.warnings || []),
           created_at: row.created_at || extra.savedAt || new Date().toISOString(),
@@ -5372,21 +5394,39 @@ const STUDIO_TAB_HTML = {
         <div class="space-y-3">
           ${rows.length ? rows.map(rec=>`
             <div class="surface-2 rounded-xl p-3">
-              <div class="flex items-center justify-between gap-2 mb-2 flex-wrap">
+              <div class="flex items-center justify-between gap-2 mb-1 flex-wrap">
                 <p class="text-xs font-semibold truncate">${rec.pet_name} <span class="text-muted font-normal">· ${rec.breed || '견종 미상'}</span></p>
-                <span class="text-[10px] text-muted whitespace-nowrap">${rec.weight ?? '-'}kg · BCS ${rec.bcs || '-'}</span>
+                <span class="text-[10px] text-muted whitespace-nowrap">${rec.weight ?? '-'}kg · BCS ${rec.bcs || '-'} · ${GENDER_NEUTERED_OPTIONS[rec.gender_neutered] || '성별 미상'}</span>
               </div>
 
-              <p class="text-[10px] font-bold text-muted mb-1">💊 복용 약물</p>
-              <div class="flex flex-wrap gap-1 mb-2">${chipList(rec.active_medications, '복용 중인 약물 없음')}</div>
+              ${Array.isArray(rec.medical_history) && rec.medical_history.length ? `
+                <div class="flex flex-wrap gap-1 mb-2">
+                  <span class="text-[10px] font-semibold text-muted">📋 기왕력:</span>
+                  ${chipList(rec.medical_history, '')}
+                </div>` : ''}
 
-              <p class="text-[10px] font-bold text-muted mb-1">🥣 복용 영양제</p>
-              <div class="flex flex-wrap gap-1 mb-2">${chipList(rec.active_supplements, '복용 중인 영양제 없음')}</div>
+              <p class="text-[10px] font-bold text-muted mb-1">💊 복용 약물 (분자 성분 / 용량)</p>
+              <div class="space-y-0.5 mb-2">
+                ${Array.isArray(rec.active_medication_details) && rec.active_medication_details.length
+                  ? rec.active_medication_details.map(m=>`<p class="text-[10px]" style="color:#2C241F;">· ${m.category}: <b>${m.drug_molecule}</b>${m.dosage_optional ? ` (${m.dosage_optional}mg/kg)` : ' (용량 미입력)'}</p>`).join('')
+                  : `<p class="text-[10px] text-muted">복용 중인 약물 없음</p>`}
+              </div>
+
+              <p class="text-[10px] font-bold text-muted mb-1">🥣 복용 영양제 (주성분 / 제품명)</p>
+              <div class="space-y-0.5 mb-2">
+                ${Array.isArray(rec.active_supplement_details) && rec.active_supplement_details.length
+                  ? rec.active_supplement_details.map(s=>`<p class="text-[10px]" style="color:#2C241F;">· ${s.category}: <b>${s.ingredient_or_product_name}</b></p>`).join('')
+                  : `<p class="text-[10px] text-muted">복용 중인 영양제 없음</p>`}
+              </div>
 
               ${Array.isArray(rec.dni_warnings) && rec.dni_warnings.length ? `
                 <p class="text-[10px] font-bold mb-1" style="color:#C0473A;">⚠️ DNI 경고 ${rec.dni_warnings.length}건</p>
-                <div class="space-y-1 mb-2">
-                  ${rec.dni_warnings.map(w=>`<p class="text-[10px]" style="color:#C0473A;">· ${w.medLabel||w.medId} × ${w.suppLabel||w.suppId} (${w.type}, 격리 ${w.isolationHours}h)</p>`).join('')}
+                <div class="space-y-1.5 mb-2">
+                  ${rec.dni_warnings.map(w=>`
+                    <div class="rounded-lg p-1.5" style="background:#C0473A0d;">
+                      <p class="text-[10px]" style="color:#C0473A;">· ${w.molecule} × ${w.nutrient} (${w.interaction_type}, 격리 ${w.isolation_hours}h)${w.dosage_flag ? ' 🚩용량미입력' : ''}</p>
+                      <p class="text-[9px] mt-0.5" style="color:#6b6259;">📚 ${w.clinical_reference || '출처 미상'}</p>
+                    </div>`).join('')}
                 </div>` : `<p class="text-[10px] mb-2" style="color:#2FBF9F;">✅ 상극 경고 없음</p>`}
 
               <p class="text-[10px] font-bold text-muted mb-1">📅 1일 Chrono 타임라인</p>
@@ -5753,11 +5793,17 @@ function initMixCalcPage(){
 
 
 /* ============================================================
-   🧬 DNI-Chrono Matrix (약물-영양소 상극 감지 & 시간대별 1g 스케줄러)
+   🧬 DNI-Chrono Matrix (분자 성분 기반 정밀 약물-영양소 상극 감지 & 시간대별 1g 스케줄러)
    — DB 저장 없이도 동작하지만, 제출 시 Supabase pet_health_scores 테이블에 인서트해요.
 ============================================================ */
 const petInsurance = {
   name: "", breed: BREEDS[0], weight: 10.0, ageMonths: 12, bcs: 5,
+  genderNeutered: "male",
+  medicalHistory: [], // 기왕력/수술 히스토리 태그 배열
+};
+
+const GENDER_NEUTERED_OPTIONS = {
+  male: "수컷", male_neutered: "중성화 수컷", female: "암컷", female_neutered: "중성화 암컷",
 };
 
 const MEDICATIONS = [
@@ -5766,38 +5812,104 @@ const MEDICATIONS = [
   {id:"steroid",    label:"스테로이드"},
   {id:"joint_med",  label:"관절약"},
 ];
-const dniMatrix = {
-  medications: ["none"],  // 선택된 약물 id 배열 ('none' 포함 시 나머지와 배타)
-  supplements: ["none"],  // 선택된 영양제 id 배열
+/* 대분류 카테고리별 대표 활성 성분(Active Ingredient / Drug Molecule) 예시 */
+const DRUG_MOLECULES_BY_CATEGORY = {
+  diuretic:   ["Furosemide", "Spironolactone", "Torsemide"],
+  antibiotic: ["Enrofloxacin", "Amoxicillin", "Cephalexin", "Metronidazole"],
+  steroid:    ["Prednisolone", "Dexamethasone", "Methylprednisolone"],
+  joint_med:  ["Carprofen", "Meloxicam", "Firocoxib", "Robenacoxib"],
+};
+/* 영양제 카테고리별 주성분(Nutrient Ingredient) 예시 */
+const SUPPLEMENT_INGREDIENTS_BY_CATEGORY = {
+  joint:        ["글루코사민", "콘드로이친", "초록입홍합(GLM)", "MSM"],
+  gut:          ["프로바이오틱스(유산균)", "프리바이오틱스", "효모추출물"],
+  skin:         ["오메가3(EPA/DHA)", "비오틴", "아연"],
+  multivitamin: ["킬레이트 칼슘", "비타민D3", "종합비타민"],
 };
 
-/* 약물 × 영양제 상극(CONFLICT)/영양 고갈(DEPLETION) 규칙 테이블 */
-const DNI_RULES = [
-  { medId:"diuretic",   suppId:"joint",        type:"DEPLETION", isolationHours:2,
-    message:"이뇨제는 칼륨·마그네슘 배출을 촉진해, 관절 영양제의 미네랄 흡수 효율이 떨어질 수 있어요." },
-  { medId:"antibiotic", suppId:"gut",          type:"CONFLICT",  isolationHours:3,
-    message:"항생제는 유산균(프로바이오틱스)까지 함께 사멸시켜 효과를 크게 떨어뜨려요." },
-  { medId:"steroid",    suppId:"multivitamin", type:"DEPLETION", isolationHours:2,
-    message:"스테로이드 장기 복용은 칼슘·비타민D 대사를 방해해 종합영양제의 흡수를 저해할 수 있어요." },
-  { medId:"joint_med",  suppId:"joint",        type:"CONFLICT",  isolationHours:1,
-    message:"관절약과 관절 영양제(오메가/글루코사민)를 동시에 급여하면 위장관 자극이 중복될 수 있어요." },
+const dniMatrix = {
+  medications: ["none"],   // 선택된 약물 카테고리 id 배열 ('none' 포함 시 나머지와 배타)
+  supplements: ["none"],   // 선택된 영양제 카테고리 id 배열
+  medicationDetails: {},   // { [categoryId]: {drugMolecule, customMolecule, dosage} }
+  supplementDetails: {},   // { [categoryId]: {ingredient, customIngredient, productName} }
+};
+
+function resolveMedicationMolecule(categoryId){
+  const detail = dniMatrix.medicationDetails[categoryId];
+  if(!detail) return (DRUG_MOLECULES_BY_CATEGORY[categoryId] || [])[0] || categoryId;
+  if(detail.drugMolecule === '직접입력') return (detail.customMolecule || '').trim() || '(성분명 미입력)';
+  return detail.drugMolecule || (DRUG_MOLECULES_BY_CATEGORY[categoryId] || [])[0] || categoryId;
+}
+function resolveSupplementIngredient(categoryId){
+  const detail = dniMatrix.supplementDetails[categoryId];
+  if(!detail) return (SUPPLEMENT_INGREDIENTS_BY_CATEGORY[categoryId] || [])[0] || categoryId;
+  if(detail.ingredient === '직접입력') return (detail.customIngredient || '').trim() || '(주성분 미입력)';
+  return detail.ingredient || (SUPPLEMENT_INGREDIENTS_BY_CATEGORY[categoryId] || [])[0] || categoryId;
+}
+
+/* 분자 성분(Drug Molecule) × 영양소 주성분(Nutrient Ingredient) 임상 상극/고갈 매핑 규칙 —
+   Plumb's Veterinary Drug Handbook 등 임상 참고자료 기반 예시 데이터예요. */
+const DNI_MOLECULE_RULES = [
+  { molecule:"Enrofloxacin", nutrient:"킬레이트 칼슘", type:"CONFLICT", isolationHours:2,
+    note:"퀴놀론계 항생제는 칼슘과 킬레이트를 형성해 항생제 흡수율이 크게 저하될 수 있어요.",
+    reference:"Plumb's Veterinary Drug Handbook, 9th ed." },
+  { molecule:"Enrofloxacin", nutrient:"프로바이오틱스(유산균)", type:"CONFLICT", isolationHours:3,
+    note:"광범위 항생제가 유익균까지 함께 사멸시켜 프로바이오틱스 효과가 크게 떨어져요.",
+    reference:"Plumb's Veterinary Drug Handbook, 9th ed." },
+  { molecule:"Amoxicillin", nutrient:"프로바이오틱스(유산균)", type:"CONFLICT", isolationHours:2,
+    note:"항생제 복용 중 유산균은 사멸 위험이 있어 반드시 시간차를 두고 급여해야 해요.",
+    reference:"Plumb's Veterinary Drug Handbook, 9th ed." },
+  { molecule:"Furosemide", nutrient:"킬레이트 칼슘", type:"DEPLETION", isolationHours:2,
+    note:"루프이뇨제는 칼슘·칼륨·마그네슘 배출을 촉진해 미네랄 고갈 위험이 있어요.",
+    reference:"Plumb's Veterinary Drug Handbook; ACVIM Consensus Statement" },
+  { molecule:"Furosemide", nutrient:"글루코사민", type:"DEPLETION", isolationHours:2,
+    note:"이뇨제로 인한 전해질 손실은 관절 영양제의 미네랄 흡수 효율에도 영향을 줄 수 있어요.",
+    reference:"Plumb's Veterinary Drug Handbook, 9th ed." },
+  { molecule:"Prednisolone", nutrient:"킬레이트 칼슘", type:"DEPLETION", isolationHours:2,
+    note:"코르티코스테로이드 장기 복용은 칼슘 흡수·대사를 저해할 수 있어요.",
+    reference:"Plumb's Veterinary Drug Handbook, 9th ed." },
+  { molecule:"Prednisolone", nutrient:"비타민D3", type:"DEPLETION", isolationHours:2,
+    note:"스테로이드는 비타민D 대사 효소를 억제해 결핍 위험을 높일 수 있어요.",
+    reference:"Plumb's Veterinary Drug Handbook, 9th ed." },
+  { molecule:"Carprofen", nutrient:"오메가3(EPA/DHA)", type:"CONFLICT", isolationHours:1,
+    note:"NSAIDs와 고용량 오메가3를 동시 급여하면 위장관 출혈 위험이 중복될 수 있어요.",
+    reference:"Plumb's Veterinary Drug Handbook, 9th ed." },
+  { molecule:"Meloxicam", nutrient:"오메가3(EPA/DHA)", type:"CONFLICT", isolationHours:1,
+    note:"NSAIDs와 고용량 오메가3를 동시 급여하면 위장관 출혈 위험이 중복될 수 있어요.",
+    reference:"Plumb's Veterinary Drug Handbook, 9th ed." },
 ];
 
 function detectDniWarnings(){
-  const meds = dniMatrix.medications.filter(m=>m!=='none');
-  const supps = dniMatrix.supplements.filter(s=>s!=='none');
+  const activeMeds = dniMatrix.medications.filter(m=>m!=='none').map(cat=>({
+    category: cat,
+    molecule: resolveMedicationMolecule(cat),
+    dosage: (dniMatrix.medicationDetails[cat] && dniMatrix.medicationDetails[cat].dosage) || null,
+  }));
+  const activeSupps = dniMatrix.supplements.filter(s=>s!=='none').map(cat=>({
+    category: cat,
+    ingredient: resolveSupplementIngredient(cat),
+  }));
+
   const warnings = [];
-  meds.forEach(medId=>{
-    supps.forEach(suppId=>{
-      const rule = DNI_RULES.find(r=>r.medId===medId && r.suppId===suppId);
-      if(rule){
-        warnings.push({
-          medId, suppId, type: rule.type, isolationHours: rule.isolationHours,
-          medLabel: MEDICATIONS.find(m=>m.id===medId)?.label || medId,
-          suppLabel: SUPPLEMENT_CATEGORIES.find(c=>c.id===suppId)?.label || suppId,
-          message: rule.message,
-        });
-      }
+  activeMeds.forEach(med=>{
+    activeSupps.forEach(supp=>{
+      const rule = DNI_MOLECULE_RULES.find(r=>r.molecule===med.molecule && r.nutrient===supp.ingredient);
+      if(!rule) return;
+      const dosageFlag = !med.dosage;
+      const recommendationNote = dosageFlag
+        ? `⚠️ ${rule.molecule}은 특정 용량 이상 복용 시 ${rule.nutrient} 고갈 또는 흡수 억제 반응이 나타날 수 있습니다.`
+        : `${rule.note} 최소 ${rule.isolationHours}시간 이상 간격을 두고 급여해주세요. (현재 용량: ${med.dosage}mg/kg)`;
+      warnings.push({
+        molecule: rule.molecule,
+        nutrient: rule.nutrient,
+        interaction_type: rule.type,
+        isolation_hours: rule.isolationHours,
+        dosage_flag: dosageFlag,
+        clinical_reference: rule.reference,
+        recommendation_note: recommendationNote,
+        medCategory: med.category,
+        suppCategory: supp.category,
+      });
     });
   });
   return warnings;
@@ -5813,12 +5925,13 @@ function renderDniWarningBanner(warnings){
   }
   noWarningText.classList.add('hidden');
   banner.innerHTML = warnings.map(w=>`
-    <div class="rounded-xl p-3" style="background:${w.type==='CONFLICT' ? '#C0473A14' : '#D89A1E14'}; border:1.5px solid ${w.type==='CONFLICT' ? '#C0473A44' : '#D89A1E44'};">
-      <p class="text-xs font-bold mb-1" style="color:${w.type==='CONFLICT' ? '#C0473A' : '#D89A1E'};">
-        ${w.type==='CONFLICT' ? '⚠️ 상극(CONFLICT)' : '🧪 영양 고갈(DEPLETION)'} · ${w.medLabel} × ${w.suppLabel}
+    <div class="rounded-xl p-3" style="background:${w.interaction_type==='CONFLICT' ? '#C0473A14' : '#D89A1E14'}; border:1.5px solid ${w.interaction_type==='CONFLICT' ? '#C0473A44' : '#D89A1E44'};">
+      <p class="text-xs font-bold mb-1" style="color:${w.interaction_type==='CONFLICT' ? '#C0473A' : '#D89A1E'};">
+        ${w.interaction_type==='CONFLICT' ? '⚠️ 상극(CONFLICT)' : '🧪 영양 고갈(DEPLETION)'} · ${w.molecule} × ${w.nutrient}
       </p>
-      <p class="text-xs" style="color:#2C241F;">${w.message}</p>
-      <p class="text-[11px] mt-1 font-semibold" style="color:${w.type==='CONFLICT' ? '#C0473A' : '#D89A1E'};">⏱️ 최소 ${w.isolationHours}시간 이상 간격을 두고 급여해주세요.</p>
+      <p class="text-xs mb-1" style="color:#2C241F;">${w.recommendation_note}</p>
+      ${w.dosage_flag ? `<p class="text-[10px] font-semibold mb-1" style="color:${w.interaction_type==='CONFLICT' ? '#C0473A' : '#D89A1E'};">🚩 용량(Dosage) 미입력 — 위 문구는 조건부 가이드예요. 정확한 용량을 입력하면 더 구체적인 안내를 받을 수 있어요.</p>` : ''}
+      <p class="text-[10px] mt-1.5 inline-block px-2 py-0.5 rounded-full" style="background:#2C241F0d; color:#6b6259;">📚 출처: ${w.clinical_reference}</p>
     </div>`).join('');
 }
 
@@ -5832,7 +5945,7 @@ function buildDniChronoSchedule(warnings){
   const remainingKcal = Math.max(0, targetKcal - treatKcal - wetKcal);
   const finalFoodG = Math.round((remainingKcal / kcalPer100g) * 100);
 
-  const conflictedSuppIds = new Set(warnings.map(w=>w.suppId));
+  const conflictedSuppCategories = new Set(warnings.map(w=>w.suppCategory));
   const slots = [
     { time:"08:00", label:"오전", foodG: Math.round(finalFoodG*0.4), items:[] },
     { time:"13:00", label:"점심", foodG: Math.round(finalFoodG*0.2), items:[] },
@@ -5840,16 +5953,19 @@ function buildDniChronoSchedule(warnings){
     { time:"22:00", label:"야간", foodG: 0, items:[] },
   ];
 
-  dniMatrix.medications.filter(m=>m!=='none').forEach(medId=>{
-    const label = MEDICATIONS.find(m=>m.id===medId)?.label || medId;
-    slots[0].items.push(`💊 ${label}`);
+  dniMatrix.medications.filter(m=>m!=='none').forEach(cat=>{
+    const molecule = resolveMedicationMolecule(cat);
+    const dosage = dniMatrix.medicationDetails[cat] && dniMatrix.medicationDetails[cat].dosage;
+    slots[0].items.push(`💊 ${molecule}${dosage ? ` (${dosage}mg/kg)` : ''}`);
   });
-  dniMatrix.supplements.filter(s=>s!=='none').forEach(suppId=>{
-    const label = SUPPLEMENT_CATEGORIES.find(c=>c.id===suppId)?.label || suppId;
-    if(conflictedSuppIds.has(suppId)){
-      slots[1].items.push(`💊(격리) ${label} 영양제`);
+  dniMatrix.supplements.filter(s=>s!=='none').forEach(cat=>{
+    const ingredient = resolveSupplementIngredient(cat);
+    const productName = dniMatrix.supplementDetails[cat] && dniMatrix.supplementDetails[cat].productName;
+    const label = `${ingredient}${productName ? ` - ${productName}` : ''}`;
+    if(conflictedSuppCategories.has(cat)){
+      slots[1].items.push(`💊(격리) ${label}`);
     } else {
-      slots[2].items.push(`💊 ${label} 영양제`);
+      slots[2].items.push(`💊 ${label}`);
     }
   });
   if(mixCalc.treatG > 0) slots[1].items.push(`🍖 ${treatCat.label} ${mixCalc.treatG}g`);
@@ -5866,6 +5982,105 @@ function renderDniChronoTimeline(slots){
       <p class="font-display font-bold text-lg mb-1.5" style="color:#2C241F;">${s.foodG}g<span class="text-[10px] font-medium" style="color:#6b6259;"> 사료</span></p>
       ${s.items.length ? s.items.map(it=>`<p class="text-[11px]" style="color:#2C241F;">${it}</p>`).join('') : `<p class="text-[11px]" style="color:#999;">일반 급여</p>`}
     </div>`).join('');
+}
+
+/* ---- 기왕력 태그 입력 ---- */
+function renderMedicalHistoryTags(){
+  const wrap = document.getElementById('insMedicalHistoryTags');
+  wrap.innerHTML = petInsurance.medicalHistory.map((tag,idx)=>`
+    <span class="text-[11px] font-semibold px-2.5 py-1 rounded-full inline-flex items-center gap-1" style="background:#3A5A401A; color:#3A5A40;">
+      ${tag}<button type="button" class="med-history-remove-btn" data-idx="${idx}" style="line-height:1;">×</button>
+    </span>`).join('');
+  wrap.querySelectorAll('.med-history-remove-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      petInsurance.medicalHistory.splice(parseInt(btn.dataset.idx), 1);
+      renderMedicalHistoryTags();
+    });
+  });
+}
+
+/* ---- 약물/영양제 세부 입력 행 렌더링 ---- */
+function renderMedicationDetailRows(){
+  const wrap = document.getElementById('dniMedDetailWrap');
+  const activeCats = dniMatrix.medications.filter(m=>m!=='none');
+  wrap.innerHTML = activeCats.map(cat=>{
+    if(!dniMatrix.medicationDetails[cat]) dniMatrix.medicationDetails[cat] = { drugMolecule: DRUG_MOLECULES_BY_CATEGORY[cat][0], customMolecule:'', dosage:null };
+    const detail = dniMatrix.medicationDetails[cat];
+    const catLabel = MEDICATIONS.find(m=>m.id===cat)?.label || cat;
+    const options = [...DRUG_MOLECULES_BY_CATEGORY[cat], '직접입력'];
+    return `
+      <div class="rounded-xl p-3" style="background:#FAF9F5;">
+        <p class="text-[11px] font-bold mb-2" style="color:#3A5A40;">${catLabel} 세부 정보</p>
+        <select class="dni-med-molecule-select w-full rounded-lg px-2 py-2 text-xs mb-2" data-cat="${cat}" style="border:1px solid #3A5A4033;">
+          ${options.map(o=>`<option value="${o}" ${detail.drugMolecule===o?'selected':''}>${o}</option>`).join('')}
+        </select>
+        ${detail.drugMolecule==='직접입력' ? `<input type="text" class="dni-med-custom-input w-full rounded-lg px-2 py-2 text-xs mb-2" data-cat="${cat}" placeholder="성분명을 입력해주세요" value="${detail.customMolecule||''}" style="border:1px solid #3A5A4033;">` : ''}
+        <div class="relative">
+          <input type="number" step="0.1" class="dni-med-dosage-input w-full rounded-lg px-2 py-2 text-xs" data-cat="${cat}" placeholder="용량 (선택 입력)" value="${detail.dosage ?? ''}" style="border:1px solid #3A5A4033;">
+          <span class="absolute right-2 top-1/2 -translate-y-1/2 text-[10px]" style="color:#6b6259;">mg/kg</span>
+        </div>
+      </div>`;
+  }).join('');
+
+  wrap.querySelectorAll('.dni-med-molecule-select').forEach(sel=>{
+    sel.addEventListener('change', e=>{
+      dniMatrix.medicationDetails[sel.dataset.cat].drugMolecule = e.target.value;
+      renderMedicationDetailRows();
+      updateInsuranceOutputs();
+    });
+  });
+  wrap.querySelectorAll('.dni-med-custom-input').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      dniMatrix.medicationDetails[inp.dataset.cat].customMolecule = e.target.value;
+      updateInsuranceOutputs();
+    });
+  });
+  wrap.querySelectorAll('.dni-med-dosage-input').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      dniMatrix.medicationDetails[inp.dataset.cat].dosage = e.target.value ? parseFloat(e.target.value) : null;
+      updateInsuranceOutputs();
+    });
+  });
+}
+
+function renderSupplementDetailRows(){
+  const wrap = document.getElementById('dniSuppDetailWrap');
+  const activeCats = dniMatrix.supplements.filter(s=>s!=='none');
+  wrap.innerHTML = activeCats.map(cat=>{
+    if(!dniMatrix.supplementDetails[cat]) dniMatrix.supplementDetails[cat] = { ingredient: SUPPLEMENT_INGREDIENTS_BY_CATEGORY[cat][0], customIngredient:'', productName:'' };
+    const detail = dniMatrix.supplementDetails[cat];
+    const catLabel = SUPPLEMENT_CATEGORIES.find(c=>c.id===cat)?.label || cat;
+    const options = [...SUPPLEMENT_INGREDIENTS_BY_CATEGORY[cat], '직접입력'];
+    return `
+      <div class="rounded-xl p-3" style="background:#FAF9F5;">
+        <p class="text-[11px] font-bold mb-2" style="color:#3A5A40;">${catLabel} 세부 정보</p>
+        <select class="dni-supp-ingredient-select w-full rounded-lg px-2 py-2 text-xs mb-2" data-cat="${cat}" style="border:1px solid #3A5A4033;">
+          ${options.map(o=>`<option value="${o}" ${detail.ingredient===o?'selected':''}>${o}</option>`).join('')}
+        </select>
+        ${detail.ingredient==='직접입력' ? `<input type="text" class="dni-supp-custom-input w-full rounded-lg px-2 py-2 text-xs mb-2" data-cat="${cat}" placeholder="주성분명을 입력해주세요" value="${detail.customIngredient||''}" style="border:1px solid #3A5A4033;">` : ''}
+        <input type="text" class="dni-supp-product-input w-full rounded-lg px-2 py-2 text-xs" data-cat="${cat}" placeholder="제품명 (선택 입력)" value="${detail.productName||''}" style="border:1px solid #3A5A4033;">
+      </div>`;
+  }).join('');
+
+  wrap.querySelectorAll('.dni-supp-ingredient-select').forEach(sel=>{
+    sel.addEventListener('change', e=>{
+      dniMatrix.supplementDetails[sel.dataset.cat].ingredient = e.target.value;
+      renderSupplementDetailRows();
+      updateInsuranceOutputs();
+    });
+  });
+  wrap.querySelectorAll('.dni-supp-custom-input').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      dniMatrix.supplementDetails[inp.dataset.cat].customIngredient = e.target.value;
+      updateInsuranceOutputs();
+    });
+  });
+  wrap.querySelectorAll('.dni-supp-product-input').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      dniMatrix.supplementDetails[inp.dataset.cat].productName = e.target.value;
+      updateInsuranceOutputs();
+    });
+  });
 }
 
 function updateInsuranceOutputs(){
@@ -5906,8 +6121,22 @@ async function submitDniChronoData(){
   const breed = petInsurance.breed;
   const weight = petInsurance.weight;
   const bcs = petInsurance.bcs;
-  const activeMedications = dniMatrix.medications.filter(m=>m!=='none').map(id=>MEDICATIONS.find(m=>m.id===id)?.label || id);
-  const activeSupplements = dniMatrix.supplements.filter(s=>s!=='none').map(id=>SUPPLEMENT_CATEGORIES.find(c=>c.id===id)?.label || id);
+  const genderNeutered = petInsurance.genderNeutered;
+  const medicalHistory = petInsurance.medicalHistory;
+
+  const activeMedicationDetails = dniMatrix.medications.filter(m=>m!=='none').map(cat=>({
+    category: MEDICATIONS.find(m=>m.id===cat)?.label || cat,
+    drug_molecule: resolveMedicationMolecule(cat),
+    dosage_optional: (dniMatrix.medicationDetails[cat] && dniMatrix.medicationDetails[cat].dosage) || null,
+  }));
+  const activeSupplementDetails = dniMatrix.supplements.filter(s=>s!=='none').map(cat=>{
+    const detail = dniMatrix.supplementDetails[cat] || {};
+    const ingredient = resolveSupplementIngredient(cat);
+    return {
+      category: SUPPLEMENT_CATEGORIES.find(c=>c.id===cat)?.label || cat,
+      ingredient_or_product_name: detail.productName ? `${ingredient} (${detail.productName})` : ingredient,
+    };
+  });
 
   // ---- 재생성된 pet_health_scores 테이블 컬럼 구조에 정확히 맞춰 매핑하고,
   //      값이 undefined/null이어도 절대 비어있지 않도록 전부 fallback 기본값을 둬요. ----
@@ -5916,15 +6145,18 @@ async function submitDniChronoData(){
     breed: breed || '말티즈',
     weight: Number(weight) || 3.5,
     bcs: String(bcs) || '5',
-    active_medications: JSON.stringify(activeMedications),   // e.g. ['항생제', '이뇨제']
-    active_supplements: JSON.stringify(activeSupplements),    // e.g. ['관절', '유산균']
-    daily_chrono_schedule: JSON.stringify(schedule),          // 화면에 표시된 1일 Chrono 타임라인
-    dni_warnings: JSON.stringify(warnings),                   // 감지된 DNI 경고 문구 데이터
+    gender_neutered: genderNeutered || 'male',
+    medical_history: JSON.stringify(medicalHistory || []),
+    active_medication_details: JSON.stringify(activeMedicationDetails),
+    active_supplement_details: JSON.stringify(activeSupplementDetails),
+    dni_warnings: JSON.stringify(warnings),
+    daily_chrono_schedule: JSON.stringify(schedule),
 
     // 전체 폼 상태 및 계산 결과를 JSONB로 백업 보존 (컬럼이 다르거나 빠져도 데이터는 항상 남아요)
     extra_data: JSON.stringify({
-      petName, breed, weight, bcs, ageMonths: petInsurance.ageMonths,
-      activeMedications, activeSupplements, warnings, schedule,
+      petName, breed, weight, bcs, genderNeutered, medicalHistory,
+      ageMonths: petInsurance.ageMonths,
+      activeMedicationDetails, activeSupplementDetails, warnings, schedule,
       savedAt: new Date().toISOString(),
     }),
   };
@@ -5986,18 +6218,36 @@ function initInsurancePage(){
     updateInsuranceOutputs();
   });
 
+  bindSingleSelectGroup('insGenderGroup', v=>{ petInsurance.genderNeutered = v; });
+  document.querySelector('#insGenderGroup button[data-val="male"]').classList.add('active');
+
+  document.getElementById('insMedicalHistoryInput').addEventListener('keydown', e=>{
+    if(e.key === 'Enter'){
+      e.preventDefault();
+      const val = e.target.value.trim();
+      if(val){
+        petInsurance.medicalHistory.push(val);
+        e.target.value = '';
+        renderMedicalHistoryTags();
+      }
+    }
+  });
+  renderMedicalHistoryTags();
+
   bindExclusiveMultiGroup('dniMedGroup', dniMatrix.medications);
   bindExclusiveMultiGroup('dniSuppGroup', dniMatrix.supplements);
   document.querySelector('#dniMedGroup button[data-val="none"]').classList.add('active');
   document.querySelector('#dniSuppGroup button[data-val="none"]').classList.add('active');
-  // 배타적 다중 선택 그룹이 바뀔 때마다 DNI 재계산이 즉시 반영되도록 별도 위임 바인딩
-  document.getElementById('dniMedGroup').addEventListener('click', ()=>updateInsuranceOutputs());
-  document.getElementById('dniSuppGroup').addEventListener('click', ()=>updateInsuranceOutputs());
+  // 배타적 다중 선택 그룹이 바뀔 때마다 세부 입력 행 및 DNI 재계산이 즉시 반영되도록 위임 바인딩
+  document.getElementById('dniMedGroup').addEventListener('click', ()=>{ renderMedicationDetailRows(); updateInsuranceOutputs(); });
+  document.getElementById('dniSuppGroup').addEventListener('click', ()=>{ renderSupplementDetailRows(); updateInsuranceOutputs(); });
 
   document.getElementById('insSubmitBtn').addEventListener('click', submitDniChronoData);
 
   updateInsuranceOutputs();
 }
+
+
 
 
 
