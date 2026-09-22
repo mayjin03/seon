@@ -34,6 +34,7 @@ export default async function handler(req, res) {
     "이 처방전/약봉투 이미지에서 모든 처방 약물 성분(drug_molecule), 카테고리(category), 용량(dosage), 투여경로(route_of_administration), 상품명(trade_name)을 추출하여 JSON 스키마 규격대로만 반환해 주세요.";
 
   try {
+    // 콘솔 플레이그라운드와 일치하는 최신 모델명 'claude-sonnet-5' 적용
     const anthropicResponse = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
@@ -43,7 +44,7 @@ export default async function handler(req, res) {
         "accept": "application/json"
       },
       body: JSON.stringify({
-        model: "claude-3-sonnet-20240229",
+        model: "claude-sonnet-5",
         max_tokens: 2048,
         system: system || undefined,
         messages: [
