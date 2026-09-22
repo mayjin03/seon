@@ -852,16 +852,38 @@
           <div class="flex flex-wrap gap-1.5 mb-5" id="insMedicalHistoryTags"></div>
 
           <div class="pt-4" style="border-top:1px dashed #3A5A4033;">
-            <p class="font-bold text-sm mb-1" style="color:#2C241F;">② 복용 중인 약물 <span class="font-normal text-[11px]" style="color:#6b6259;">(Drug Molecule 기반)</span></p>
-            <div class="grid grid-cols-3 gap-2 mb-1" id="dniMedGroup">
-              <button data-val="diuretic" class="mc-chip rounded-xl py-2.5 text-xs">💧 이뇨제</button>
-              <button data-val="antibiotic" class="mc-chip rounded-xl py-2.5 text-xs">💊 항생제</button>
-              <button data-val="steroid" class="mc-chip rounded-xl py-2.5 text-xs">🧪 스테로이드</button>
-              <button data-val="joint_med" class="mc-chip rounded-xl py-2.5 text-xs">🦴 관절약</button>
-              <button data-val="none" class="mc-chip rounded-xl py-2.5 text-xs col-span-2">복용 안 함</button>
+            <p class="font-bold text-sm mb-2" style="color:#2C241F;">② 복용 중인 약물 <span class="font-normal text-[11px]" style="color:#6b6259;">(Drug Molecule 기반)</span></p>
+
+            <div class="grid grid-cols-2 gap-2 mb-3" id="dniMedModeGroup">
+              <button data-val="scan" class="mc-chip rounded-xl py-2.5 text-xs">📸 처방전 사진 스캔</button>
+              <button data-val="manual" class="mc-chip rounded-xl py-2.5 text-xs">✍️ 직접 성분 입력</button>
             </div>
-            <p class="text-[11px] mt-2 mb-3" style="color:#6b6259;">중복 선택 가능해요. 카테고리를 고르면 세부 성분명·용량 입력란이 나타나요.</p>
-            <div class="space-y-2 mb-4" id="dniMedDetailWrap"></div>
+
+            <!-- Option A: 처방전 AI 스캔 -->
+            <div id="dniScanPanel" class="hidden mb-4">
+              <div class="rounded-xl p-4 text-center mb-2" style="background:#FAF9F5; border:1.5px dashed #3A5A4055;">
+                <input type="file" id="dniPrescriptionFileInput" accept="image/*" class="text-xs mb-2">
+                <p class="text-[11px]" style="color:#6b6259;">처방전 사진을 올리면 AI가 약물 성분명·용량·카테고리를 자동으로 읽어드려요.</p>
+              </div>
+              <button type="button" id="dniScanUploadBtn" class="w-full rounded-xl py-2.5 text-xs font-bold" style="background:#3A5A40; color:#fff;">🔍 업로드 &amp; AI 분석</button>
+              <p id="dniScanStatus" class="text-[11px] text-center mt-2 min-h-[16px]" style="color:#3A5A40;"></p>
+              <div id="dniScanThumbWrap" class="hidden mt-2 text-center">
+                <img id="dniScanThumb" class="inline-block rounded-lg" style="max-height:120px;" alt="처방전 미리보기">
+              </div>
+            </div>
+
+            <!-- Option B: 직접 성분 입력 -->
+            <div id="dniManualPanel">
+              <div class="grid grid-cols-3 gap-2 mb-1" id="dniMedGroup">
+                <button data-val="diuretic" class="mc-chip rounded-xl py-2.5 text-xs">💧 이뇨제</button>
+                <button data-val="antibiotic" class="mc-chip rounded-xl py-2.5 text-xs">💊 항생제</button>
+                <button data-val="steroid" class="mc-chip rounded-xl py-2.5 text-xs">🧪 스테로이드</button>
+                <button data-val="joint_med" class="mc-chip rounded-xl py-2.5 text-xs">🦴 관절약</button>
+                <button data-val="none" class="mc-chip rounded-xl py-2.5 text-xs col-span-2">복용 안 함</button>
+              </div>
+              <p class="text-[11px] mt-2 mb-3" style="color:#6b6259;">중복 선택 가능해요. 카테고리를 고르면 세부 성분명·용량 입력란이 나타나요.</p>
+              <div class="space-y-2 mb-4" id="dniMedDetailWrap"></div>
+            </div>
 
             <p class="font-bold text-sm mb-1" style="color:#2C241F;">③ 복용 중인 영양제 <span class="font-normal text-[11px]" style="color:#6b6259;">(주성분 기반)</span></p>
             <div class="grid grid-cols-3 gap-2" id="dniSuppGroup">
@@ -1148,6 +1170,8 @@ const SUPABASE_TABLE = "user_analytics"; // 진단 데이터를 저장/조회할
      active_supplement_details jsonb,  -- [{ category, ingredient_or_product_name }]
      daily_chrono_schedule     jsonb,  -- 시간대별(오전/점심/저녁/야간) 1g 급여·투약 타임라인
      dni_warnings              jsonb,  -- [{ molecule, nutrient, interaction_type, dosage_flag, clinical_reference, recommendation_note }]
+     prescription_image_url    text,   -- 처방전 스캔 사진 URL (Storage 'prescriptions' 버킷, 직접입력 시 null)
+     raw_ocr_extracted_data    jsonb,  -- Vision AI(OCR) 추출 원본 JSON (직접입력 시 {})
      extra_data                jsonb,  -- 폼 입력 전체 및 계산 결과 백업
      created_at                timestamptz default now()
    );
@@ -1158,6 +1182,12 @@ const SUPABASE_TABLE = "user_analytics"; // 진단 데이터를 저장/조회할
    alter table public.pet_health_scores add column if not exists active_supplement_details jsonb;
    alter table public.pet_health_scores add column if not exists dni_warnings jsonb;
    alter table public.pet_health_scores add column if not exists daily_chrono_schedule jsonb;
+   alter table public.pet_health_scores add column if not exists prescription_image_url text;
+   alter table public.pet_health_scores add column if not exists raw_ocr_extracted_data jsonb;
+
+   -- Storage 'prescriptions' 버킷은 별도로 Public 읽기 정책이 있어야 썸네일이 보여요:
+   -- create policy "public read prescriptions" on storage.objects for select to public using (bucket_id = 'prescriptions');
+   -- create policy "anon upload prescriptions" on storage.objects for insert to anon with check (bucket_id = 'prescriptions');
 
    -- ⚠️ 테이블을 새로 만들거나 컬럼을 추가한 직후에는 PostgREST의 스키마 캐시가 아직 갱신되지
    -- 않아 PGRST205("Could not find the table ... in the schema cache") 에러가 잠깐 날 수 있어요.
@@ -5064,6 +5094,9 @@ async function loadDniRecordsFromDB(){
           active_supplement_details: parseMaybeJson(row.active_supplement_details, extra.activeSupplementDetails || []),
           daily_chrono_schedule: parseMaybeJson(row.daily_chrono_schedule, extra.schedule || []),
           dni_warnings: parseMaybeJson(row.dni_warnings, extra.warnings || []),
+          prescription_image_url: row.prescription_image_url || extra.prescriptionImageUrl || null,
+          raw_ocr_extracted_data: parseMaybeJson(row.raw_ocr_extracted_data, extra.rawOcrExtractedData || {}),
+          medication_input_mode: extra.usedPrescriptionScan || row.prescription_image_url ? 'scan' : 'manual',
           created_at: row.created_at || extra.savedAt || new Date().toISOString(),
         };
       });
@@ -5398,6 +5431,15 @@ const STUDIO_TAB_HTML = {
                 <p class="text-xs font-semibold truncate">${rec.pet_name} <span class="text-muted font-normal">· ${rec.breed || '견종 미상'}</span></p>
                 <span class="text-[10px] text-muted whitespace-nowrap">${rec.weight ?? '-'}kg · BCS ${rec.bcs || '-'} · ${GENDER_NEUTERED_OPTIONS[rec.gender_neutered] || '성별 미상'}</span>
               </div>
+
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block mb-2" style="background:${rec.medication_input_mode==='scan' ? '#3A5A401A' : '#2C241F0d'}; color:${rec.medication_input_mode==='scan' ? '#3A5A40' : '#6b6259'};">
+                ${rec.medication_input_mode==='scan' ? '📸 처방전 사진 스캔' : '✍️ 직접 입력'}
+              </span>
+
+              ${rec.prescription_image_url ? `
+                <div class="mb-2">
+                  <img src="${rec.prescription_image_url}" alt="처방전 스캔 썸네일" class="rounded-lg" style="max-height:80px; max-width:100%;">
+                </div>` : ''}
 
               ${Array.isArray(rec.medical_history) && rec.medical_history.length ? `
                 <div class="flex flex-wrap gap-1 mb-2">
@@ -5832,6 +5874,11 @@ const dniMatrix = {
   supplements: ["none"],   // 선택된 영양제 카테고리 id 배열
   medicationDetails: {},   // { [categoryId]: {drugMolecule, customMolecule, dosage} }
   supplementDetails: {},   // { [categoryId]: {ingredient, customIngredient, productName} }
+  medicationInputMode: "manual", // 'scan' | 'manual' — 처방전 AI 스캔 vs 직접 성분 입력 (현재 화면 상태)
+  usedPrescriptionScan: false,   // 이번 세션에서 처방전 스캔을 한 번이라도 사용했는지 (모드 전환과 무관하게 유지)
+  prescriptionImageUrl: null,    // Supabase Storage('prescriptions')에 업로드된 사진 URL
+  rawOcrExtractedData: {},       // Vision AI(OCR) 추출 원본 JSON (스캔 입력 시에만 채워짐)
+  prescriptionFile: null,        // 선택된 파일 객체(업로드 전 임시 보관)
 };
 
 function resolveMedicationMolecule(categoryId){
@@ -6000,6 +6047,130 @@ function renderMedicalHistoryTags(){
 }
 
 /* ---- 약물/영양제 세부 입력 행 렌더링 ---- */
+/* ---- 약물 입력 모드(스캔/수동) 전환 ---- */
+function syncMedModePanels(){
+  document.getElementById('dniScanPanel').classList.toggle('hidden', dniMatrix.medicationInputMode !== 'scan');
+  document.getElementById('dniManualPanel').classList.toggle('hidden', dniMatrix.medicationInputMode !== 'manual');
+}
+function syncCategoryButtonActiveState(containerId, activeArray){
+  document.querySelectorAll(`#${containerId} button`).forEach(b=>{
+    b.classList.toggle('active', activeArray.includes(b.dataset.val));
+  });
+}
+function guessCategoryForMolecule(molecule){
+  for(const [cat, list] of Object.entries(DRUG_MOLECULES_BY_CATEGORY)){
+    if(list.includes(molecule)) return cat;
+  }
+  return 'antibiotic';
+}
+
+/* ⚠️ 실제 서비스에서는 이 자리에서 Vision AI(OCR) API를 호출해요.
+   이 데모 환경에는 별도 백엔드가 없어서, 업로드된 처방전 사진을 분석하는 대신
+   그럴듯한 예시 추출 결과를 시뮬레이션으로 반환해요 (검토 모달에서 반드시 확인/수정할 수 있어요). */
+function simulateVisionAiExtraction(){
+  const samples = [
+    { drug_molecule:'Enrofloxacin', category:'antibiotic', dosage:5,  confidence:0.91, raw_text_snippet:'Rx: Enrofloxacin 5mg/kg SID x 7days' },
+    { drug_molecule:'Furosemide',   category:'diuretic',   dosage:2,  confidence:0.88, raw_text_snippet:'Rx: Furosemide 2mg/kg BID' },
+    { drug_molecule:'Prednisolone', category:'steroid',    dosage:0.5,confidence:0.89, raw_text_snippet:'Rx: Prednisolone 0.5mg/kg SID' },
+  ];
+  return samples[0]; // 데모 안정성을 위해 첫 번째 예시로 고정
+}
+
+async function handlePrescriptionScan(){
+  const fileInput = document.getElementById('dniPrescriptionFileInput');
+  const file = fileInput.files && fileInput.files[0];
+  const statusEl = document.getElementById('dniScanStatus');
+  if(!file){
+    statusEl.textContent = '⚠️ 먼저 처방전 사진을 선택해주세요.';
+    statusEl.style.color = '#C0473A';
+    return;
+  }
+
+  statusEl.style.color = '#3A5A40';
+  statusEl.textContent = '⏳ 업로드 중...';
+
+  let imageUrl = null;
+  if(supabaseClient){
+    try{
+      const path = `scan_${Date.now()}_${file.name}`;
+      const { error: uploadError } = await supabaseClient.storage.from('prescriptions').upload(path, file);
+      if(uploadError){
+        console.error('PRESCRIPTION_UPLOAD_ERROR:', JSON.stringify(uploadError, null, 2));
+        statusEl.textContent = `⚠️ 업로드 실패: ${uploadError.message || '알 수 없는 오류'} — 로컬 미리보기로만 진행해요.`;
+        imageUrl = URL.createObjectURL(file);
+      } else {
+        const { data: publicUrlData } = supabaseClient.storage.from('prescriptions').getPublicUrl(path);
+        imageUrl = (publicUrlData && publicUrlData.publicUrl) || URL.createObjectURL(file);
+      }
+    }catch(err){
+      console.error('PRESCRIPTION_UPLOAD_ERROR:', safeStringifyError(err));
+      statusEl.textContent = '⚠️ 업로드 중 오류가 발생해 로컬 미리보기로만 진행해요.';
+      imageUrl = URL.createObjectURL(file);
+    }
+  } else {
+    // Supabase 미연결 시에는 실제 저장 없이 로컬 미리보기만 제공해요.
+    imageUrl = URL.createObjectURL(file);
+  }
+
+  dniMatrix.prescriptionImageUrl = imageUrl;
+  dniMatrix.usedPrescriptionScan = true;
+  const thumb = document.getElementById('dniScanThumb');
+  thumb.src = imageUrl;
+  document.getElementById('dniScanThumbWrap').classList.remove('hidden');
+
+  statusEl.textContent = '🤖 AI가 약물 정보를 분석하고 있어요...';
+  const extracted = simulateVisionAiExtraction();
+  dniMatrix.rawOcrExtractedData = extracted;
+  statusEl.textContent = '✅ 분석 완료! 아래에서 확인·수정해주세요.';
+  openPrescriptionReviewModal(extracted);
+}
+
+function openPrescriptionReviewModal(extracted){
+  mountModal(`
+    <p class="text-xs font-bold mb-1" style="color:#3A5A40;">🤖 AI 자동 추출 결과 (검토 후 확인해주세요)</p>
+    <h3 class="font-display text-xl font-bold mb-3">처방전 스캔 검토</h3>
+    <p class="text-xs text-muted mb-3">스캔 원문: "${extracted.raw_text_snippet}" (신뢰도 ${Math.round(extracted.confidence*100)}%)</p>
+
+    <label class="block text-xs font-semibold mb-1.5">약물 대분류</label>
+    <select id="reviewCategorySelect" class="w-full rounded-xl px-3 py-2.5 mb-3 text-sm" style="border:1px solid #3A5A4033;">
+      ${MEDICATIONS.map(m=>`<option value="${m.id}" ${m.id===extracted.category?'selected':''}>${m.label}</option>`).join('')}
+    </select>
+
+    <label class="block text-xs font-semibold mb-1.5">약물 성분명 (Drug Molecule)</label>
+    <input type="text" id="reviewMoleculeInput" value="${extracted.drug_molecule}" class="w-full rounded-xl px-3 py-2.5 mb-3 text-sm" style="border:1px solid #3A5A4033;">
+
+    <label class="block text-xs font-semibold mb-1.5">용량 (mg/kg, 선택)</label>
+    <input type="number" step="0.1" id="reviewDosageInput" value="${extracted.dosage ?? ''}" class="w-full rounded-xl px-3 py-2.5 mb-4 text-sm" style="border:1px solid #3A5A4033;">
+
+    <button id="reviewConfirmBtn" class="btn-primary w-full rounded-xl py-3 text-sm">확인하고 반영하기</button>
+  `, true);
+
+  document.getElementById('reviewConfirmBtn').addEventListener('click', ()=>{
+    const category = document.getElementById('reviewCategorySelect').value;
+    const molecule = document.getElementById('reviewMoleculeInput').value.trim();
+    const dosage = document.getElementById('reviewDosageInput').value ? parseFloat(document.getElementById('reviewDosageInput').value) : null;
+
+    // 'none'을 제거하고 해당 카테고리를 추가해요.
+    const noneIdx = dniMatrix.medications.indexOf('none');
+    if(noneIdx > -1) dniMatrix.medications.splice(noneIdx, 1);
+    if(!dniMatrix.medications.includes(category)) dniMatrix.medications.push(category);
+
+    const isKnownMolecule = (DRUG_MOLECULES_BY_CATEGORY[category] || []).includes(molecule);
+    dniMatrix.medicationDetails[category] = isKnownMolecule
+      ? { drugMolecule: molecule, customMolecule:'', dosage }
+      : { drugMolecule: '직접입력', customMolecule: molecule, dosage };
+
+    // 검토 완료 후에는 직접입력(수동) 화면으로 전환해 반영 결과를 바로 보여줘요.
+    dniMatrix.medicationInputMode = 'manual';
+    syncMedModePanels();
+    syncCategoryButtonActiveState('dniMedModeGroup', ['manual']);
+    syncCategoryButtonActiveState('dniMedGroup', dniMatrix.medications);
+    renderMedicationDetailRows();
+    updateInsuranceOutputs();
+    closeModal();
+  });
+}
+
 function renderMedicationDetailRows(){
   const wrap = document.getElementById('dniMedDetailWrap');
   const activeCats = dniMatrix.medications.filter(m=>m!=='none');
@@ -6151,12 +6322,18 @@ async function submitDniChronoData(){
     active_supplement_details: JSON.stringify(activeSupplementDetails),
     dni_warnings: JSON.stringify(warnings),
     daily_chrono_schedule: JSON.stringify(schedule),
+    prescription_image_url: dniMatrix.usedPrescriptionScan ? (dniMatrix.prescriptionImageUrl || null) : null,
+    raw_ocr_extracted_data: JSON.stringify(dniMatrix.usedPrescriptionScan ? (dniMatrix.rawOcrExtractedData || {}) : {}),
 
     // 전체 폼 상태 및 계산 결과를 JSONB로 백업 보존 (컬럼이 다르거나 빠져도 데이터는 항상 남아요)
     extra_data: JSON.stringify({
       petName, breed, weight, bcs, genderNeutered, medicalHistory,
       ageMonths: petInsurance.ageMonths,
       activeMedicationDetails, activeSupplementDetails, warnings, schedule,
+      medicationInputMode: dniMatrix.medicationInputMode,
+      usedPrescriptionScan: dniMatrix.usedPrescriptionScan,
+      prescriptionImageUrl: dniMatrix.prescriptionImageUrl,
+      rawOcrExtractedData: dniMatrix.rawOcrExtractedData,
       savedAt: new Date().toISOString(),
     }),
   };
@@ -6241,6 +6418,11 @@ function initInsurancePage(){
   // 배타적 다중 선택 그룹이 바뀔 때마다 세부 입력 행 및 DNI 재계산이 즉시 반영되도록 위임 바인딩
   document.getElementById('dniMedGroup').addEventListener('click', ()=>{ renderMedicationDetailRows(); updateInsuranceOutputs(); });
   document.getElementById('dniSuppGroup').addEventListener('click', ()=>{ renderSupplementDetailRows(); updateInsuranceOutputs(); });
+
+  bindSingleSelectGroup('dniMedModeGroup', v=>{ dniMatrix.medicationInputMode = v; syncMedModePanels(); });
+  document.querySelector('#dniMedModeGroup button[data-val="manual"]').classList.add('active');
+  syncMedModePanels();
+  document.getElementById('dniScanUploadBtn').addEventListener('click', handlePrescriptionScan);
 
   document.getElementById('insSubmitBtn').addEventListener('click', submitDniChronoData);
 
