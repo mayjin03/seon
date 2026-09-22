@@ -7,7 +7,6 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method Not Allowed" });
   }
 
-  // 1) API Key 정제 (줄바꿈, 따옴표, 공백 완전 제거)
   const rawKey = process.env.ANTHROPIC_API_KEY || "";
   const apiKey = rawKey.replace(/["'\r\n\s]/g, "").trim();
 
@@ -17,7 +16,6 @@ export default async function handler(req, res) {
     });
   }
 
-  // 2) Body 데이터 검증
   const { image, system, instruction } = req.body || {};
   if (!image || typeof image !== "string") {
     return res.status(400).json({ error: "이미지(base64) 데이터가 누락되었습니다." });
@@ -36,10 +34,7 @@ export default async function handler(req, res) {
     "이 처방전/약봉투 이미지에서 모든 처방 약물 성분(drug_molecule), 카테고리(category), 용량(dosage), 투여경로(route_of_administration), 상품명(trade_name)을 추출하여 JSON 스키마 규격대로만 반환해 주세요.";
 
   try {
-    // 3) Anthropic Messages API 호출 (최신 모델명 claude-3-5-sonnet-latest 적용)
-    const targetUrl = "https://api.anthropic.com/v1/messages";
-    
-    const anthropicResponse = await fetch(targetUrl, {
+    const anthropicResponse = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
         "x-api-key": apiKey,
@@ -48,7 +43,7 @@ export default async function handler(req, res) {
         "accept": "application/json"
       },
       body: JSON.stringify({
-        model: "claude-3-5-sonnet-latest",
+        model: "claude-3-sonnet-20240229",
         max_tokens: 2048,
         system: system || undefined,
         messages: [
@@ -80,7 +75,6 @@ export default async function handler(req, res) {
       return res.status(502).json({
         error: `Anthropic API 응답 에러 (HTTP ${resStatus})`,
         raw_anthropic_response: responseText,
-        key_length: apiKey.length,
         key_prefix: apiKey.substring(0, 12)
       });
     }
