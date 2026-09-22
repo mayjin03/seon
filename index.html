@@ -6346,17 +6346,46 @@ function normalizeVisionAiResponse(apiResponse){
  * 호출부(handlePrescriptionScan)에서 이를 감지해 빈 검토 모달로 안전하게 폴백해요.
  */
 async function analyzePrescriptionImage(base64Image){
-  // ---- 실제 배포 시 이 부분을 교체하세요 ----
-  // const res = await fetch('/api/analyze-prescription', {
-  //   method: 'POST',
-  //   headers: { 'Content-Type': 'application/json' },
-  //   body: JSON.stringify({ image: base64Image, systemPrompt: PRESCRIPTION_VISION_SYSTEM_PROMPT }),
-  // });
-  // if(!res.ok) throw new Error(`Vision AI 분석 요청이 실패했습니다 (HTTP ${res.status})`);
-  // const apiResponse = await res.json();
-  // return normalizeVisionAiResponse(apiResponse);
+  // ⚠️ 보안상 이유로 Anthropic API(https://api.anthropic.com/v1/messages)는 프론트엔드에서 직접 호출하지 않아요.
+  //    (1) 브라우저에 API 키를 두면 누구나 페이지 소스/네트워크 탭에서 키를 훔쳐볼 수 있어요.
+  //    (2) Anthropic API는 브라우저의 직접 호출(CORS)을 허용하지 않아, 프론트엔드에서 바로 fetch해도 차단돼요.
+  //    그래서 이 함수는 우리 쪽 백엔드 프록시(/api/analyze-prescription)를 호출하고,
+  //    그 백엔드가 서버 환경변수 ANTHROPIC_API_KEY로 Claude 3.5 Sonnet Vision을 실제 호출해요.
+  //    (프로젝트 루트에 함께 제공한 api-analyze-prescription.js 파일이 바로 그 백엔드 구현이에요.)
+  let response;
+  try{
+    response = await fetch('/api/analyze-prescription', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        image: base64Image,
+        model: 'claude-3-5-sonnet-20241022',
+        system: PRESCRIPTION_VISION_SYSTEM_PROMPT,
+        instruction: '이 처방전/약봉투 이미지에서 모든 처방 약물 성분(drug_molecule), 카테고리(category), 용량(dosage), 투여경로(route_of_administration), 상품명(trade_name)을 추출하여 JSON 스키마 규격대로만 반환해 주세요.',
+      }),
+    });
+  }catch(networkErr){
+    // 백엔드 엔드포인트 자체가 아직 배포되지 않았거나 네트워크에 문제가 있는 경우
+    throw new Error('Vision AI 서버(/api/analyze-prescription)에 연결할 수 없습니다. 백엔드가 배포되어 있는지 확인해주세요.');
+  }
 
-  throw new Error('VISION_API_NOT_CONFIGURED');
+  let body = null;
+  try{ body = await response.json(); }catch(parseErr){ body = null; }
+
+  if(!response.ok){
+    // 백엔드가 "API Key 미설정" 등 구체적인 이유를 내려주면 그 문구를 그대로 보여주고,
+    // 그렇지 않으면 사용자가 요청한 정확한 안내 문구로 안전하게 폴백해요.
+    const backendMessage = body && (body.error || body.message);
+    if(response.status === 401 || response.status === 500){
+      throw new Error(backendMessage || 'API Key가 설정되지 않았습니다. 환경 변수에 ANTHROPIC_API_KEY를 등록해 주세요.');
+    }
+    throw new Error(backendMessage || `Vision AI 분석 요청이 실패했습니다 (HTTP ${response.status}).`);
+  }
+
+  if(!body || (!body.hospital_name && !Array.isArray(body.extracted_medications))){
+    throw new Error('Vision AI 응답 형식이 올바르지 않습니다.');
+  }
+  return body; // { hospital_name, extracted_medications } — 정규화는 호출부(normalizeVisionAiResponse)에서 일괄 처리해요
 }
 
 /* Storage 업로드 실패/네트워크 오류 시 앱이 죽지 않도록, 파일을 Base64 DataURL로 안전하게 읽어요.
@@ -6443,9 +6472,7 @@ async function handlePrescriptionScan(){
     const errMsg = err?.message || 'Vision AI 분석에 실패했습니다.';
     console.warn('VISION_AI_ERROR:', errMsg);
     extracted = [];
-    statusEl.textContent = errMsg === 'VISION_API_NOT_CONFIGURED'
-      ? '⚠️ Vision AI 분석 서버가 아직 연결되지 않았어요. 검토 화면에서 [약물 직접 추가]로 입력해주세요.'
-      : `⚠️ 분석 중 오류가 발생했어요 (${errMsg}). 검토 화면에서 직접 추가해주세요.`;
+    statusEl.textContent = `⚠️ ${errMsg} 검토 화면에서 [약물 직접 추가]로 입력해주세요.`;
   }
   dniMatrix.rawOcrExtractedData = extracted;
   openPrescriptionReviewModal(extracted);
