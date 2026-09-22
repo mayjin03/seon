@@ -1,17 +1,15 @@
 /**
  * api/analyze-prescription.js
- * Anthropic Claude 3.5 Sonnet Vision 백엔드 프록시
  */
 
 export default async function handler(req, res) {
-  // CORS 및 HTTP Method 검증
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method Not Allowed" });
   }
 
-  // 1) API Key 검증 (공백 제거)
+  // 1) API Key 정제 (줄바꿈, 따옴표, 공백 완전 제거)
   const rawKey = process.env.ANTHROPIC_API_KEY || "";
-  const apiKey = rawKey.trim();
+  const apiKey = rawKey.replace(/["'\r\n\s]/g, "").trim();
 
   if (!apiKey) {
     return res.status(500).json({
@@ -38,17 +36,19 @@ export default async function handler(req, res) {
     "이 처방전/약봉투 이미지에서 모든 처방 약물 성분(drug_molecule), 카테고리(category), 용량(dosage), 투여경로(route_of_administration), 상품명(trade_name)을 추출하여 JSON 스키마 규격대로만 반환해 주세요.";
 
   try {
-    // 3) Anthropic Messages API 호출 (정확한 Endpoint URL 및 Header 지정)
-    const anthropicResponse = await fetch("https://api.anthropic.com/v1/messages", {
+    // 3) Anthropic Messages API 호출 (URL 및 헤더 규격 엄격 적용)
+    const targetUrl = "https://api.anthropic.com/v1/messages";
+    
+    const anthropicResponse = await fetch(targetUrl, {
       method: "POST",
       headers: {
-        "Accept": "application/json",
-        "Content-Type": "application/json",
         "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01"
+        "anthropic-version": "2023-06-01",
+        "content-type": "application/json",
+        "accept": "application/json"
       },
       body: JSON.stringify({
-        model: "claude-3-haiku-20240307",
+        model: "claude-3-5-sonnet-20240620",
         max_tokens: 2048,
         system: system || undefined,
         messages: [
@@ -74,29 +74,31 @@ export default async function handler(req, res) {
     });
 
     const resStatus = anthropicResponse.status;
+    const responseText = await anthropicResponse.text();
 
     if (!anthropicResponse.ok) {
-      let errorDetail = "";
-      try {
-        const errJson = await anthropicResponse.json();
-        errorDetail = errJson?.error?.message || JSON.stringify(errJson);
-      } catch (_) {
-        errorDetail = await anthropicResponse.text();
-      }
-
+      // Anthropic이 실제로 보낸 에러 메시지를 있는 그대로 프론트로 전달
       return res.status(502).json({
-        error: `Vision AI 분석 요청이 실패했습니다 (HTTP ${resStatus}). ${errorDetail}`
+        error: `Anthropic API 응답 에러 (HTTP ${resStatus})`,
+        raw_anthropic_response: responseText,
+        key_length: apiKey.length,
+        key_prefix: apiKey.substring(0, 12)
       });
     }
 
-    const data = await anthropicResponse.json();
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (_) {
+      return res.status(502).json({ error: "Anthropic 응답 파싱 실패", raw: responseText });
+    }
+
     const rawText = (data.content || [])
       .filter((block) => block.type === "text")
       .map((block) => block.text)
       .join("\n")
       .trim();
 
-    // Markdown Code Block (```json ... ```) 제거
     const cleanedJsonText = rawText
       .replace(/^```json\s*/i, "")
       .replace(/^```\s*/i, "")
@@ -120,7 +122,6 @@ export default async function handler(req, res) {
       });
     }
 
-    // 4) 성공 응답 반환
     return res.status(200).json({
       hospital_name: parsedResult.hospital_name || "",
       extracted_medications: parsedResult.extracted_medications
