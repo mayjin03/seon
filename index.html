@@ -5827,19 +5827,21 @@ async function submitPetHealthScore(){
   const discountRate = r.discountRate;
   const passportNo = petInsurance.passportNo;
 
-  // ---- 컬럼명이 다를 수 있는 경우(weight vs weight_kg 등)를 모두 커버하고,
-  //      값이 undefined/null이어도 절대 비어있지 않도록 전부 fallback 기본값을 둬요. ----
+  // ---- 컬럼명이 다를 수 있는 경우(weight vs weight_kg, bcs vs bcs_score, health_score vs seon_health_score)를
+  //      모두 커버하고, 값이 undefined/null이어도 절대 비어있지 않도록 전부 fallback 기본값을 둬요. ----
   const payload = {
     pet_name: petName || '이름없음',
     breed: breed || '요크셔테리어',
     age_months: Number(ageMonths) || 12,
-    weight_kg: Number(weight || weightKg || 3.2), // weight와 weight_kg 컬럼 둘 다 대응
-    weight: Number(weight || weightKg || 3.2),
+    weight: Number(weight || weightKg) || 3.2,
+    weight_kg: Number(weight || weightKg) || 3.2, // weight와 weight_kg 컬럼 둘 다 대응
+    bcs: String(bcsScore || '5'),                 // bcs와 bcs_score 컬럼 둘 다 대응
     bcs_score: Number(bcsScore) || 5,
     has_limping: Boolean(hasLimping),
     stool_condition: stoolCondition || 'normal',
     scratch_frequency: scratchFreq || 'none',
     seon_health_score: Number(healthScore) || 80,
+    health_score: Number(healthScore) || 80,      // seon_health_score와 health_score 컬럼 둘 다 대응
     patella_risk_percent: Number(patellaRisk) || 20,
     digestive_risk_percent: Number(digestiveRisk) || 20,
     skin_risk_percent: Number(skinRisk) || 20,
@@ -5863,15 +5865,10 @@ async function submitPetHealthScore(){
   }
   console.log('payload:', JSON.stringify(payload, null, 2));
   try{
-    // 최후의 안전망: 위 payload가 스키마 불일치(컬럼 없음)나 NOT NULL 위반(23502) 등 어떤 이유로든 실패하면,
-    // extra_data + 가장 기본적인 컬럼만 담은 최소 페이로드로 자동 2차 시도해요.
+    // 최후의 안전망(2-Tier Fallback): 위 payload의 어떤 컬럼에서든 에러(PGRST204 컬럼 없음, 23502 NOT NULL 위반 등)가
+    // 발생하면, pet_name + extra_data만 담은 최소 페이로드로 자동 2차 저장을 시도해요.
     const minimalFallbackPayload = {
       pet_name: payload.pet_name,
-      breed: payload.breed,
-      weight: payload.weight,
-      bcs: String(payload.bcs_score),
-      health_score: payload.seon_health_score,
-      age_months: payload.age_months,
       extra_data: payload.extra_data,
     };
     const { error, usedMinimalFallback } = await insertWithSchemaFallback('pet_health_scores', payload, minimalFallbackPayload);
