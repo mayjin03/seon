@@ -36,7 +36,7 @@ export default async function handler(req, res) {
     "이 처방전/약봉투 이미지에서 모든 처방 약물 성분(drug_molecule), 카테고리(category), 용량(dosage), 투여경로(route_of_administration), 상품명(trade_name)을 추출하여 JSON 스키마 규격대로만 반환해 주세요.";
 
   try {
-    // 3) Anthropic Messages API 호출 (URL 및 헤더 규격 엄격 적용)
+    // 3) Anthropic Messages API 호출 (최신 모델명 claude-3-5-sonnet-latest 적용)
     const targetUrl = "https://api.anthropic.com/v1/messages";
     
     const anthropicResponse = await fetch(targetUrl, {
@@ -48,7 +48,7 @@ export default async function handler(req, res) {
         "accept": "application/json"
       },
       body: JSON.stringify({
-        model: "claude-3-5-sonnet-20240620",
+        model: "claude-3-5-sonnet-latest",
         max_tokens: 2048,
         system: system || undefined,
         messages: [
@@ -77,7 +77,6 @@ export default async function handler(req, res) {
     const responseText = await anthropicResponse.text();
 
     if (!anthropicResponse.ok) {
-      // Anthropic이 실제로 보낸 에러 메시지를 있는 그대로 프론트로 전달
       return res.status(502).json({
         error: `Anthropic API 응답 에러 (HTTP ${resStatus})`,
         raw_anthropic_response: responseText,
