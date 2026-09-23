@@ -2258,6 +2258,11 @@ function computeResults(){
   if(dog.target < W * 0.98) goalType = 'loss';
   else if(dog.target > W * 1.02) goalType = 'gain';
 
+  // 유지(maintain) 기준값을 먼저 계산해두고, 증량(gain) 계수가 "동일 조건(활동량·중성화)"에서
+  // 이 유지 기준값보다 항상 최소 0.3 높도록 고정해요 — 이렇게 하면 어떤 활동량/중성화 조합에서도
+  // "증량인데 유지보다 급여량이 적어지는" 연산 역전이 구조적으로 원천 차단돼요.
+  const maintainBase = (dog.neutered?1.6:1.8) + (dog.activity==='high'?0.2:dog.activity==='low'?-0.2:0);
+
   let factor, factorNote;
   if(goalType === 'loss' || dog.bcs>=6){
     let base = dog.activity==='low' ? 0.80 : dog.activity==='high' ? 1.00 : 0.90;
@@ -2265,12 +2270,13 @@ function computeResults(){
     factor = Math.min(1.0, Math.max(0.8, base));
     factorNote = `감량 모드: 기본 ${dog.activity==='low'?'0.80':dog.activity==='high'?'1.00':'0.90'} ${dog.neutered?'− 중성화 보정 0.05':''} → 최종 ${factor.toFixed(2)}`;
   } else if(goalType === 'gain' || dog.bcs<=3){
-    let base = 1.4 + (dog.activity==='high'?0.2:dog.activity==='low'?-0.1:0) + (dog.bcs<=3?0.2:0);
-    factor = Math.min(1.8, Math.max(1.2, base));
-    factorNote = `증량 모드: 활동량 및 저체중 보정 반영 → 최종 ${factor.toFixed(2)}`;
+    // ⚠️ QC 감사에서 발견: 이전에는 저활동 조건에서 증량(최소 1.3)이 유지(최소 1.4)보다 낮아지는
+    // 연산 역전 버그가 있었어요. 이제 "유지 기준값 + 0.3" 이상을 항상 보장하도록 재정의했어요.
+    let base = maintainBase + 0.3 + (dog.bcs<=3?0.2:0);
+    factor = Math.min(2.5, Math.max(1.4, base));
+    factorNote = `증량 모드: 유지 기준(${maintainBase.toFixed(2)}) + 0.3 이상 보장 + 활동량/저체중 보정 → 최종 ${factor.toFixed(2)}`;
   } else {
-    let base = (dog.neutered?1.6:1.8) + (dog.activity==='high'?0.2:dog.activity==='low'?-0.2:0);
-    factor = Math.min(2.0, Math.max(1.4, base));
+    factor = Math.min(2.0, Math.max(1.4, maintainBase));
     factorNote = `유지 모드: ${dog.neutered?'중성화(1.6)':'미중성화(1.8)'} ${dog.activity!=='normal' ? (dog.activity==='high'?'+ 고활동 0.2':'− 저활동 0.2'):''} → 최종 ${factor.toFixed(2)}`;
   }
   const MER = RER * factor;
@@ -4368,7 +4374,9 @@ function getReportNutritionData(rec){
     if(target < weight*0.98) goalType = 'loss';
     else if(target > weight*1.02) goalType = 'gain';
   }
-  const factor = (goalType==='loss' || bcs>=6) ? 0.85 : (goalType==='gain' || bcs<=3) ? 1.4 : 1.6;
+  // ⚠️ QC 감사에서 발견: 기존에는 증량(1.4)이 유지(1.6)보다 작아 동일한 연산 역전 버그가 있었어요.
+  // 감량 < 유지 < 증량 순서가 항상 보장되도록 증량 계수를 유지보다 확실히 크게 재정의했어요.
+  const factor = (goalType==='loss' || bcs>=6) ? 0.85 : (goalType==='gain' || bcs<=3) ? 1.8 : 1.6;
   const MER = RER * factor;
   const planEntry = PLANS.find(p => PLAN_TYPE_LABEL[p.id] === rec.plan_type) || PLANS[0];
   return {
@@ -6032,7 +6040,10 @@ function computeChronoDER(){
   const bcs = petInsurance.bcs;
   const RER = 70 * Math.pow(weight, 0.75);
   const bcsCoef = bcs<=3 ? 1.1 : bcs<=5 ? 1.0 : bcs<=7 ? 0.95 : 0.85;
-  const goalFactor = chronoInput.weightGoal==='loss' ? 1.0 : chronoInput.weightGoal==='gain' ? 1.3 : 1.6;
+  // ⚠️ 이전에는 유지(1.6)가 증량(1.3)보다 커서 "증량인데 급여량이 더 적어지는" 연산 역전 버그가 있었어요.
+  // 감량(0.8~1.0) < 유지(1.0~1.2) < 증량(1.2~1.4) 밴드를 각 구간 중앙값으로 고정해, 어떤 체중·BCS 조합에서도
+  // 반드시 감량 < 유지 < 증량 순서로 단조증가하도록 계수 자체를 재정의했어요.
+  const goalFactor = chronoInput.weightGoal==='loss' ? 0.9 : chronoInput.weightGoal==='gain' ? 1.3 : 1.1;
   return RER * bcsCoef * goalFactor;
 }
 /* DER과 사료 칼로리(kcal/kg, 유저 직접 수정 가능)를 조합해 1일 권장 급여량(g)을 자동 산출해요. */
