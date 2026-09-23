@@ -863,9 +863,10 @@
           <div class="pt-4" style="border-top:1px dashed #3A5A4033;">
             <p class="font-bold text-sm mb-2" style="color:#2C241F;">② 복용 중인 약물 <span class="font-normal text-[11px]" style="color:#6b6259;">(Drug Molecule 기반)</span></p>
 
-            <div class="grid grid-cols-2 gap-2 mb-3" id="dniMedModeGroup">
+            <div class="grid grid-cols-3 gap-2 mb-3" id="dniMedModeGroup">
               <button data-val="scan" class="mc-chip rounded-xl py-2.5 text-xs">📸 처방전 사진 스캔</button>
               <button data-val="manual" class="mc-chip rounded-xl py-2.5 text-xs">✍️ 직접 성분 입력</button>
+              <button data-val="symptom" class="mc-chip rounded-xl py-2.5 text-xs">🩺 약 이름을 몰라요</button>
             </div>
 
             <!-- Option A: 처방전 AI 스캔 -->
@@ -878,6 +879,43 @@
               <p id="dniScanStatus" class="text-[11px] text-center mt-2 min-h-[16px]" style="color:#3A5A40;"></p>
               <div id="dniScanThumbWrap" class="hidden mt-2 text-center">
                 <img id="dniScanThumb" class="inline-block rounded-lg" style="max-height:120px;" alt="처방전 미리보기">
+              </div>
+            </div>
+
+            <!-- Option C: 약 이름을 몰라요 (증상 기반 입력) -->
+            <div id="dniSymptomPanel" class="hidden mb-4">
+              <p class="text-[11px] mb-3" style="color:#6b6259;">약 이름이 정확히 기억나지 않아도 괜찮아요. 증상만 알려주시면 일반적인 약물 계열을 유추해 타임라인에 반영해드려요.</p>
+
+              <label class="block text-[11px] font-semibold mb-1.5" style="color:#2C241F;">처방 목적 / 증상 카테고리 <span style="color:#C0473A;">*</span></label>
+              <div class="grid grid-cols-2 gap-2 mb-3" id="dniSymptomCategoryGroup">
+                <button data-val="JOINT_PAIN" class="mc-chip rounded-xl py-2.5 text-xs">🦴 슬개골/관절/통증</button>
+                <button data-val="RESPIRATORY" class="mc-chip rounded-xl py-2.5 text-xs">🫁 기침/콧물/호흡기</button>
+                <button data-val="DIGESTIVE" class="mc-chip rounded-xl py-2.5 text-xs">🤢 구토/설사/소화기</button>
+                <button data-val="SKIN_ALLERGY" class="mc-chip rounded-xl py-2.5 text-xs">🐾 피부가려움/습진/귀염증</button>
+                <button data-val="URINARY" class="mc-chip rounded-xl py-2.5 text-xs">🚽 방광염/혈뇨/비뇨기</button>
+                <button data-val="POST_SURGERY" class="mc-chip rounded-xl py-2.5 text-xs">🏥 수술후회복/일반처방</button>
+              </div>
+
+              <div class="grid sm:grid-cols-2 gap-3 mb-3">
+                <div>
+                  <label class="block text-[11px] font-semibold mb-1.5" style="color:#2C241F;">1일 복용 횟수</label>
+                  <input type="number" min="1" max="6" step="1" id="dniSymptomFreqInput" value="2" class="w-full rounded-xl px-3 py-2.5 text-sm" style="border:1px solid #3A5A4033;">
+                </div>
+                <div>
+                  <label class="block text-[11px] font-semibold mb-1.5" style="color:#2C241F;">주요(첫) 복용 시각</label>
+                  <input type="time" id="dniSymptomTimeInput" value="08:00" class="w-full rounded-xl px-3 py-2.5 text-sm" style="border:1px solid #3A5A4033;">
+                </div>
+              </div>
+              <label class="block text-[11px] font-semibold mb-1.5" style="color:#2C241F;">병원명 <span class="font-normal text-muted">(선택 입력)</span></label>
+              <input type="text" id="dniSymptomHospitalInput" placeholder="예: 행복동물병원" class="w-full rounded-xl px-3 py-2.5 mb-3 text-sm" style="border:1px solid #3A5A4033;">
+
+              <button type="button" id="dniSymptomAddBtn" class="w-full rounded-xl py-2.5 text-xs font-bold" style="background:#3A5A40; color:#fff;">➕ 유추 약물 태그로 추가하기</button>
+
+              <div id="dniSymptomGuideCard" class="hidden mt-3 rounded-xl p-3" style="background:#3A5A400d;">
+                <p class="text-xs font-bold mb-1" style="color:#3A5A40;">🩺 유추된 약물 복약 가이드</p>
+                <p class="text-xs mb-2" id="dniSymptomGuideText" style="color:#2C241F;"></p>
+                <button type="button" id="dniSymptomCopyTemplateBtn" class="w-full rounded-lg py-2 text-[11px] font-bold" style="background:#FAF9F5; border:1px solid #3A5A4055; color:#3A5A40;">📋 원클릭 병원 문의 템플릿 복사</button>
+                <p id="dniSymptomCopyStatus" class="text-[10px] text-center mt-1 min-h-[14px]" style="color:#3A5A40;"></p>
               </div>
             </div>
 
@@ -1217,7 +1255,7 @@ const SUPABASE_TABLE = "user_analytics"; // 진단 데이터를 저장/조회할
      bcs                       text,
      gender_neutered           text,   -- 성별/중성화 여부 (male/male_neutered/female/female_neutered)
      medical_history           jsonb,  -- 기왕력·수술 히스토리 태그 목록
-     active_medication_details jsonb,  -- [{ category, drug_molecule, dosage_optional, route_of_administration }]
+     active_medication_details jsonb,  -- [{ category, drug_molecule, dosage_optional, route_of_administration, is_unknown_name, symptom_category, daily_frequency, first_dose_time, hospital_name }]
      active_supplement_details jsonb,  -- [{ category, ingredient_or_product_name }]
      daily_chrono_schedule     jsonb,  -- 시간대별(오전/점심/저녁/야간) 1g 급여·투약 타임라인
      dni_warnings              jsonb,  -- [{ molecule, nutrient, interaction_type, dosage_flag, clinical_reference, recommendation_note }]
@@ -5511,7 +5549,8 @@ const STUDIO_TAB_HTML = {
                 ${Array.isArray(rec.active_medication_details) && rec.active_medication_details.length
                   ? rec.active_medication_details.map(m=>{
                       const routeIcon = ROUTES.find(r=>r.label===m.route_of_administration)?.icon || '💊';
-                      return `<p class="text-[10px]" style="color:#2C241F;">· ${m.category}: <b>${m.drug_molecule}</b>${m.dosage_optional ? ` (${m.dosage_optional})` : ' (용량 미입력)'} <span class="px-1.5 py-0.5 rounded-full" style="background:#3A5A401A; color:#3A5A40;">${routeIcon} ${m.route_of_administration || '경로 미상'}</span></p>`;
+                      const unknownBadge = m.is_unknown_name ? ` <span class="px-1.5 py-0.5 rounded-full" style="background:#D89A1E1A; color:#D89A1E;">🩺 증상기반·이름미확정${m.daily_frequency?` · 1일 ${m.daily_frequency}회`:''}${m.hospital_name?` · ${m.hospital_name}`:''}</span>` : '';
+                      return `<p class="text-[10px]" style="color:#2C241F;">· ${m.category}: <b>${m.drug_molecule}</b>${m.dosage_optional ? ` (${m.dosage_optional})` : ' (용량 미입력)'} <span class="px-1.5 py-0.5 rounded-full" style="background:#3A5A401A; color:#3A5A40;">${routeIcon} ${m.route_of_administration || '경로 미상'}</span>${unknownBadge}</p>`;
                     }).join('')
                   : `<p class="text-[10px] text-muted">복용 중인 약물 없음</p>`}
               </div>
@@ -5953,6 +5992,18 @@ const ROUTES = [
   {id:"topical",      label:"외용제/안약",          icon:"🧴", passesGI:false},
 ];
 function routeInfo(routeId){ return ROUTES.find(r=>r.id===routeId) || ROUTES[0]; }
+
+/* 약 이름을 모르는 유저를 위한 '증상 카테고리 → 유추 약물계열' 매핑 —
+   정확한 성분명은 알 수 없지만, 일반적인 약물계열과 범용 복약 가이드를 제공해요. */
+const SYMPTOM_CATEGORY_MAP = {
+  JOINT_PAIN:    { label:"슬개골/관절/통증", category:"nsaid",       inferredMolecule:"소염진통제(NSAIDs) 계열 추정",     guideline:"식후 급여를 권장해요. 오메가3 등 특정 영양제와는 최소 2시간 시차를 두고 급여해주세요." },
+  RESPIRATORY:   { label:"기침/콧물/호흡기", category:"antibiotic",  inferredMolecule:"호흡기계 항생제/기관지확장제 계열 추정", guideline:"공복·식후 상관없이 급여 가능해요. 유산균과는 2~3시간 시차를 두면 더 안전해요." },
+  DIGESTIVE:     { label:"구토/설사/소화기", category:"gi",          inferredMolecule:"위장관 보호제/지사제 계열 추정",     guideline:"공복 상태에 급여하는 게 좋아요. 기름진 간식·유제품은 피해주세요." },
+  SKIN_ALLERGY:  { label:"피부가려움/습진/귀염증", category:"immuno_skin", inferredMolecule:"항히스타민/면역조절제 계열 추정", guideline:"식후 급여를 권장해요. 오메가3와는 함께 급여해도 무방해요." },
+  URINARY:       { label:"방광염/혈뇨/비뇨기", category:"antibiotic", inferredMolecule:"비뇨기계 항생제 계열 추정",        guideline:"충분한 음수와 함께 급여해주세요. 칼슘 보충제와는 최소 2시간 시차를 두는 게 좋아요." },
+  POST_SURGERY:  { label:"수술후회복/일반처방", category:"antibiotic", inferredMolecule:"항생제+소염진통제 복합처방 계열 추정", guideline:"정확한 용량·기간은 반드시 병원 처방을 따르고, 사료와 함께 급여해주세요." },
+};
+
 /* Vision AI 응답은 카테고리를 한글 라벨로 주므로(예: "항생제"), 내부 id로 역매핑해요. 매칭 실패 시 'other'. */
 function categoryIdFromLabel(label){
   const found = MEDICATIONS.find(m=>m.label===label || m.label.includes(label) || (label && label.includes(m.label)));
@@ -6062,6 +6113,18 @@ function computeChronoMealTimesMinutes(){
   const start = parseTimeToMinutes(chronoInput.mainMealTime);
   if(freq === 1) return [start];
   const spanMinutes = 12 * 60; // 아침~저녁 12시간 창
+  const step = spanMinutes / (freq - 1);
+  return Array.from({length:freq}, (_,i)=> Math.round(start + i*step));
+}
+/* 약물별로 1일 복용 횟수(dailyFrequency)가 따로 지정돼 있으면(예: 증상 기반으로 추가한 약물),
+   해당 약물만의 복용 시각들을 계산해요. 지정이 없으면 기존처럼 첫 끼 시각 1회만 반환해요. */
+function computeEntryDoseTimesMinutes(entry){
+  if(!entry.dailyFrequency || entry.dailyFrequency <= 1){
+    return [ entry.firstDoseTime ? parseTimeToMinutes(entry.firstDoseTime) : computeChronoMealTimesMinutes()[0] ];
+  }
+  const freq = Math.max(1, Math.min(6, entry.dailyFrequency));
+  const start = parseTimeToMinutes(entry.firstDoseTime || chronoInput.mainMealTime);
+  const spanMinutes = 12 * 60;
   const step = spanMinutes / (freq - 1);
   return Array.from({length:freq}, (_,i)=> Math.round(start + i*step));
 }
@@ -6277,7 +6340,11 @@ function buildDniChronoSchedule(warnings){
   dniMatrix.medicationEntries.forEach(e=>{
     const molecule = resolveEntryMolecule(e);
     const rt = routeInfo(e.route);
-    slots[0].items.push(`${rt.icon} ${molecule}${e.dosage ? ` (${e.dosage})` : ''}`);
+    const doseTimes = computeEntryDoseTimesMinutes(e);
+    doseTimes.forEach(dt=>{
+      const closestSlot = slots.reduce((best,s)=> Math.abs(s.minutes-dt) < Math.abs(best.minutes-dt) ? s : best, slots[0]);
+      closestSlot.items.push(`${rt.icon} ${molecule}${e.dosage ? ` (${e.dosage})` : ''}`);
+    });
   });
   dniMatrix.supplements.filter(s=>s!=='none').forEach(cat=>{
     const ingredient = resolveSupplementIngredient(cat);
@@ -6516,6 +6583,7 @@ function buildInsuranceBcsButtons(){
 function syncMedModePanels(){
   document.getElementById('dniScanPanel').classList.toggle('hidden', dniMatrix.medicationInputMode !== 'scan');
   document.getElementById('dniManualPanel').classList.toggle('hidden', dniMatrix.medicationInputMode !== 'manual');
+  document.getElementById('dniSymptomPanel').classList.toggle('hidden', dniMatrix.medicationInputMode !== 'symptom');
 }
 
 /* ============================================================
@@ -6656,6 +6724,94 @@ function readFileAsDataUrl(file){
       reject(new Error((err && err.message) || '파일을 읽는 중 오류가 발생했습니다.'));
     }
   });
+}
+
+/* ---- Option C: 약 이름을 몰라요 (증상 기반 입력) ---- */
+let dniSymptomSelectedCategory = null;
+let dniLastAddedSymptomEntry = null; // 마지막으로 추가한 증상 기반 약물 (병원 문의 템플릿 생성에 사용)
+
+function handleAddSymptomBasedMedication(){
+  if(!dniSymptomSelectedCategory){
+    alert('처방 목적 / 증상 카테고리를 먼저 선택해주세요.');
+    return;
+  }
+  const info = SYMPTOM_CATEGORY_MAP[dniSymptomSelectedCategory];
+  const dailyFrequency = Math.max(1, Math.min(6, parseInt(document.getElementById('dniSymptomFreqInput').value) || 1));
+  const firstDoseTime = document.getElementById('dniSymptomTimeInput').value || '08:00';
+  const hospitalName = document.getElementById('dniSymptomHospitalInput').value.trim();
+
+  const entry = newMedEntry({
+    category: info.category,
+    drugMolecule: '직접입력',
+    customMolecule: info.inferredMolecule,
+    dosage: null,
+    route: 'oral_tablet',
+    isUnknownName: true,               // 약 이름 미확정 플래그
+    symptomCategory: dniSymptomSelectedCategory,
+    dailyFrequency,
+    firstDoseTime,
+    hospitalName,
+  });
+  dniMatrix.medicationEntries.push(entry);
+  dniLastAddedSymptomEntry = { ...entry, symptomLabel: info.label, guideline: info.guideline };
+
+  // 약물 추가 목록(직접입력 패널)에도 즉시 반영해서, 유저가 카테고리/성분명을 추가로 조정할 수 있게 해요.
+  dniMatrix.medicationInputMode = 'manual';
+  syncMedModePanels();
+  document.querySelectorAll('#dniMedModeGroup button').forEach(b=>b.classList.toggle('active', b.dataset.val==='manual'));
+  renderMedicationEntries();
+
+  // 유추 약물 복약 가이드 카드 노출
+  const guideCard = document.getElementById('dniSymptomGuideCard');
+  guideCard.classList.remove('hidden');
+  document.getElementById('dniSymptomGuideText').textContent = `유추된 ${info.label} 약물(${info.inferredMolecule}): ${info.guideline}`;
+  document.getElementById('dniSymptomCopyStatus').textContent = '';
+
+  updateInsuranceOutputs();
+}
+
+function buildHospitalInquiryTemplate(){
+  const e = dniLastAddedSymptomEntry;
+  if(!e) return '';
+  const petName = petInsurance.name || '이름없음';
+  return [
+    `[${petName} 복용약 문의]`,
+    `- 증상/처방목적: ${e.symptomLabel}`,
+    `- 1일 복용 횟수: ${e.dailyFrequency}회`,
+    `- 첫 복용 시각: ${e.firstDoseTime}`,
+    e.hospitalName ? `- 방문 병원: ${e.hospitalName}` : null,
+    ``,
+    `안녕하세요, 저희 아이가 위와 같이 약을 처방받아 복용 중인데 정확한 약 이름(성분명)을 확인하지 못했어요.`,
+    `영양제와의 상호작용을 안전하게 관리하고 싶어서 그러는데, 정확한 약물명과 용량을 알려주실 수 있을까요?`,
+  ].filter(Boolean).join('\n');
+}
+function copyHospitalInquiryTemplate(){
+  const template = buildHospitalInquiryTemplate();
+  const statusEl = document.getElementById('dniSymptomCopyStatus');
+  if(!template){
+    statusEl.textContent = '⚠️ 먼저 증상 기반 약물을 추가해주세요.';
+    statusEl.style.color = '#C0473A';
+    return;
+  }
+  const done = () => { statusEl.textContent = '✅ 병원 문의 템플릿이 복사됐어요!'; statusEl.style.color = '#3A5A40'; };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(template).then(done).catch(()=>{
+      statusEl.textContent = '⚠️ 복사에 실패했어요. 직접 선택해 복사해주세요.';
+      statusEl.style.color = '#C0473A';
+    });
+  } else {
+    try{
+      const ta = document.createElement('textarea');
+      ta.value = template; ta.style.position='fixed'; ta.style.opacity='0';
+      document.body.appendChild(ta); ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      done();
+    }catch(err){
+      statusEl.textContent = '⚠️ 복사에 실패했어요. 직접 선택해 복사해주세요.';
+      statusEl.style.color = '#C0473A';
+    }
+  }
 }
 
 async function handlePrescriptionScan(){
@@ -6802,6 +6958,11 @@ async function submitDniChronoData(){
     drug_molecule: resolveEntryMolecule(e),
     dosage_optional: e.dosage || null,
     route_of_administration: routeInfo(e.route).label,
+    is_unknown_name: !!e.isUnknownName,
+    symptom_category: e.symptomCategory || null,
+    daily_frequency: e.dailyFrequency || null,
+    first_dose_time: e.firstDoseTime || null,
+    hospital_name: e.hospitalName || null,
   }));
   const activeSupplementDetails = dniMatrix.supplements.filter(s=>s!=='none').map(cat=>{
     const detail = dniMatrix.supplementDetails[cat] || {};
@@ -6933,6 +7094,10 @@ function initInsurancePage(){
   syncMedModePanels();
   document.getElementById('dniScanUploadBtn').addEventListener('click', handlePrescriptionScan);
 
+  bindSingleSelectGroup('dniSymptomCategoryGroup', v=>{ dniSymptomSelectedCategory = v; });
+  document.getElementById('dniSymptomAddBtn').addEventListener('click', handleAddSymptomBasedMedication);
+  document.getElementById('dniSymptomCopyTemplateBtn').addEventListener('click', copyHospitalInquiryTemplate);
+
   bindSingleSelectGroup('chronoWeightGoalGroup', v=>{
     chronoInput.weightGoal = v;
     syncChronoTargetWeightVisibility();
@@ -7052,7 +7217,9 @@ function buildMinuteLevelChronoMatrix(warnings){
   dniMatrix.medicationEntries.forEach(e=>{
     const molecule = resolveEntryMolecule(e);
     const rt = routeInfo(e.route);
-    items.push({ minutes: baseMedTime, label:`${rt.icon} ${molecule}${e.dosage?` (${e.dosage})`:''}`, type:'약물' });
+    computeEntryDoseTimesMinutes(e).forEach(dt=>{
+      items.push({ minutes: dt, label:`${rt.icon} ${molecule}${e.dosage?` (${e.dosage})`:''}`, type:'약물' });
+    });
   });
 
   const isolationByCategory = {};
