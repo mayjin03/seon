@@ -7774,7 +7774,7 @@ function initBcsTestPage(){
   renderStickerLayer();
 
   document.querySelectorAll('.main-tab-btn').forEach(b=>{
-    b.addEventListener('click', ()=>switchMainTab(b.dataset.tab));
+    b.addEventListener('click', ()=>navigateToTab(b.dataset.tab));
   });
 
   const ribInput = document.getElementById('bcsSliderRib');
@@ -7805,7 +7805,7 @@ function initBcsTestPage(){
   document.getElementById('bcsStickerResetBtn').addEventListener('click', resetStickers);
   document.getElementById('bcsSaveImgBtn').addEventListener('click', saveBcsCardImage);
   document.getElementById('bcsGoDiagnosisBtn').addEventListener('click', ()=>{
-    switchMainTab('home');
+    navigateToTab('home');
     goToDiagnosisForm();
   });
 }
@@ -7971,13 +7971,93 @@ async function saveBcsCardImage(){
 }
 
 /* ============================================================
+   🔗 URL 라우팅 (Hash 기반) — 정적 파일로 배포돼도 서버 설정 없이
+   뒤로가기/앞으로가기·딥링크가 그대로 동작하도록 History API 대신 해시 라우팅을 써요.
+   (History API 방식은 새로고침/직접 접속 시 서버가 모든 경로를 index.html로
+   되돌려줘야 하는데, 정적 호스팅 환경에서는 이 설정이 없으면 404가 나기 쉬워요.)
+============================================================ */
+const ROUTE_TO_TAB = { '': 'home', 'main': 'home', 'chrono': 'insurance', 'mix-calc': 'mixcalc', 'bcs': 'bcs' };
+const TAB_TO_ROUTE = { home: '', insurance: 'chrono', mixcalc: 'mix-calc', bcs: 'bcs' };
+
+function getTabFromCurrentHash(){
+  const path = window.location.hash.replace(/^#\/?/, '').replace(/\/$/, '');
+  return ROUTE_TO_TAB[path] || 'home';
+}
+/* 탭 전환 + URL 동기화를 함께 처리해요. 버튼 클릭 등 '유저가 직접 이동'할 때는 새 히스토리
+   항목을 쌓고(뒤로가기 지원), hashchange 이벤트로 들어온 경우는 이미 히스토리가 있으니 UI만 맞춰요. */
+function navigateToTab(tab, opts){
+  opts = opts || {};
+  const route = TAB_TO_ROUTE[tab] !== undefined ? TAB_TO_ROUTE[tab] : '';
+  const newHash = '#/' + route;
+  if(!opts.skipHashUpdate && window.location.hash !== newHash){
+    window.location.hash = newHash; // 새 히스토리 항목 생성 → 뒤로가기로 이전 탭에 복귀 가능
+  }
+  switchMainTab(tab);
+}
+window.addEventListener('hashchange', ()=>{
+  // 뒤로/앞으로가기나 주소창 직접 입력으로 해시가 바뀐 경우 — 탭만 맞추고 해시는 다시 건드리지 않아요(루프 방지).
+  navigateToTab(getTabFromCurrentHash(), { skipHashUpdate: true });
+});
+
+/* ============================================================
+   💾 앱 State 스냅샷 — 새로고침/딥링크로 직접 들어와도 입력값이 사라지지 않도록,
+   반려동물 프로필·DNI 선택·사료 설정값을 로컬스토리지에 주기적으로 백업하고
+   부팅 시 가장 먼저 복원해요. (Supabase 저장과는 별개의, 브라우저 로컬 안전망이에요.)
+============================================================ */
+const LOCAL_STATE_SNAPSHOT_KEY = 'seonAppStateSnapshot';
+function saveAppStateSnapshot(){
+  try{
+    const snapshot = {
+      petInsurance,
+      chronoInput,
+      mixCalcLite: {
+        weight: mixCalc.weight, bcs: mixCalc.bcs, goal: mixCalc.goal, goalChangeKg: mixCalc.goalChangeKg,
+        foodPresetId: mixCalc.foodPresetId, customKcal: mixCalc.customKcal,
+        treatCategoryId: mixCalc.treatCategoryId, wetCategoryId: mixCalc.wetCategoryId,
+        treatG: mixCalc.treatG, wetG: mixCalc.wetG,
+      },
+      dniMatrixLite: {
+        supplements: dniMatrix.supplements,
+        supplementDetails: dniMatrix.supplementDetails,
+        medicationEntries: dniMatrix.medicationEntries,
+      },
+      savedAt: new Date().toISOString(),
+    };
+    localStorage.setItem(LOCAL_STATE_SNAPSHOT_KEY, JSON.stringify(snapshot));
+  }catch(err){
+    // 프라이빗 브라우징 등 localStorage를 쓸 수 없는 환경에서는 조용히 건너뛰어요 (앱 동작에는 영향 없음).
+  }
+}
+function restoreAppStateSnapshot(){
+  try{
+    const raw = localStorage.getItem(LOCAL_STATE_SNAPSHOT_KEY);
+    if(!raw) return;
+    const snap = JSON.parse(raw);
+    if(snap.petInsurance && typeof snap.petInsurance === 'object') Object.assign(petInsurance, snap.petInsurance);
+    if(snap.chronoInput && typeof snap.chronoInput === 'object') Object.assign(chronoInput, snap.chronoInput);
+    if(snap.mixCalcLite && typeof snap.mixCalcLite === 'object') Object.assign(mixCalc, snap.mixCalcLite);
+    if(snap.dniMatrixLite && typeof snap.dniMatrixLite === 'object'){
+      if(Array.isArray(snap.dniMatrixLite.supplements)) dniMatrix.supplements = snap.dniMatrixLite.supplements;
+      if(snap.dniMatrixLite.supplementDetails) dniMatrix.supplementDetails = snap.dniMatrixLite.supplementDetails;
+      if(Array.isArray(snap.dniMatrixLite.medicationEntries)) dniMatrix.medicationEntries = snap.dniMatrixLite.medicationEntries;
+    }
+  }catch(err){
+    // 저장된 데이터가 손상돼 있으면 조용히 무시하고 기본값으로 진행해요 (에러로 앱이 죽지 않도록).
+  }
+}
+// 탭 전환·페이지 이탈 시점마다 스냅샷을 저장해, 새로고침이나 딥링크 재방문에도 입력값이 남아있게 해요.
+window.addEventListener('hashchange', saveAppStateSnapshot);
+window.addEventListener('beforeunload', saveAppStateSnapshot);
+
+/* ============================================================
    INIT
 ============================================================ */
+restoreAppStateSnapshot(); // 다른 init 함수들이 state를 읽어 DOM을 그리기 전에 가장 먼저 복원해요.
 init();
 initBcsTestPage();
 initMixCalcPage();
 initInsurancePage();
-switchMainTab('home');
+navigateToTab(getTabFromCurrentHash(), { skipHashUpdate: true }); // 딥링크(#/chrono 등) 지원 + 뒤로가기 루프 방지
 
 })();
 </script>
