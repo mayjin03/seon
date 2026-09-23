@@ -917,10 +917,49 @@
       <div class="max-w-5xl mx-auto mt-5 rounded-2xl overflow-hidden" style="background:#FFFFFF; border:1.5px solid #3A5A4022; box-shadow:0 8px 28px rgba(44,36,31,.08);">
         <div class="px-6 pt-6 pb-5" style="background:linear-gradient(160deg,#3A5A40,#2C4732);">
           <p class="font-bold text-sm mb-1" style="color:#fff;">📅 1일 Chrono 타임라인</p>
-          <p class="text-xs" style="color:rgba(255,255,255,.75);">'🥣 1g 믹스 계산기'의 급여량과 연동해 시간대별로 정밀 분정했어요.</p>
+          <p class="text-xs" style="color:rgba(255,255,255,.75);">목표 체중과 드시는 사료 정보를 입력하시면, 최적의 1일 급여량과 DNI 안전 타임라인을 산출해 드려요.</p>
         </div>
         <div class="p-6">
-          <div class="grid sm:grid-cols-4 gap-3 mb-6" id="dniChronoTimeline"></div>
+          <p class="text-xs font-bold mb-3" style="color:#2C241F;">🍽️ 급여 스케줄 입력 <span class="font-normal text-[11px]" style="color:#6b6259;">('🥣 1g 믹스 계산기'와는 별개의 독립 입력이에요)</span></p>
+
+          <label class="block text-[11px] font-semibold mb-1.5" style="color:#2C241F;">건강/체중 관리 목표</label>
+          <div class="grid grid-cols-3 gap-2 mb-2" id="chronoWeightGoalGroup">
+            <button data-val="loss" class="mc-chip rounded-xl py-2.5 text-xs">📉 체중 감량</button>
+            <button data-val="maintain" class="mc-chip rounded-xl py-2.5 text-xs">⚖️ 체중 유지</button>
+            <button data-val="gain" class="mc-chip rounded-xl py-2.5 text-xs">📈 체중 증량/회복</button>
+          </div>
+          <div id="chronoTargetWeightWrap" class="hidden mb-4">
+            <label class="block text-[11px] font-semibold mb-1.5" style="color:#2C241F;">목표 체중(kg) <span class="font-normal text-muted">(선택 입력 — 비워두면 현재 체중 기준으로 계산해요)</span></label>
+            <input type="number" min="0.1" step="0.1" id="chronoTargetWeightInput" placeholder="예: 8.5" class="w-full rounded-xl px-3 py-2.5 text-sm" style="border:1px solid #3A5A4033;">
+          </div>
+
+          <label class="block text-[11px] font-semibold mb-1.5" style="color:#2C241F;">주식 사료 제품명</label>
+          <input type="text" id="chronoFoodProductNameInput" list="chronoFoodProductDatalist" placeholder="예: 로얄캐닌 인도어 어덜트" class="w-full rounded-xl px-3 py-2.5 mb-2 text-sm" style="border:1px solid #3A5A4033;">
+          <datalist id="chronoFoodProductDatalist"></datalist>
+
+          <div class="relative mb-4">
+            <label class="block text-[11px] font-semibold mb-1.5" style="color:#2C241F;">사료 칼로리(kcal/kg) <span class="font-normal text-muted">(제품명 입력 시 자동 추론 — 포장지 수치로 언제든 직접 수정 가능해요)</span></label>
+            <input type="number" min="100" step="10" id="chronoFoodKcalInput" value="3650" class="w-full rounded-xl px-3 py-2.5 text-sm" style="border:1px solid #3A5A4033;">
+            <p id="chronoKcalInferredNote" class="text-[10px] mt-1 min-h-[14px]" style="color:#3A5A40;"></p>
+          </div>
+
+          <div class="grid sm:grid-cols-2 gap-3 mb-4">
+            <div>
+              <label class="block text-[11px] font-semibold mb-1.5" style="color:#2C241F;">급여 횟수</label>
+              <input type="number" min="1" max="6" step="1" id="chronoFeedingFreqInput" value="3" class="w-full rounded-xl px-3 py-2.5 text-sm" style="border:1px solid #3A5A4033;">
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold mb-1.5" style="color:#2C241F;">첫 끼(주요 식사) 시각</label>
+              <input type="time" id="chronoMainMealTimeInput" value="08:00" class="w-full rounded-xl px-3 py-2.5 text-sm" style="border:1px solid #3A5A4033;">
+            </div>
+          </div>
+
+          <div class="rounded-xl p-3 mb-6 text-center" style="background:#3A5A400d;">
+            <p class="text-[11px] font-semibold mb-0.5" style="color:#3A5A40;">🧮 자동 계산된 1일 권장 급여량</p>
+            <p class="font-display font-bold text-xl" style="color:#2C241F;"><span id="chronoAutoDailyG">0.0</span>g <span class="text-xs font-normal text-muted">(DER <span id="chronoAutoDER">0</span>kcal 기준)</span></p>
+          </div>
+
+          <div class="grid sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-6" id="dniChronoTimeline"></div>
           <div class="flex flex-wrap items-center justify-center gap-2 pt-5" style="border-top:1px dashed #3A5A4033;">
             <button type="button" id="insSubmitBtn" class="rounded-xl px-6 py-3 text-sm font-bold" style="background:#3A5A40; color:#fff;">✅ DNI 체크 &amp; Chrono 스케줄 저장하기</button>
             <button type="button" id="insViewReportBtn" class="rounded-xl px-6 py-3 text-sm font-bold" style="background:#FAF9F5; border:1.5px solid #3A5A4055; color:#3A5A40;">📄 정밀 메디컬 리포트 보기 (무료)</button>
@@ -5952,6 +5991,70 @@ const dniMatrix = {
   rawOcrExtractedData: [],       // Vision AI(OCR) 추출 원본 JSON 배열 (직접 입력 시에만 비어있음)
 };
 
+/* Chrono Matrix 전용 독립 입력 — '🥣 1g 믹스 계산기'의 State와는 완전히 분리된, DNI-Chrono만의 데이터예요. */
+const chronoInput = {
+  weightGoal: "maintain",     // 'loss' | 'maintain' | 'gain' — 건강/체중 관리 목표
+  targetWeight: null,         // 목표 체중(kg) — 선택 입력, 없으면 현재 체중 기준으로 계산
+  foodProductName: "",        // 주식 사료 제품명 (자유 입력 — kcal 자동추론의 입력 소스)
+  foodKcalPerKg: 3650,        // 사료 칼로리(kcal/kg) — 자동 추론되지만 언제든 직접 수정 가능
+  feedingFreq: 3,             // 급여 횟수
+  mainMealTime: "08:00",      // 첫 끼(아침) 시각 — 이후 끼니는 이 시각 기준으로 균등 분배돼요
+};
+/* 대표 사료 브랜드/라인업별 평균 칼로리 밀도(kcal/kg) — 제품명 입력 시 자동완성 후보 및
+   kcal 자동 추론의 기준 데이터로 써요. (에러 방지 3단계: 제품명 입력 → kcal 자동추론 →
+   유저가 포장지 보고 언제든 직접 수정 가능한 항상-활성화 입력창) */
+const CHRONO_FOOD_PRODUCTS = [
+  { id:"rc_satiety",    label:"[로얄캐닌] 세이보리 / 체중조절(Satiety) 처방식", kcalPerKg:3100, keywords:["세이보리","satiety","체중조절"] },
+  { id:"rc_indoor",     label:"[로얄캐닌] 인도어 / 어덜트 건식",              kcalPerKg:3850, keywords:["로얄캐닌","royal canin","인도어","indoor"] },
+  { id:"hills_rd_wd",   label:"[힐스] r/d 또는 w/d 체중관리/처방식",          kcalPerKg:3200, keywords:["r/d","w/d","rd","wd","체중관리","처방식"] },
+  { id:"hills_adult",   label:"[힐스] 어덜트/퍼피 일반 건식",                kcalPerKg:3750, keywords:["힐스","hills","사이언스 다이어트","어덜트","퍼피","adult","puppy"] },
+  { id:"now_go_fresh",  label:"[나우 / 고] 프레쉬 어덜트 / 센시티비티",        kcalPerKg:3700, keywords:["나우","now fresh","고 ","go fresh","프레쉬","센시티비티"] },
+  { id:"orijen_acana",  label:"[오리젠 / 아카나] 고단백·고칼로리 프리미엄",     kcalPerKg:3975, keywords:["오리젠","orijen","아카나","acana"] },
+  { id:"wet_homemade",  label:"[화식 / 수제 스튜] 습식 주식 파우치·화식",       kcalPerKg:1200, keywords:["화식","수제","스튜","습식","파우치"] },
+  { id:"custom_avg",    label:"[직접 선택] 기타 건식 사료 평균",              kcalPerKg:3650, keywords:[] },
+];
+/* 제품명 텍스트에서 가장 근접한 브랜드/라인업을 찾아 kcal/kg을 추론해요. 매칭되는 게 없으면
+   null을 반환해, 이미 입력돼 있는 kcal 값을 함부로 덮어쓰지 않도록 해요(에러 방지). */
+function inferChronoFoodKcal(productName){
+  const name = String(productName||'').toLowerCase().trim();
+  if(!name) return null;
+  for(const p of CHRONO_FOOD_PRODUCTS){
+    if(p.keywords.some(kw=>name.includes(kw.toLowerCase()))) return p;
+  }
+  return null;
+}
+/* 체중/BCS + 건강 목표(+목표 체중)를 조합해 1일 필요 에너지(DER)를 계산해요.
+   감량/증량을 선택하고 목표 체중을 입력하면 '목표 체중' 기준으로, 그 외에는 현재 체중 기준으로 계산해요. */
+function computeChronoDER(){
+  const useTargetWeight = (chronoInput.weightGoal === 'loss' || chronoInput.weightGoal === 'gain')
+    && Number.isFinite(chronoInput.targetWeight) && chronoInput.targetWeight > 0;
+  const weight = useTargetWeight ? chronoInput.targetWeight : petInsurance.weight;
+  const bcs = petInsurance.bcs;
+  const RER = 70 * Math.pow(weight, 0.75);
+  const bcsCoef = bcs<=3 ? 1.1 : bcs<=5 ? 1.0 : bcs<=7 ? 0.95 : 0.85;
+  const goalFactor = chronoInput.weightGoal==='loss' ? 1.0 : chronoInput.weightGoal==='gain' ? 1.3 : 1.6;
+  return RER * bcsCoef * goalFactor;
+}
+/* DER과 사료 칼로리(kcal/kg, 유저 직접 수정 가능)를 조합해 1일 권장 급여량(g)을 자동 산출해요. */
+function computeChronoDailyFoodG(){
+  const der = computeChronoDER();
+  const kcalPerKg = chronoInput.foodKcalPerKg > 0 ? chronoInput.foodKcalPerKg : 3650;
+  return (der / kcalPerKg) * 1000;
+}
+function parseTimeToMinutes(hhmm){
+  const [h, m] = String(hhmm||'08:00').split(':').map(Number);
+  return (Number.isFinite(h) ? h : 8) * 60 + (Number.isFinite(m) ? m : 0);
+}
+/* 급여 횟수만큼, 첫 끼 시각부터 12시간 창(window) 안에 균등하게 끼니 시각을 배분해요. */
+function computeChronoMealTimesMinutes(){
+  const freq = Math.max(1, Math.min(6, chronoInput.feedingFreq || 1));
+  const start = parseTimeToMinutes(chronoInput.mainMealTime);
+  if(freq === 1) return [start];
+  const spanMinutes = 12 * 60; // 아침~저녁 12시간 창
+  const step = spanMinutes / (freq - 1);
+  return Array.from({length:freq}, (_,i)=> Math.round(start + i*step));
+}
+
 function resolveEntryMolecule(entry){
   if(entry.drugMolecule === '직접입력') return (entry.customMolecule || '').trim() || '(성분명 미입력)';
   return entry.drugMolecule || '(성분명 미입력)';
@@ -6099,24 +6202,20 @@ function renderDniWarningTableHtml(warnings){
 
 /* ---- 시각적 컴포넌트: 사료/간식/토핑 비율을 컬러 스택 바로 표현 ---- */
 function renderMicroMixRatioBarHtml(mix){
-  const dryKcal = Math.max(0, parseFloat(mix.targetKcal) - parseFloat(mix.treatKcal) - parseFloat(mix.wetKcal));
-  const total = dryKcal + parseFloat(mix.treatKcal) + parseFloat(mix.wetKcal) || 1;
-  const segs = [
-    { label:'건식 사료', g:mix.dryFoodG, kcal:dryKcal, color:'#3A5A40' },
-    { label:mix.treatLabel, g:mix.treatG, kcal:parseFloat(mix.treatKcal), color:'#D89A1E' },
-    { label:mix.wetLabel, g:mix.wetG, kcal:parseFloat(mix.wetKcal), color:'#2FBF9F' },
-  ].filter(s=>s.kcal > 0 || s.label==='건식 사료');
+  const colors = ['#3A5A40','#2FBF9F','#D89A1E','#5B6B7A','#F2C14E','#C0473A'];
+  const meals = mix.meals || [];
+  const totalG = meals.reduce((sum,m)=>sum+parseFloat(m.g), 0) || 1;
   return `
     <div class="flex w-full rounded-full overflow-hidden mb-3" style="height:14px;">
-      ${segs.map(s=>`<div style="width:${(s.kcal/total*100).toFixed(1)}%; background:${s.color};"></div>`).join('')}
+      ${meals.map((m,i)=>`<div style="width:${(parseFloat(m.g)/totalG*100).toFixed(1)}%; background:${colors[i%colors.length]};"></div>`).join('')}
     </div>
-    <div class="grid grid-cols-3 gap-2">
-      ${segs.map(s=>`
+    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+      ${meals.map((m,i)=>`
         <div class="flex items-center gap-1.5">
-          <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background:${s.color};"></span>
+          <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background:${colors[i%colors.length]};"></span>
           <div>
-            <p class="text-[10px] text-muted leading-tight">${s.label}</p>
-            <p class="text-xs font-bold leading-tight">${s.g}g <span class="font-normal text-muted">(${(s.kcal/total*100).toFixed(0)}%)</span></p>
+            <p class="text-[10px] text-muted leading-tight">${m.label} · ${m.time}</p>
+            <p class="text-xs font-bold leading-tight">${m.g}g <span class="font-normal text-muted">(${(parseFloat(m.g)/totalG*100).toFixed(0)}%)</span></p>
           </div>
         </div>`).join('')}
     </div>`;
@@ -6148,22 +6247,21 @@ function renderDniWarningBanner(warnings){
 }
 
 function buildDniChronoSchedule(warnings){
-  const kcalPer100g = mixCalcCurrentKcalPer100g();
-  const targetKcal = mixCalcTargetKcal();
-  const treatCat = MIXCALC_TREAT_CATEGORIES.find(c=>c.id===mixCalc.treatCategoryId) || MIXCALC_TREAT_CATEGORIES[0];
-  const wetCat = MIXCALC_WET_CATEGORIES.find(c=>c.id===mixCalc.wetCategoryId) || MIXCALC_WET_CATEGORIES[0];
-  const treatKcal = mixCalc.treatG * (treatCat.kcal/100);
-  const wetKcal = mixCalc.wetG * (wetCat.kcal/100);
-  const remainingKcal = Math.max(0, targetKcal - treatKcal - wetKcal);
-  const finalFoodG = Math.round((remainingKcal / kcalPer100g) * 100);
+  const freq = Math.max(1, Math.min(6, chronoInput.feedingFreq || 1));
+  const mealMinutes = computeChronoMealTimesMinutes();
+  const perMealG = (computeChronoDailyFoodG() / freq).toFixed(1);
+  const fmt = m => { const h = Math.floor(m/60)%24; const mm = m%60; return `${String(h).padStart(2,'0')}:${String(mm).padStart(2,'0')}`; };
+  const MEAL_LABELS = ['오전','점심','오후','저녁','야식','새벽'];
+
+  const slots = mealMinutes.map((m,i)=>({ time: fmt(m), label: MEAL_LABELS[i] || `${i+1}번째`, minutes: m, foodG: perMealG, items: [] }));
 
   const conflictedSuppCategories = new Set(warnings.map(w=>w.suppCategory));
-  const slots = [
-    { time:"08:00", label:"오전", foodG: Math.round(finalFoodG*0.4), items:[] },
-    { time:"13:00", label:"점심", foodG: Math.round(finalFoodG*0.2), items:[] },
-    { time:"19:00", label:"저녁", foodG: Math.round(finalFoodG*0.4), items:[] },
-    { time:"22:00", label:"야간", foodG: 0, items:[] },
-  ];
+  const isolationByCategory = {};
+  warnings.forEach(w=>{
+    if(w.interaction_type === 'CONFLICT'){
+      isolationByCategory[w.suppCategory] = Math.max(isolationByCategory[w.suppCategory] || 0, w.isolation_hours);
+    }
+  });
 
   dniMatrix.medicationEntries.forEach(e=>{
     const molecule = resolveEntryMolecule(e);
@@ -6175,13 +6273,13 @@ function buildDniChronoSchedule(warnings){
     const productName = dniMatrix.supplementDetails[cat] && dniMatrix.supplementDetails[cat].productName;
     const label = `${ingredient}${productName ? ` - ${productName}` : ''}`;
     if(conflictedSuppCategories.has(cat)){
-      slots[1].items.push(`💊(격리) ${label}`);
+      const targetMinutes = computeIsolationTargetMinutes(mealMinutes[0], isolationByCategory[cat]);
+      const targetSlot = slots.find(s=>s.minutes >= targetMinutes) || slots[slots.length-1];
+      targetSlot.items.push(`💊(격리) ${label}`);
     } else {
-      slots[2].items.push(`💊 ${label}`);
+      slots[slots.length-1].items.push(`💊 ${label}`);
     }
   });
-  if(mixCalc.treatG > 0) slots[1].items.push(`🍖 ${treatCat.label} ${mixCalc.treatG}g`);
-  if(mixCalc.wetG > 0) slots[1].items.push(`🥫 ${wetCat.label} ${mixCalc.wetG}g`);
 
   return slots;
 }
@@ -6191,7 +6289,10 @@ function renderDniChronoTimeline(slots){
   const SLOT_STYLE = {
     '오전': { emoji:'🌅', accent:'#F2C14E' },
     '점심': { emoji:'🌞', accent:'#3A5A40' },
+    '오후': { emoji:'☀️', accent:'#2FBF9F' },
     '저녁': { emoji:'🌆', accent:'#D89A1E' },
+    '야식': { emoji:'🌙', accent:'#5B6B7A' },
+    '새벽': { emoji:'🌌', accent:'#5B6B7A' },
     '야간': { emoji:'🌙', accent:'#5B6B7A' },
   };
   wrap.innerHTML = slots.map(s=>{
@@ -6345,9 +6446,17 @@ function renderSupplementDetailRows(){
   });
 }
 
+function syncChronoTargetWeightVisibility(){
+  const wrap = document.getElementById('chronoTargetWeightWrap');
+  const show = chronoInput.weightGoal === 'loss' || chronoInput.weightGoal === 'gain';
+  wrap.classList.toggle('hidden', !show);
+}
+
 function updateInsuranceOutputs(){
   document.getElementById('insWeightLabel').textContent = petInsurance.weight.toFixed(1) + 'kg';
   document.getElementById('insAgeMonthsLabel').textContent = petInsurance.ageMonths + '개월';
+  document.getElementById('chronoAutoDailyG').textContent = computeChronoDailyFoodG().toFixed(1);
+  document.getElementById('chronoAutoDER').textContent = Math.round(computeChronoDER());
 
   const warnings = detectDniWarnings();
   renderDniWarningBanner(warnings);
@@ -6813,6 +6922,55 @@ function initInsurancePage(){
   syncMedModePanels();
   document.getElementById('dniScanUploadBtn').addEventListener('click', handlePrescriptionScan);
 
+  bindSingleSelectGroup('chronoWeightGoalGroup', v=>{
+    chronoInput.weightGoal = v;
+    syncChronoTargetWeightVisibility();
+    updateInsuranceOutputs();
+  });
+  document.querySelector(`#chronoWeightGoalGroup button[data-val="${chronoInput.weightGoal}"]`).classList.add('active');
+  syncChronoTargetWeightVisibility();
+
+  document.getElementById('chronoTargetWeightInput').addEventListener('input', e=>{
+    chronoInput.targetWeight = e.target.value ? parseFloat(e.target.value) : null;
+    updateInsuranceOutputs();
+  });
+
+  const chronoFoodDatalist = document.getElementById('chronoFoodProductDatalist');
+  CHRONO_FOOD_PRODUCTS.forEach(p=>{
+    const opt = document.createElement('option');
+    opt.value = p.label;
+    chronoFoodDatalist.appendChild(opt);
+  });
+  const chronoKcalInput = document.getElementById('chronoFoodKcalInput');
+  const chronoKcalNote = document.getElementById('chronoKcalInferredNote');
+  document.getElementById('chronoFoodProductNameInput').addEventListener('input', e=>{
+    chronoInput.foodProductName = e.target.value;
+    // ① 제품명 입력 → ② kcal 자동 추론(매칭 실패 시 기존 값을 그대로 두어 에러를 방지) → ③ 유저가 항상 직접 수정 가능
+    const matched = inferChronoFoodKcal(e.target.value);
+    if(matched){
+      chronoInput.foodKcalPerKg = matched.kcalPerKg;
+      chronoKcalInput.value = matched.kcalPerKg;
+      chronoKcalNote.textContent = `✅ "${matched.label}" 기준으로 ${matched.kcalPerKg.toLocaleString()}kcal/kg을 자동으로 채웠어요. 포장지 수치와 다르면 직접 수정해주세요.`;
+    } else {
+      chronoKcalNote.textContent = '';
+    }
+    updateInsuranceOutputs();
+  });
+  chronoKcalInput.addEventListener('input', e=>{
+    chronoInput.foodKcalPerKg = parseFloat(e.target.value) || 3650;
+    chronoKcalNote.textContent = '';
+    updateInsuranceOutputs();
+  });
+
+  document.getElementById('chronoFeedingFreqInput').addEventListener('input', e=>{
+    chronoInput.feedingFreq = Math.max(1, Math.min(6, parseInt(e.target.value) || 1));
+    updateInsuranceOutputs();
+  });
+  document.getElementById('chronoMainMealTimeInput').addEventListener('input', e=>{
+    chronoInput.mainMealTime = e.target.value || '08:00';
+    updateInsuranceOutputs();
+  });
+
   document.getElementById('insSubmitBtn').addEventListener('click', submitDniChronoData);
   document.getElementById('insViewReportBtn').addEventListener('click', ()=>openChronoDniReport());
 
@@ -6869,9 +7027,16 @@ function buildChronoActionSentences(warnings){
    상극(CONFLICT)이 감지된 영양제는 해당 약물 투여시각 + 격리시간(hour) + 30분 안전여유만큼 뒤로 밀어서 배치해요. */
 function buildMinuteLevelChronoMatrix(warnings){
   const items = [];
-  const baseMedTime = 8*60;   // 08:00
-  const lunchTime = 13*60;    // 13:00
-  const dinnerTime = 19*60;   // 19:00
+  const mealMinutes = computeChronoMealTimesMinutes();
+  const baseMedTime = mealMinutes[0];
+  const lastMealTime = mealMinutes[mealMinutes.length-1];
+  const freq = mealMinutes.length;
+  const perMealG = (computeChronoDailyFoodG() / freq).toFixed(1);
+  const MEAL_LABELS = ['오전','점심','오후','저녁','야식','새벽'];
+
+  mealMinutes.forEach((m,i)=>{
+    items.push({ minutes: m, label:`🍚 사료 급여 (${MEAL_LABELS[i]||`${i+1}번째`}) ${perMealG}g`, type:'식사' });
+  });
 
   dniMatrix.medicationEntries.forEach(e=>{
     const molecule = resolveEntryMolecule(e);
@@ -6894,47 +7059,34 @@ function buildMinuteLevelChronoMatrix(warnings){
       const t = computeIsolationTargetMinutes(baseMedTime, isolationByCategory[cat]);
       items.push({ minutes: t, label: `${label} — 상극 회피를 위해 격리 배치`, type:'영양제(격리)' });
     } else {
-      items.push({ minutes: dinnerTime, label, type:'영양제' });
+      items.push({ minutes: lastMealTime, label, type:'영양제' });
     }
   });
-
-  if(mixCalc.treatG > 0){
-    const cat = MIXCALC_TREAT_CATEGORIES.find(c=>c.id===mixCalc.treatCategoryId) || MIXCALC_TREAT_CATEGORIES[0];
-    items.push({ minutes: lunchTime, label:`🍖 ${cat.label} ${mixCalc.treatG}g`, type:'간식' });
-  }
-  if(mixCalc.wetG > 0){
-    const cat = MIXCALC_WET_CATEGORIES.find(c=>c.id===mixCalc.wetCategoryId) || MIXCALC_WET_CATEGORIES[0];
-    items.push({ minutes: lunchTime, label:`🥫 ${cat.label} ${mixCalc.wetG}g`, type:'토핑' });
-  }
 
   items.sort((a,b)=>a.minutes-b.minutes);
   const fmt = m => { const h = Math.floor(m/60)%24; const mm = m%60; return `${String(h).padStart(2,'0')}:${String(mm).padStart(2,'0')}`; };
   return items.map(it=>({ time: fmt(it.minutes), label: it.label, type: it.type }));
 }
 
-/* RER/MER 기준 목표 칼로리에서 실제 급여 중인 간식·토핑 칼로리를 뺀 나머지를
+/* 1일 총 급여량(g)에서 실제 급여 중인 간식·토핑 칼로리를 뺀 나머지를
    선택한 사료의 kcal/100g 밀도로 환산해 0.1g 단위까지 정밀 계산해요. */
 function build1gMicroMixingData(){
-  const kcalPer100g = mixCalcCurrentKcalPer100g();
-  const rerBasisWeight = mixCalcIdealWeight();
-  const RER = 70 * Math.pow(rerBasisWeight, 0.75);
-  const bcsCoef = mixCalc.bcs<=3 ? 1.1 : mixCalc.bcs<=5 ? 1.0 : mixCalc.bcs<=7 ? 0.95 : 0.85;
-  const baseFactor = 1.6;
-  const goalCoef = mixCalc.goal==='loss' ? baseFactor*0.825 : mixCalc.goal==='gain' ? baseFactor*1.2 : baseFactor;
-  const targetKcal = mixCalcTargetKcal();
-  const treatCat = MIXCALC_TREAT_CATEGORIES.find(c=>c.id===mixCalc.treatCategoryId) || MIXCALC_TREAT_CATEGORIES[0];
-  const wetCat = MIXCALC_WET_CATEGORIES.find(c=>c.id===mixCalc.wetCategoryId) || MIXCALC_WET_CATEGORIES[0];
-  const treatKcal = mixCalc.treatG * (treatCat.kcal/100);
-  const wetKcal = mixCalc.wetG * (wetCat.kcal/100);
-  const remainingKcal = Math.max(0, targetKcal - treatKcal - wetKcal);
-  const dryG = (remainingKcal / kcalPer100g) * 100;
+  const freq = Math.max(1, Math.min(6, chronoInput.feedingFreq || 1));
+  const dailyFoodG = computeChronoDailyFoodG();
+  const perMealG = dailyFoodG / freq;
+  const mealMinutes = computeChronoMealTimesMinutes();
+  const MEAL_LABELS = ['오전','점심','오후','저녁','야식','새벽'];
   return {
-    targetKcal: targetKcal.toFixed(1),
-    dryFoodG: dryG.toFixed(1),
-    treatG: mixCalc.treatG.toFixed(1), treatLabel: treatCat.label, treatKcal: treatKcal.toFixed(1),
-    wetG: mixCalc.wetG.toFixed(1), wetLabel: wetCat.label, wetKcal: wetKcal.toFixed(1),
-    rerBasisWeight: rerBasisWeight.toFixed(1), RER: RER.toFixed(1), bcsCoef, goalCoef: goalCoef.toFixed(2),
-    kcalPer100g,
+    dailyFoodG: dailyFoodG.toFixed(1),
+    dryFoodG: dailyFoodG.toFixed(1), // Section2 카드 레이아웃과의 호환을 위해 동일 값을 별칭으로도 제공
+    feedingFreq: freq,
+    perMealG: perMealG.toFixed(1),
+    mainMealTime: chronoInput.mainMealTime,
+    meals: mealMinutes.map((m,i)=>({
+      label: MEAL_LABELS[i] || `${i+1}번째`,
+      time: `${String(Math.floor(m/60)%24).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`,
+      g: perMealG.toFixed(1),
+    })),
   };
 }
 
@@ -7175,8 +7327,8 @@ function renderChronoDniReportHtml(){
       </table>
 
       <div class="grid grid-cols-3 gap-2 mb-4">
-        ${metricCard('일일 권장 칼로리', mix.targetKcal+'kcal', 'RER/MER 기준', 'flame')}
-        ${metricCard('건식 사료', mix.dryFoodG+'g', '0.1g 정밀 계산', 'bone')}
+        ${metricCard('1일 총 급여량', mix.dailyFoodG+'g', '보호자 직접 입력', 'bone')}
+        ${metricCard('급여 횟수', mix.feedingFreq+'회', '첫 끼 '+mix.mainMealTime, 'flame')}
         ${metricCard('DNI 경고', warnings.length+'건', warnings.length?'주의 필요':'안전', 'info')}
       </div>
       <div class="tooltip-box p-3 text-xs text-muted leading-relaxed">
@@ -7206,28 +7358,24 @@ function renderChronoDniReportHtml(){
     </div>
 
     <div class="pdf-page">
-      <p class="pdf-kicker mb-1">SECTION 2 · 0.1G MICRO-MIXING & NUTRITION RATIO</p>
-      <h2 class="font-display font-bold text-xl mb-1">질환 맞춤형 마이크로 믹싱 &amp; 영양 배합 가이드</h2>
-      <p class="text-xs text-muted mb-4">RER/MER 기준으로 0.1g 단위까지 정밀 계산했고, 복용 중인 약물의 대사 특성을 반영했어요.</p>
+      <p class="pdf-kicker mb-1">SECTION 2 · 0.1G MICRO-MIXING & FEEDING SCHEDULE</p>
+      <h2 class="font-display font-bold text-xl mb-1">질환 맞춤형 마이크로 믹싱 &amp; 끼니별 배분 가이드</h2>
+      <p class="text-xs text-muted mb-4">Chrono Matrix에 직접 입력하신 1일 총 급여량을 0.1g 단위까지 정밀하게 끼니별로 배분했고, 복용 중인 약물의 대사 특성을 반영했어요.</p>
 
-      <p class="text-xs font-bold text-muted mb-2">🥣 배합 비율</p>
+      <p class="text-xs font-bold text-muted mb-2">🥣 끼니별 배분 비율</p>
       <div class="tooltip-box p-3 mb-4">${renderMicroMixRatioBarHtml(mix)}</div>
 
       <p class="text-xs font-bold text-muted mb-2">🧮 계산 근거</p>
       <table class="w-full text-[11px] mb-4" style="border-collapse:collapse;">
         <tbody>
-          <tr style="border-bottom:1px solid #2C241F14;"><td class="py-1.5 text-muted" style="width:40%;">RER (기초대사에너지)</td><td class="py-1.5 font-semibold">70 × ${mix.rerBasisWeight}^0.75 = ${mix.RER}kcal</td></tr>
-          <tr style="border-bottom:1px solid #2C241F14;"><td class="py-1.5 text-muted">BCS 보정 계수</td><td class="py-1.5 font-semibold">× ${mix.bcsCoef}</td></tr>
-          <tr style="border-bottom:1px solid #2C241F14;"><td class="py-1.5 text-muted">목표 계수</td><td class="py-1.5 font-semibold">× ${mix.goalCoef}</td></tr>
-          <tr><td class="py-1.5 text-muted">일일 목표 칼로리(MER)</td><td class="py-1.5 font-bold" style="color:#3A5A40;">${mix.targetKcal}kcal</td></tr>
+          <tr style="border-bottom:1px solid #2C241F14;"><td class="py-1.5 text-muted" style="width:40%;">1일 총 급여량</td><td class="py-1.5 font-semibold">${mix.dailyFoodG}g (보호자 직접 입력)</td></tr>
+          <tr style="border-bottom:1px solid #2C241F14;"><td class="py-1.5 text-muted">급여 횟수</td><td class="py-1.5 font-semibold">÷ ${mix.feedingFreq}회</td></tr>
+          <tr><td class="py-1.5 text-muted">1회 급여량</td><td class="py-1.5 font-bold" style="color:#3A5A40;">${mix.perMealG}g / 끼</td></tr>
         </tbody>
       </table>
 
       <div class="grid grid-cols-2 gap-3 mb-4">
-        ${metricCard('건식 사료(Dry Food)', mix.dryFoodG+'g', mix.kcalPer100g+'kcal/100g 밀도 기준', 'bone')}
-        ${metricCard('간식(Treats)', mix.treatG+'g', mix.treatLabel+' · '+mix.treatKcal+'kcal', 'cookie')}
-        ${metricCard('토핑/습식(Wet Food)', mix.wetG+'g', mix.wetLabel+' · '+mix.wetKcal+'kcal', 'drumstick')}
-        ${metricCard('일일 목표 칼로리', mix.targetKcal+'kcal', 'RER×BCS계수×목표계수', 'flame')}
+        ${mix.meals.map(m=>metricCard(`${m.label} 급여`, m.g+'g', m.time, 'bone')).join('')}
       </div>
       <div class="tooltip-box p-3">
         <p class="text-xs font-bold mb-1" style="color:#3A5A40;">🩺 ${ratioNote.tag} 맞춤 배합</p>
