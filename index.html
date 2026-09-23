@@ -138,7 +138,7 @@
   .sticker-palette-btn:hover{ border-color:var(--c-primary); transform:translateY(-2px); }
   .sticker-palette-btn.is-text{ font-size:11px; font-weight:700; padding:8px 10px; white-space:nowrap; }
 
-  /* ---- 1g 믹스 계산기 & DNI-Chrono Matrix 공용: Forest Sage & Warm Cream 테마 ---- */
+  /* ---- 1g 믹스 계산기 & 1일 안전 투약 타임라인 공용: Forest Sage & Warm Cream 테마 ---- */
   .mc-chip{ background:#FAF9F5; border:1.5px solid #3A5A4026; color:#2C241F; transition:all .18s cubic-bezier(.22,1,.36,1); font-weight:600; box-shadow:0 1px 2px rgba(44,36,31,.03); }
   .mc-chip:hover{ border-color:#3A5A4055; transform:translateY(-1px); box-shadow:0 6px 14px -9px rgba(58,90,64,.28); }
   .mc-chip.active{ background:#3A5A40; border-color:#3A5A40; color:#fff; box-shadow:0 6px 16px -8px rgba(58,90,64,.45); }
@@ -337,7 +337,7 @@
       <div class="inline-flex bg-primary-light rounded-full p-1 gap-1">
         <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="home">🏠 홈 / 진단</button>
         <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="mixcalc">🥣 1g 믹스 계산기</button>
-        <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="insurance">🧬 DNI-Chrono Matrix</button>
+        <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="insurance">🛡️ 1일 안전 투약 타임라인</button>
         <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="bcs">📸 멍생스컷 BCS 테스트</button>
       </div>
     </div>
@@ -812,14 +812,14 @@
       </div>
     </div>
 
-    <!-- ===================== DNI-CHRONO PAGE: 약물-영양소 상극 감지 & 시간대별 1g 스케줄러 ===================== -->
+    <!-- ===================== 1일 안전 투약 타임라인 PAGE: 약물-영양소 상극 감지 & 시간대별 1g 스케줄러 ===================== -->
     <div id="insurancePage" class="hidden">
       <div class="text-center mb-8">
         <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full mb-4" style="background:#3A5A401A; color:#3A5A40;">
-          <span>🧬</span><span class="text-xs font-bold">Drug-Nutrient Interaction × Chrono Scheduling</span>
+          <span>🛡️</span><span class="text-xs font-bold">안전 투약 스케줄링</span>
         </div>
-        <h1 class="font-display font-bold mb-2" style="font-size:clamp(1.4rem,4vw,2rem); color:#2C241F;">DNI-Chrono Matrix</h1>
-        <p class="text-sm" style="color:#6b6259;">복용 약물과 영양제 간 상극을 감지하고, 시간대별 1g 급여·투약 스케줄을 만들어드려요</p>
+        <h1 class="font-display font-bold mb-2" style="font-size:clamp(1.4rem,4vw,2rem); color:#2C241F;">1일 안전 투약 타임라인</h1>
+        <p class="text-sm" style="color:#6b6259;">아이의 약과 영양제가 서로 충돌하지 않는 안전한 복용 시각과 식사 스케줄을 자동으로 계산해 드려요.</p>
       </div>
 
       <div class="grid lg:grid-cols-2 gap-5 max-w-5xl mx-auto">
@@ -957,11 +957,11 @@
         </div>
       </div>
 
-      <!-- 최종 결과물 대시보드 패널: Chrono 타임라인 + 액션 버튼 통합 -->
+      <!-- 최종 결과물 대시보드 패널: 1일 안전 투약 타임라인 + 액션 버튼 통합 -->
       <div class="max-w-5xl mx-auto mt-5 rounded-2xl overflow-hidden" style="background:#FFFFFF; border:1.5px solid #3A5A4022; box-shadow:0 8px 28px rgba(44,36,31,.08);">
         <div class="px-6 pt-6 pb-5" style="background:linear-gradient(160deg,#3A5A40,#2C4732);">
-          <p class="font-bold text-sm mb-1" style="color:#fff;">📅 1일 Chrono 타임라인</p>
-          <p class="text-xs" style="color:rgba(255,255,255,.75);">목표 체중과 드시는 사료 정보를 입력하시면, 최적의 1일 급여량과 DNI 안전 타임라인을 산출해 드려요.</p>
+          <p class="font-bold text-sm mb-1" style="color:#fff;">📅 1일 안전 투약 타임라인</p>
+          <p class="text-xs" style="color:rgba(255,255,255,.75);">아이의 건강 목표와 사료 정보를 입력하시면, 약물 상극을 피하는 최적의 1일 안전 투약 스케줄을 산출해 드려요.</p>
         </div>
         <div class="p-6">
           <p class="text-xs font-bold mb-3" style="color:#2C241F;">🍽️ 급여 스케줄 입력 <span class="font-normal text-[11px]" style="color:#6b6259;">('🥣 1g 믹스 계산기'와는 별개의 독립 입력이에요)</span></p>
@@ -1005,7 +1005,7 @@
 
           <div class="grid sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-6" id="dniChronoTimeline"></div>
           <div class="flex flex-wrap items-center justify-center gap-2 pt-5" style="border-top:1px dashed #3A5A4033;">
-            <button type="button" id="insSubmitBtn" class="rounded-xl px-6 py-3 text-sm font-bold" style="background:#3A5A40; color:#fff;">✅ DNI 체크 &amp; Chrono 스케줄 저장하기</button>
+            <button type="button" id="insSubmitBtn" class="rounded-xl px-6 py-3 text-sm font-bold" style="background:#3A5A40; color:#fff;">✅ 1일 안전 투약 스케줄 저장하기</button>
             <button type="button" id="insViewReportBtn" class="rounded-xl px-6 py-3 text-sm font-bold" style="background:#FAF9F5; border:1.5px solid #3A5A4055; color:#3A5A40;">📄 정밀 메디컬 리포트 보기 (무료)</button>
           </div>
         </div>
@@ -1249,7 +1249,7 @@ const SUPABASE_TABLE = "user_analytics"; // 진단 데이터를 저장/조회할
 ============================================================ */
 
 /* ============================================================
-   🧬 DNI-Chrono Matrix 테이블 (Supabase 대시보드 → SQL Editor에서 실행)
+   🛡️ 1일 안전 투약 타임라인 테이블 (Supabase 대시보드 → SQL Editor에서 실행)
    ------------------------------------------------------------
    user_analytics와 동일하게 "핵심 컬럼 + extra_data(JSONB)" 구조를 써요.
 
@@ -5578,7 +5578,7 @@ const STUDIO_TAB_HTML = {
                     </div>`).join('')}
                 </div>` : `<p class="text-[10px] mb-2" style="color:#2FBF9F;">✅ 상극 경고 없음</p>`}
 
-              <p class="text-[10px] font-bold text-muted mb-1">📅 1일 Chrono 타임라인</p>
+              <p class="text-[10px] font-bold text-muted mb-1">📅 1일 안전 투약 타임라인</p>
               <div class="grid grid-cols-4 gap-1">
                 ${(Array.isArray(rec.daily_chrono_schedule) ? rec.daily_chrono_schedule : []).map(slot=>`
                   <div class="rounded-lg p-1.5 text-center surface">
@@ -5588,13 +5588,13 @@ const STUDIO_TAB_HTML = {
                   </div>`).join('') || `<p class="text-[10px] text-muted col-span-4">타임라인 데이터 없음</p>`}
               </div>
             </div>
-          `).join('') : `<div class="py-6 text-center text-muted text-xs">${dniDbStatus==='error' ? 'DB 조회에 실패했어요. 위 오류 메시지를 확인해주세요.' : dniDbStatus==='loading' ? '불러오는 중이에요...' : '아직 제출된 DNI-Chrono 데이터가 없어요.'}</div>`}
+          `).join('') : `<div class="py-6 text-center text-muted text-xs">${dniDbStatus==='error' ? 'DB 조회에 실패했어요. 위 오류 메시지를 확인해주세요.' : dniDbStatus==='loading' ? '불러오는 중이에요...' : '아직 제출된 데이터가 없어요.'}</div>`}
         </div>
       </div>
 
       <div class="tooltip-box p-3 text-xs text-muted">
         ${supabaseClient
-          ? `Supabase <code>pet_health_scores</code> 테이블과 실시간으로 연동돼 있어요. '🧬 DNI-Chrono Matrix' 탭에서 제출하면 이 목록에 즉시 반영돼요.`
+          ? `Supabase <code>pet_health_scores</code> 테이블과 실시간으로 연동돼 있어요. '🛡️ 1일 안전 투약 타임라인' 탭에서 제출하면 이 목록에 즉시 반영돼요.`
           : `Supabase가 아직 연결되지 않아 데이터를 표시할 수 없어요. 상단 코드의 <code>SUPABASE_URL</code> / <code>SUPABASE_ANON_KEY</code>를 채워주세요.`}
       </div>
     </div>`;
@@ -5942,7 +5942,7 @@ function initMixCalcPage(){
 
 
 /* ============================================================
-   🧬 DNI-Chrono Matrix (수의학 임상 기준 확장판: 11개 약물 카테고리 ×
+   🛡️ 1일 안전 투약 타임라인 (수의학 임상 기준 확장판: 11개 약물 카테고리 ×
    투여 경로(Route of Administration) 분기 × 동적 N개 처방 파싱)
    — DB 저장 없이도 동작하지만, 제출 시 Supabase pet_health_scores 테이블에 인서트해요.
 ============================================================ */
@@ -7026,16 +7026,16 @@ async function submitDniChronoData(){
     const { error, usedMinimalFallback } = await insertWithSchemaFallback('pet_health_scores', payload, minimalFallbackPayload);
     if(error){
       console.error('CRITICAL_INSERT_ERROR:', JSON.stringify(error, null, 2));
-      alert('DNI 체크 데이터 저장 중 오류가 발생했습니다.\n\n' + JSON.stringify(error, null, 2));
+      alert('1일 안전 투약 스케줄 저장 중 오류가 발생했습니다.\n\n' + JSON.stringify(error, null, 2));
     } else {
       if(usedMinimalFallback){
         console.warn('[seon] 전체 컬럼 저장에 실패해, extra_data 중심의 최소 페이로드로 2차 저장에 성공했어요.');
       }
-      alert("🎉 DNI 상극 체크 완료! 맞춤 Chrono 영양 타임라인이 저장되었습니다.");
+      alert("🎉 1일 안전 투약 스케줄 저장 완료! 맞춤 안전 투약 타임라인이 저장되었습니다.");
     }
   }catch(err){
     console.error('CRITICAL_INSERT_ERROR:', safeStringifyError(err));
-    alert('DNI 체크 데이터 저장 중 오류가 발생했습니다.\n\n' + safeStringifyError(err));
+    alert('1일 안전 투약 스케줄 저장 중 오류가 발생했습니다.\n\n' + safeStringifyError(err));
   }
 }
 
@@ -7164,7 +7164,7 @@ function initInsurancePage(){
 
 
 /* ============================================================
-   📄 Premium Chrono-DNI Medical Report (7-Page, 4대 핵심 섹션)
+   📄 1일 안전 투약 타임라인 프리미엄 메디컬 리포트 (7-Page, 4대 핵심 섹션)
    — 결제 벽 없이 누구나 전체 리포트를 무료로 열람·인쇄할 수 있어요.
 ============================================================ */
 
@@ -7461,7 +7461,7 @@ function buildWeeklyFeedingGuideHtml(){
 }
 
 function renderChronoDniReportHtml(){
-  // 프리미엄 Chrono-DNI 메디컬 리포트는 결제 벽 없이 누구나 무료로 전체 열람·인쇄할 수 있어요.
+  // 프리미엄 1일 안전 투약 타임라인 메디컬 리포트는 결제 벽 없이 누구나 무료로 전체 열람·인쇄할 수 있어요.
   const warnings = detectDniWarnings();
   const bcsSignal = computeBcsSignal();
   const today = new Date().toLocaleDateString('ko-KR');
@@ -7480,7 +7480,7 @@ function renderChronoDniReportHtml(){
   return `
   <div class="pdf-report-root">
     <div class="pdf-page" style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
-      <p class="text-xs font-bold tracking-widest" style="color:#3A5A40;">SEON · PREMIUM CHRONO-DNI MEDICAL REPORT</p>
+      <p class="text-xs font-bold tracking-widest" style="color:#3A5A40;">SEON · 1일 안전 투약 타임라인 프리미엄 리포트</p>
       <h1 class="font-display font-bold my-4" style="font-size:2rem;">${petName}</h1>
       <p class="text-sm text-muted">${petInsurance.breed} · ${petInsurance.weight.toFixed(1)}kg · BCS ${bcsSignal.bcs}/9</p>
       <p class="text-xs text-muted mt-6">발급일: ${today}</p>
@@ -7527,7 +7527,7 @@ function renderChronoDniReportHtml(){
     </div>
 
     <div class="pdf-page">
-      <p class="pdf-kicker mb-1">SECTION 1 · CHRONO-DNI TIMING MATRIX</p>
+      <p class="pdf-kicker mb-1">SECTION 1 · 1일 안전 투약 타이밍 매트릭스</p>
       <h2 class="font-display font-bold text-xl mb-1">분 단위 맞춤 투약 &amp; 영양제 타이밍 매트릭스</h2>
       <p class="text-xs text-muted mb-4">상극을 완벽히 피할 수 있도록, 그대로 따라 하기만 하면 되는 시간 흐름표예요.</p>
 
@@ -7612,7 +7612,7 @@ function openChronoDniReport(){
   overlay.className = 'pdf-report-overlay';
   overlay.innerHTML = `
     <div class="pdf-toolbar surface flex items-center justify-between px-4 py-3 mb-2">
-      <p class="text-sm font-bold">📄 ${petInsurance.name || '이름없음'}의 Chrono-DNI 메디컬 리포트 <span class="text-[10px] font-normal" style="color:#2FBF9F;">무료 전체 열람</span></p>
+      <p class="text-sm font-bold">📄 ${petInsurance.name || '이름없음'}의 1일 안전 투약 타임라인 리포트 <span class="text-[10px] font-normal" style="color:#2FBF9F;">무료 전체 열람</span></p>
       <div class="flex gap-2">
         <button id="chronoDniPrintBtn" class="btn-primary rounded-xl px-4 py-2 text-xs">📥 PDF 다운로드 / 인쇄</button>
         <button id="chronoDniCloseBtn" class="btn-ghost rounded-xl px-4 py-2 text-xs">닫기</button>
@@ -7985,8 +7985,11 @@ async function saveBcsCardImage(){
    (History API 방식은 새로고침/직접 접속 시 서버가 모든 경로를 index.html로
    되돌려줘야 하는데, 정적 호스팅 환경에서는 이 설정이 없으면 404가 나기 쉬워요.)
 ============================================================ */
-const ROUTE_TO_TAB = { '': 'home', 'main': 'home', 'chrono': 'insurance', 'mix-calc': 'mixcalc', 'bcs': 'bcs' };
-const TAB_TO_ROUTE = { home: '', insurance: 'chrono', mixcalc: 'mix-calc', bcs: 'bcs' };
+/* '1일 안전 투약 타임라인'의 정식 경로는 #/safe-timeline이에요. 예전 링크(#/chrono)로 들어와도
+   깨지지 않도록 과거 경로도 계속 인식하되, 화면에는 항상 새 경로로 자동 리다이렉트해요. */
+const ROUTE_TO_TAB = { '': 'home', 'main': 'home', 'safe-timeline': 'insurance', 'chrono': 'insurance', 'mix-calc': 'mixcalc', 'bcs': 'bcs' };
+const TAB_TO_ROUTE = { home: '', insurance: 'safe-timeline', mixcalc: 'mix-calc', bcs: 'bcs' };
+const LEGACY_ROUTES = { 'chrono': 'safe-timeline' }; // 구 경로 → 신 경로 매핑 (자동 리다이렉트용)
 
 function getTabFromCurrentHash(){
   const path = window.location.hash.replace(/^#\/?/, '').replace(/\/$/, '');
@@ -8003,8 +8006,18 @@ function navigateToTab(tab, opts){
   }
   switchMainTab(tab);
 }
+/* 예전 #/chrono 링크로 접속했다면, 히스토리에 새 항목을 쌓지 않고(replaceState) 조용히
+   #/safe-timeline으로 바꿔서 이후 공유·새로고침부터는 항상 새 경로가 쓰이게 해요. */
+function redirectLegacyRouteIfNeeded(){
+  const path = window.location.hash.replace(/^#\/?/, '').replace(/\/$/, '');
+  const newPath = LEGACY_ROUTES[path];
+  if(newPath){
+    history.replaceState(null, '', '#/' + newPath);
+  }
+}
 window.addEventListener('hashchange', ()=>{
   // 뒤로/앞으로가기나 주소창 직접 입력으로 해시가 바뀐 경우 — 탭만 맞추고 해시는 다시 건드리지 않아요(루프 방지).
+  redirectLegacyRouteIfNeeded();
   navigateToTab(getTabFromCurrentHash(), { skipHashUpdate: true });
 });
 
@@ -8066,7 +8079,8 @@ init();
 initBcsTestPage();
 initMixCalcPage();
 initInsurancePage();
-navigateToTab(getTabFromCurrentHash(), { skipHashUpdate: true }); // 딥링크(#/chrono 등) 지원 + 뒤로가기 루프 방지
+redirectLegacyRouteIfNeeded(); // #/chrono로 딥링크 접속해도 조용히 #/safe-timeline으로 갱신
+navigateToTab(getTabFromCurrentHash(), { skipHashUpdate: true }); // 딥링크(#/safe-timeline 등) 지원 + 뒤로가기 루프 방지
 
 })();
 </script>
