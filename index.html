@@ -831,6 +831,10 @@
             <button data-val="senior" class="mc-chip rounded-xl py-2.5 text-xs">노령견(Senior)</button>
           </div>
 
+          <label class="block text-[11px] font-semibold mb-1.5" style="color:#2C241F;">아이 활동량</label>
+          <div class="grid grid-cols-2 gap-2 mb-1" id="metaActivityLevelGroup"></div>
+          <p id="metaActivityLevelDesc" class="text-[10px] mb-3" style="color:#6b6259;"></p>
+
           <label class="block text-[11px] font-semibold mb-2" style="color:#2C241F;">기저 질환 <span class="font-normal text-muted">(해당 시 선택 후 단계를 지정해주세요)</span></label>
           <div class="grid grid-cols-2 gap-2 mb-4" id="metaConditionsWrap"></div>
 
@@ -892,6 +896,11 @@
               <div><label class="block text-[10px] mb-1" style="color:#6b6259;">나트륨(mg/100g)</label><input type="number" min="0" step="10" id="metaFoodSodiumInput" class="w-full rounded-lg px-2 py-2 text-xs" style="border:1px solid #3A5A4033;"></div>
               <div><label class="block text-[10px] mb-1" style="color:#6b6259;">인(mg/100g)</label><input type="number" min="0" step="10" id="metaFoodPhosphorusInput" class="w-full rounded-lg px-2 py-2 text-xs" style="border:1px solid #3A5A4033;"></div>
             </div>
+          </div>
+
+          <div id="metaMixinsWrap" class="hidden mb-3">
+            <label class="block text-[11px] font-semibold mb-2" style="color:#2C241F;">부재료(Mix-in) <span class="font-normal text-muted">(주 육류 외에 섞은 재료가 있으면 선택해주세요)</span></label>
+            <div class="grid grid-cols-2 gap-2" id="metaMixinsGroup"></div>
           </div>
 
           <div class="grid grid-cols-2 gap-2 mb-1">
@@ -957,6 +966,13 @@
           </div>
           <p class="text-xs font-bold text-muted mb-2" id="nutrientOverloadLabel"></p>
           <div id="nutrientOverloadChipsWrap" class="flex flex-wrap gap-2"></div>
+        </div>
+
+        <!-- ⑤-1 장기 대사 최적화 Action Plan -->
+        <div id="metaActionPlanCard" class="rounded-[var(--radius-card)] p-6" style="background:#FFFFFF; border:1.5px solid #3A5A4022;">
+          <p class="font-bold text-sm mb-1" id="metaActionPlanTitle" style="color:#3A5A40;">💡 [서온] 장기 대사 최적화 Action Plan</p>
+          <p class="text-xs text-muted mb-4">오늘 입력하신 Health Profile과 대사 부하 계산 결과를 바탕으로 맞춤 실행 지침을 안내해드려요.</p>
+          <div id="metaActionPlanBody" class="space-y-3"></div>
         </div>
 
         <!-- ⑥ 1-Click 영양 부하 자동 교정 레시피 -->
@@ -6123,7 +6139,20 @@ function switchMainTab(tab){
   document.getElementById('metaLoadPage').classList.toggle('hidden', tab!=='metaload');
   document.getElementById('insurancePage').classList.toggle('hidden', tab!=='insurance');
   if(tab === 'metaload') renderMetaLoadPage(); // 진입할 때마다 최신 프로필/DNI 데이터 기준으로 다시 계산해요.
+  // 상단 [🏠 홈 / 진단] 탭을 누르면, 문진 중간(Step 1~5)이든 결과 대시보드를 보고 있든 상관없이
+  // 항상 맨 처음 랜딩 화면(서비스 소개 + 시작 버튼)으로 복귀해요. 입력해둔 답변 자체는 지우지
+  // 않아서(soft reset), '다시 시작하기'를 누르면 이어서 작성할 수 있어요.
+  if(tab === 'home') resetHomeTabToLandingView();
   window.scrollTo({top:0, behavior:'smooth'});
+}
+function resetHomeTabToLandingView(){
+  const landing = document.getElementById('landingSection');
+  const form = document.getElementById('formSection');
+  const dashboard = document.getElementById('dashboardSection');
+  if(landing) landing.classList.remove('hidden');
+  if(form) form.classList.add('hidden');
+  if(dashboard) dashboard.classList.add('hidden');
+  currentStep = 1; // 다음에 다시 '진단 시작하기'를 누르면 항상 Step 1부터 자연스럽게 시작돼요.
 }
 
 /* ============================================================
@@ -6798,16 +6827,30 @@ const META_CONDITION_MED_SYNERGY = [
   { conditionOrgan:"liver",  medCategories:["nsaid","steroid"],  liverMult:1.35, kidneyMult:1.05, note:"간 질환 상태에서 간 대사 위주 약물(NSAIDs/스테로이드) 복용 시 상호작용 부담이 커져요." },
 ];
 
+/* 아이 활동량(Activity Level) 4단계 — 대사 순환/배설 속도에 직접 영향을 줘요.
+   burdenFactor: 간·신장 대사 부하율에 곱해지는 계수(낮을수록 부하가 줄어요).
+   derFactor: 참고용 유지대사량(DER) 가중치예요(수의영양학적 활동량 보정 참고치). */
+const META_ACTIVITY_LEVELS = [
+  { id:"low",     label:"😴 실내 위주/저활동", desc:"산책 30분 미만, 누워있는 시간이 많음", burdenFactor:1.10, derFactor:0.90 },
+  { id:"normal",  label:"🐕 보통 활동",        desc:"일일 30분~1시간 정기 산책",             burdenFactor:1.00, derFactor:1.00 },
+  { id:"active",  label:"🏃 왕성한 활동",      desc:"일일 1~2시간 이상 야외 활동",           burdenFactor:0.95, derFactor:1.15 },
+  { id:"working", label:"⚡ 작업견/극왕성",     desc:"스포츠견/작업견 등",                     burdenFactor:0.90, derFactor:1.30 },
+];
+
 const metaHealthProfile = {
   name: "",
   breed: "maltese",
   breedOtherSize: "중형",
   weight: 5.0,
   ageGroup: "adult",
+  activityLevel: "normal",
   conditions: {},
   bloodwork: { kidneyNormal: null, liverNormal: null },
 };
 META_CONDITIONS.forEach(c=>{ metaHealthProfile.conditions[c.id] = { active:false, severity: (META_CONDITION_SEVERITY[c.id]||[{id:'mild'}])[0].id }; });
+function metaGetActivityLevel(){
+  return META_ACTIVITY_LEVELS.find(a=>a.id===metaHealthProfile.activityLevel) || META_ACTIVITY_LEVELS[1];
+}
 /* ⚠️ 예전 버전의 LocalStorage 스냅샷은 conditions[key]가 단순 boolean(true/false)이었어요.
    그 상태가 그대로 복원되면 '.active = ...'를 boolean에 대입하려다 TypeError가 났었는데,
    이 헬퍼로 항상 안전하게 {active, severity} 객체 형태로 마이그레이션해서 꺼내 써요. */
@@ -6834,20 +6877,86 @@ const META_FOOD_INPUT_MODES = [
 ];
 /* 인기 브랜드/제품 DB — 유형(건식/습식/동결건조/화식전문)별 대표 제품의 실측 근사치예요. */
 const META_FOOD_BRAND_DB = [
-  { id:"royal_canin_indoor", label:"[로얄캐닌] 인도어 어덜트",   type:"dry",         kcalPerKg:3850, proteinPct:27, fatPct:13, sodiumMg100g:280, phosphorusMg100g:850 },
-  { id:"royal_canin_renal",  label:"[로얄캐닌] 신장 처방식(Renal)", type:"dry",      kcalPerKg:3900, proteinPct:14, fatPct:20, sodiumMg100g:150, phosphorusMg100g:250 },
-  { id:"nows_grainfree",     label:"[나우] 그레인프리 어덜트",   type:"dry",         kcalPerKg:3700, proteinPct:29, fatPct:17, sodiumMg100g:320, phosphorusMg100g:900 },
-  { id:"hills_sd",           label:"[힐스] 사이언스다이어트 어덜트", type:"dry",     kcalPerKg:3600, proteinPct:23, fatPct:14, sodiumMg100g:270, phosphorusMg100g:800 },
-  { id:"hills_kd",           label:"[힐스] k/d 신장처방식",      type:"dry",         kcalPerKg:3900, proteinPct:13, fatPct:21, sodiumMg100g:130, phosphorusMg100g:220 },
-  { id:"ziwipeak",           label:"[지위픽] 에어드라이(건식)", type:"freezeDried", kcalPerKg:4700, proteinPct:34, fatPct:24, sodiumMg100g:400, phosphorusMg100g:1000 },
-  { id:"k9_natural",         label:"[K9내추럴] 프리즈드라이",   type:"freezeDried", kcalPerKg:4500, proteinPct:36, fatPct:22, sodiumMg100g:420, phosphorusMg100g:980 },
-  { id:"royal_canin_wet",    label:"[로얄캐닌] 웻파우치",       type:"wet",         kcalPerKg:1100, proteinPct:8,  fatPct:5,  sodiumMg100g:160, phosphorusMg100g:200 },
-  { id:"hills_wet",          label:"[힐스] 사이언스다이어트 캔", type:"wet",        kcalPerKg:1250, proteinPct:9.5,fatPct:6.5,sodiumMg100g:190, phosphorusMg100g:230 },
-  { id:"reybarba",           label:"[레이앤바바] 화식",         type:"homemade",   kcalPerKg:1750, proteinPct:15, fatPct:8,  sodiumMg100g:100, phosphorusMg100g:300 },
-  { id:"dooman",             label:"[듀먼] 화식",               type:"homemade",   kcalPerKg:1700, proteinPct:16, fatPct:9,  sodiumMg100g:105, phosphorusMg100g:310 },
-  { id:"ssingssing",         label:"[싱싱한화식] 화식",         type:"homemade",   kcalPerKg:1780, proteinPct:15.5,fatPct:8.5,sodiumMg100g:108, phosphorusMg100g:305 },
-  { id:"ziwipeak_raw",       label:"[지위픽] 에어드라이(생식대용)", type:"raw",     kcalPerKg:4700, proteinPct:34, fatPct:24, sodiumMg100g:400, phosphorusMg100g:1000 },
-  { id:"k9_natural_raw",     label:"[K9내추럴] 프리즈드라이(생식)", type:"raw",     kcalPerKg:4500, proteinPct:36, fatPct:22, sodiumMg100g:420, phosphorusMg100g:980 },
+  // ---- 건식(dry) ----
+  { id:"royal_canin_indoor",   label:"[로얄캐닌] 인도어 어덜트",       type:"dry", kcalPerKg:3850, proteinPct:27,   fatPct:13,   sodiumMg100g:280, phosphorusMg100g:850 },
+  { id:"royal_canin_puppy",    label:"[로얄캐닌] 퍼피",               type:"dry", kcalPerKg:3950, proteinPct:32,   fatPct:22,   sodiumMg100g:310, phosphorusMg100g:950 },
+  { id:"royal_canin_senior",   label:"[로얄캐닌] 시니어(에이징12+)",   type:"dry", kcalPerKg:3550, proteinPct:24,   fatPct:14,   sodiumMg100g:230, phosphorusMg100g:700 },
+  { id:"royal_canin_renal",    label:"[로얄캐닌] 신장 처방식(Renal)",  type:"dry", kcalPerKg:3900, proteinPct:14,   fatPct:20,   sodiumMg100g:150, phosphorusMg100g:250 },
+  { id:"hills_sd",              label:"[힐스] 사이언스다이어트 어덜트", type:"dry", kcalPerKg:3600, proteinPct:23,   fatPct:14,   sodiumMg100g:270, phosphorusMg100g:800 },
+  { id:"hills_kd",              label:"[힐스] k/d 신장 처방식",         type:"dry", kcalPerKg:3900, proteinPct:13,   fatPct:21,   sodiumMg100g:130, phosphorusMg100g:220 },
+  { id:"hills_id",              label:"[힐스] i/d 소화기 처방식",       type:"dry", kcalPerKg:3750, proteinPct:25,   fatPct:16,   sodiumMg100g:240, phosphorusMg100g:650 },
+  { id:"hills_metabolic",       label:"[힐스] 메타볼릭 체중관리",       type:"dry", kcalPerKg:3300, proteinPct:30,   fatPct:10,   sodiumMg100g:220, phosphorusMg100g:700 },
+  { id:"nows_grainfree",        label:"[나우] 그레인프리 어덜트",       type:"dry", kcalPerKg:3700, proteinPct:29,   fatPct:17,   sodiumMg100g:320, phosphorusMg100g:900 },
+  { id:"nows_senior",           label:"[나우] 시니어",                 type:"dry", kcalPerKg:3400, proteinPct:25,   fatPct:13,   sodiumMg100g:250, phosphorusMg100g:650 },
+  { id:"orijen_original",       label:"[오리젠] 오리지널(고단백)",      type:"dry", kcalPerKg:4000, proteinPct:38,   fatPct:18,   sodiumMg100g:400, phosphorusMg100g:1100 },
+  { id:"orijen_puppy",          label:"[오리젠] 퍼피",                 type:"dry", kcalPerKg:4100, proteinPct:38,   fatPct:20,   sodiumMg100g:410, phosphorusMg100g:1150 },
+  { id:"orijen_senior",         label:"[오리젠] 시니어",               type:"dry", kcalPerKg:3800, proteinPct:35,   fatPct:15,   sodiumMg100g:370, phosphorusMg100g:1000 },
+  { id:"acana_wild_prairie",    label:"[아카나] 와일드 프레리",         type:"dry", kcalPerKg:3900, proteinPct:33,   fatPct:17,   sodiumMg100g:350, phosphorusMg100g:1000 },
+  { id:"acana_freshwater",      label:"[아카나] 프레시워터(생선)",      type:"dry", kcalPerKg:3850, proteinPct:32,   fatPct:16,   sodiumMg100g:360, phosphorusMg100g:980 },
+  { id:"harim_petfood_adult",   label:"[하림펫푸드] 어덜트",            type:"dry", kcalPerKg:3600, proteinPct:26,   fatPct:15,   sodiumMg100g:290, phosphorusMg100g:820 },
+  { id:"monge_adult",           label:"[몬지] 어덜트",                 type:"dry", kcalPerKg:3650, proteinPct:26,   fatPct:15,   sodiumMg100g:300, phosphorusMg100g:850 },
+  { id:"n1_anone_adult",        label:"[앤원] 어덜트",                 type:"dry", kcalPerKg:3600, proteinPct:25,   fatPct:14,   sodiumMg100g:280, phosphorusMg100g:800 },
+
+  // ---- 습식/캔(wet) ----
+  { id:"royal_canin_wet",       label:"[로얄캐닌] 웻파우치",           type:"wet", kcalPerKg:1100, proteinPct:8,    fatPct:5,    sodiumMg100g:160, phosphorusMg100g:200 },
+  { id:"royal_canin_puppy_wet", label:"[로얄캐닌] 퍼피 웻파우치",       type:"wet", kcalPerKg:1200, proteinPct:9.5,  fatPct:6.5,  sodiumMg100g:170, phosphorusMg100g:220 },
+  { id:"royal_canin_senior_wet",label:"[로얄캐닌] 시니어 웻파우치",     type:"wet", kcalPerKg:1050, proteinPct:8.5,  fatPct:5,    sodiumMg100g:150, phosphorusMg100g:190 },
+  { id:"hills_wet",             label:"[힐스] 사이언스다이어트 캔",     type:"wet", kcalPerKg:1250, proteinPct:9.5,  fatPct:6.5,  sodiumMg100g:190, phosphorusMg100g:230 },
+  { id:"hills_kd_can",          label:"[힐스] k/d 처방캔(신장)",        type:"wet", kcalPerKg:1300, proteinPct:6,    fatPct:8,    sodiumMg100g:110, phosphorusMg100g:110 },
+  { id:"hills_id_can",          label:"[힐스] i/d 처방캔(소화기)",      type:"wet", kcalPerKg:1200, proteinPct:9,    fatPct:6,    sodiumMg100g:170, phosphorusMg100g:210 },
+  { id:"hills_metabolic_wet",   label:"[힐스] 메타볼릭 캔",             type:"wet", kcalPerKg:950,  proteinPct:10,   fatPct:4,    sodiumMg100g:150, phosphorusMg100g:200 },
+  { id:"ziwipeak_can",          label:"[지위픽] 캔",                   type:"wet", kcalPerKg:1400, proteinPct:11,   fatPct:8,    sodiumMg100g:220, phosphorusMg100g:280 },
+  { id:"wellness_can",          label:"[웰니스] 캔",                   type:"wet", kcalPerKg:1150, proteinPct:9,    fatPct:6,    sodiumMg100g:180, phosphorusMg100g:210 },
+  { id:"fomm_can",              label:"[포미] 캔",                     type:"wet", kcalPerKg:1180, proteinPct:9.2,  fatPct:6.2,  sodiumMg100g:175, phosphorusMg100g:215 },
+  { id:"carnigan_can",          label:"[카니간] 캔",                   type:"wet", kcalPerKg:1220, proteinPct:9.8,  fatPct:6.8,  sodiumMg100g:185, phosphorusMg100g:225 },
+  { id:"orijen_wet",            label:"[오리젠] 웻",                   type:"wet", kcalPerKg:1350, proteinPct:12,   fatPct:8,    sodiumMg100g:240, phosphorusMg100g:290 },
+  { id:"acana_wet",             label:"[아카나] 웻",                   type:"wet", kcalPerKg:1300, proteinPct:11.5, fatPct:7.5,  sodiumMg100g:230, phosphorusMg100g:280 },
+  { id:"monge_wet",             label:"[몬지] 캔",                     type:"wet", kcalPerKg:1200, proteinPct:9,    fatPct:6,    sodiumMg100g:180, phosphorusMg100g:220 },
+  { id:"n1_wet",                label:"[앤원] 캔",                     type:"wet", kcalPerKg:1180, proteinPct:8.8,  fatPct:5.8,  sodiumMg100g:170, phosphorusMg100g:210 },
+
+  // ---- 화식 전문(homemade) ----
+  { id:"reybarba",              label:"[레이앤바바] 화식",             type:"homemade", kcalPerKg:1750, proteinPct:15,   fatPct:8,   sodiumMg100g:100, phosphorusMg100g:300 },
+  { id:"dooman",                label:"[듀먼] 화식",                   type:"homemade", kcalPerKg:1700, proteinPct:16,   fatPct:9,   sodiumMg100g:105, phosphorusMg100g:310 },
+  { id:"dooman_puppy",          label:"[듀먼] 퍼피 화식",               type:"homemade", kcalPerKg:1850, proteinPct:18,   fatPct:11,  sodiumMg100g:110, phosphorusMg100g:340 },
+  { id:"ssingssing",            label:"[싱싱한화식] 화식",             type:"homemade", kcalPerKg:1780, proteinPct:15.5, fatPct:8.5, sodiumMg100g:108, phosphorusMg100g:305 },
+  { id:"ssingssing_lowfat",     label:"[싱싱한화식] 저지방 라인",       type:"homemade", kcalPerKg:1550, proteinPct:16,   fatPct:5,   sodiumMg100g:100, phosphorusMg100g:290 },
+  { id:"sing_sing_han_ga",      label:"[싱싱한가] 화식",               type:"homemade", kcalPerKg:1720, proteinPct:15,   fatPct:8,   sodiumMg100g:102, phosphorusMg100g:300 },
+  { id:"barf_homemade",         label:"[바프(BARF)] 화식형",           type:"homemade", kcalPerKg:1900, proteinPct:19,   fatPct:12,  sodiumMg100g:120, phosphorusMg100g:380 },
+  { id:"think_dog",             label:"[씽크독] 화식",                 type:"homemade", kcalPerKg:1730, proteinPct:15.5, fatPct:8.2, sodiumMg100g:103, phosphorusMg100g:302 },
+  { id:"think_dog_renal",       label:"[씽크독] 신장케어 라인",         type:"homemade", kcalPerKg:1600, proteinPct:11,   fatPct:9,   sodiumMg100g:80,  phosphorusMg100g:180 },
+  { id:"dr_dog",                label:"[닥터독] 화식",                 type:"homemade", kcalPerKg:1740, proteinPct:15.5, fatPct:8.3, sodiumMg100g:104, phosphorusMg100g:303 },
+  { id:"dr_dog_diet",           label:"[닥터독] 다이어트 라인",         type:"homemade", kcalPerKg:1450, proteinPct:17,   fatPct:5,   sodiumMg100g:95,  phosphorusMg100g:280 },
+  { id:"favorite",              label:"[페이보릿] 화식",               type:"homemade", kcalPerKg:1760, proteinPct:16,   fatPct:8.5, sodiumMg100g:106, phosphorusMg100g:310 },
+  { id:"reybarba_senior",       label:"[레이앤바바] 시니어 화식",       type:"homemade", kcalPerKg:1600, proteinPct:14,   fatPct:7,   sodiumMg100g:95,  phosphorusMg100g:270 },
+
+  // ---- 생식(raw) ----
+  { id:"ziwipeak_raw",          label:"[지위픽] 에어드라이(생식대용)",  type:"raw", kcalPerKg:4700, proteinPct:34, fatPct:24, sodiumMg100g:400, phosphorusMg100g:1000 },
+  { id:"ziwipeak_raw_venison",  label:"[지위픽] 베니슨(사슴고기)",      type:"raw", kcalPerKg:4600, proteinPct:35, fatPct:22, sodiumMg100g:390, phosphorusMg100g:980 },
+  { id:"k9_natural_raw",        label:"[K9내추럴] 프리즈드라이(생식)",  type:"raw", kcalPerKg:4500, proteinPct:36, fatPct:22, sodiumMg100g:420, phosphorusMg100g:980 },
+  { id:"k9_natural_beef",       label:"[K9내추럴] 비프(소고기)",        type:"raw", kcalPerKg:4400, proteinPct:34, fatPct:24, sodiumMg100g:410, phosphorusMg100g:960 },
+  { id:"barf_raw",              label:"[바프(BARF)] 생식",             type:"raw", kcalPerKg:1650, proteinPct:20, fatPct:13, sodiumMg100g:110, phosphorusMg100g:420 },
+  { id:"stella_chewys_raw",     label:"[스텔라앤슈어스] 프리즈드라이",  type:"raw", kcalPerKg:4300, proteinPct:33, fatPct:23, sodiumMg100g:380, phosphorusMg100g:920 },
+  { id:"stella_chewys_chicken", label:"[스텔라앤슈어스] 치킨",          type:"raw", kcalPerKg:4250, proteinPct:34, fatPct:21, sodiumMg100g:370, phosphorusMg100g:900 },
+  { id:"woof_raw",              label:"[워프(WOOF)] 생식",             type:"raw", kcalPerKg:1600, proteinPct:19, fatPct:12, sodiumMg100g:105, phosphorusMg100g:400 },
+  { id:"primal_raw",            label:"[프라이멀] 생식",               type:"raw", kcalPerKg:1700, proteinPct:20, fatPct:14, sodiumMg100g:115, phosphorusMg100g:430 },
+  { id:"primal_turkey",         label:"[프라이멀] 터키(칠면조)",        type:"raw", kcalPerKg:1650, proteinPct:21, fatPct:12, sodiumMg100g:110, phosphorusMg100g:410 },
+
+  // ---- 동결건조(freezeDried) ----
+  { id:"ziwipeak_fd",           label:"[지위픽] 동결건조",             type:"freezeDried", kcalPerKg:4700, proteinPct:34, fatPct:24, sodiumMg100g:400, phosphorusMg100g:1000 },
+  { id:"ziwipeak_fd_lamb",      label:"[지위픽] 램(양고기) 동결건조",   type:"freezeDried", kcalPerKg:4650, proteinPct:33, fatPct:25, sodiumMg100g:395, phosphorusMg100g:990  },
+  { id:"k9_natural_fd",         label:"[K9내추럴] 동결건조",           type:"freezeDried", kcalPerKg:4500, proteinPct:36, fatPct:22, sodiumMg100g:420, phosphorusMg100g:980 },
+  { id:"k9_natural_fd_beef",    label:"[K9내추럴] 비프 동결건조",       type:"freezeDried", kcalPerKg:4450, proteinPct:35, fatPct:23, sodiumMg100g:415, phosphorusMg100g:970  },
+  { id:"stella_chewys_fd",      label:"[스텔라앤슈어스] 동결건조",     type:"freezeDried", kcalPerKg:4300, proteinPct:33, fatPct:23, sodiumMg100g:380, phosphorusMg100g:920 },
+  { id:"stella_chewys_fd_duck", label:"[스텔라앤슈어스] 덕(오리) 동결건조", type:"freezeDried", kcalPerKg:4280, proteinPct:32, fatPct:24, sodiumMg100g:375, phosphorusMg100g:910 },
+  { id:"woof_fd",               label:"[워프(WOOF)] 동결건조",         type:"freezeDried", kcalPerKg:4200, proteinPct:32, fatPct:21, sodiumMg100g:360, phosphorusMg100g:900 },
+  { id:"woof_fd_puppy",         label:"[워프(WOOF)] 퍼피 동결건조",     type:"freezeDried", kcalPerKg:4300, proteinPct:34, fatPct:23, sodiumMg100g:370, phosphorusMg100g:940 },
+  { id:"primal_fd",             label:"[프라이멀] 동결건조",           type:"freezeDried", kcalPerKg:4350, proteinPct:34, fatPct:23, sodiumMg100g:390, phosphorusMg100g:940 },
+  { id:"primal_fd_chicken",     label:"[프라이멀] 치킨 동결건조",       type:"freezeDried", kcalPerKg:4300, proteinPct:35, fatPct:21, sodiumMg100g:385, phosphorusMg100g:930  },
+  { id:"orijen_fd",             label:"[오리젠] 동결건조",             type:"freezeDried", kcalPerKg:4400, proteinPct:37, fatPct:20, sodiumMg100g:410, phosphorusMg100g:1050 },
+  { id:"acana_fd",              label:"[아카나] 동결건조",             type:"freezeDried", kcalPerKg:4250, proteinPct:33, fatPct:19, sodiumMg100g:365, phosphorusMg100g:960  },
+  { id:"honest_kitchen_fd",     label:"[아너스트키친] 동결건조",       type:"freezeDried", kcalPerKg:4150, proteinPct:31, fatPct:18, sodiumMg100g:340, phosphorusMg100g:890  },
+  { id:"nows_fd",               label:"[나우] 동결건조",               type:"freezeDried", kcalPerKg:4180, proteinPct:32, fatPct:20, sodiumMg100g:350, phosphorusMg100g:900  },
+  { id:"instinct_fd",           label:"[인스팅트] 동결건조",           type:"freezeDried", kcalPerKg:4380, proteinPct:36, fatPct:22, sodiumMg100g:400, phosphorusMg100g:970  },
 ];
 /* 특정 제품을 못 찾을 때 쓰는 '유형별 표준 사양(Smart Preset)' — 사료 타입만 눌러도 평균 성분이 즉시 입력돼요. */
 const META_FOOD_SMART_PRESETS = [
@@ -6897,9 +7006,20 @@ const metaFoodInput = {
   selectedBrandId: "",
   selectedPresetId: "dry_standard",
   kcalPerKg: 3650, proteinPct: 26, fatPct: 15, sodiumMg100g: 300, phosphorusMg100g: 900, moisturePct: 10,
+  calciumMg100g: 15,  // 순살(뼈 없는) 근육육 기준 통상치 — '뼈 포함' 부재료 선택 시 크게 올라가요.
+  potassiumMg100g: 350, // 육류 100g당 통상적인 칼륨 함량
   dailyG: 100, freqPerDay: 2,
+  mixins: { egg:false, veggie:false, grain:false, bone:false }, // 화식/생식 부재료 (뼈 포함은 생식 전용)
   treatType: "jerky", treatUnitMode: "count", treatQuantity: 0,
 };
+/* 화식/생식 부재료(Mix-in) — 주 육류 외에 섞은 재료가 있으면 선택해요. 하루 급여량(dailyG)에
+   비례해서 7대 영양소(DM 기준) 총량에 가산/보정돼요. */
+const META_HOMEMADE_MIXINS = [
+  { id:"egg",    label:"🥚 달걀/계란 노른자",      proteinPctBonus:1.5, fatPctBonus:1.0,  phosphorusMg100gBonus:15, calciumMg100gBonus:5   },
+  { id:"veggie", label:"🥦 야채/채소 믹스",        proteinPctBonus:-1,  fatPctBonus:-0.5, potassiumMg100gBonus:40                          },
+  { id:"grain",  label:"🌾 곡류/탄수화물",         proteinPctBonus:-2,  fatPctBonus:-1,   phosphorusMg100gBonus:10                         },
+  { id:"bone",   label:"🦴 뼈 포함(생식 전용)",     calciumMg100gBonus:80, phosphorusMg100gBonus:40                                        },
+];
 /* 제형별 통상적인 수분(%) 기본값 — 직접입력 모드에서 처음 보여줄 참고값이에요(언제든 수정 가능). */
 const META_FOOD_TYPE_DEFAULT_MOISTURE = { dry:10, wet:78, homemade:75, raw:70, freezeDried:8 };
 
@@ -7094,7 +7214,28 @@ function computeMetaPerMealG(){
 }
 function metaGetEffectiveFoodMacros(){
   // 5개 제형 전부 브랜드/프리셋/직접입력 3가지 모드로 동일하게 채워진 metaFoodInput 값을 그대로 써요.
-  return { proteinPct: metaFoodInput.proteinPct, fatPct: metaFoodInput.fatPct, sodiumMg100g: metaFoodInput.sodiumMg100g, phosphorusMg100g: metaFoodInput.phosphorusMg100g };
+  let proteinPct = metaFoodInput.proteinPct, fatPct = metaFoodInput.fatPct;
+  let sodiumMg100g = metaFoodInput.sodiumMg100g, phosphorusMg100g = metaFoodInput.phosphorusMg100g;
+  let calciumMg100g = metaFoodInput.calciumMg100g ?? 15, potassiumMg100g = metaFoodInput.potassiumMg100g ?? 350;
+
+  // 화식/생식 부재료(Mix-in) — 활성화된 항목만큼 조단백/조지방(%) 및 미네랄(mg/100g)이 보정돼요.
+  const isHomemadeOrRaw = metaFoodInput.type === 'homemade' || metaFoodInput.type === 'raw';
+  if(isHomemadeOrRaw && metaFoodInput.mixins){
+    META_HOMEMADE_MIXINS.forEach(m=>{
+      if(!metaFoodInput.mixins[m.id]) return;
+      if(m.id === 'bone' && metaFoodInput.type !== 'raw') return; // 뼈 포함은 생식 전용
+      proteinPct += m.proteinPctBonus || 0;
+      fatPct += m.fatPctBonus || 0;
+      phosphorusMg100g += m.phosphorusMg100gBonus || 0;
+      calciumMg100g += m.calciumMg100gBonus || 0;
+      potassiumMg100g += m.potassiumMg100gBonus || 0;
+    });
+  }
+  return {
+    proteinPct: Math.max(0, proteinPct), fatPct: Math.max(0, fatPct),
+    sodiumMg100g, phosphorusMg100g: Math.max(0, phosphorusMg100g),
+    calciumMg100g: Math.max(0, calciumMg100g), potassiumMg100g: Math.max(0, potassiumMg100g),
+  };
 }
 /* 화식/생식용 '[추정] 단백질원별' 항목 — 건물(DM) 기준 평균 DB를 해당 제형의 통상 수분(%)으로
    환산해 브랜드 검색 드롭다운에서 바로 고를 수 있는 항목으로 만들어요. */
@@ -7128,7 +7269,11 @@ function computeMetaNutrientTotals(){
   let totalProteinG = foodFactor * macros.proteinPct;
   let totalSodiumMg = foodFactor * macros.sodiumMg100g;
   let totalPhosphorusMg = foodFactor * macros.phosphorusMg100g;
-  let totalVitAiu = 0, totalVitDiu = 0, totalCalciumMg = 0, totalOmega3Mg = 0, totalPotassiumMg = 0;
+  // 사료(및 부재료 보정) 자체의 칼슘/칼륨 기여분 — 이전에는 영양제에서만 집계되고 사료 쪽은
+  // 누락돼 있어서, '뼈 포함' 등 부재료 선택이 Ca:P 비율에 실제로 반영되지 않았어요.
+  let totalCalciumMg = foodFactor * macros.calciumMg100g;
+  let totalPotassiumMg = foodFactor * macros.potassiumMg100g;
+  let totalVitAiu = 0, totalVitDiu = 0, totalOmega3Mg = 0;
 
   // 간식: 제형별 100g당 밀도(kcal/단백/지방/나트륨/인)를 사료와 동일한 방식으로 합산해요.
   // [개수] 입력이면 제형별 1개당 평균 질량(g)으로 먼저 환산한 뒤 계산해요.
@@ -7189,9 +7334,11 @@ function computeOrganBurden(){
   const referenceMassG = weight * 25;
   const massLoadPct = ((nutrients.foodG + nutrients.treatG) / referenceMassG) * 60;
   const ageFactor = (META_AGE_GROUPS.find(a=>a.id===metaHealthProfile.ageGroup) || META_AGE_GROUPS[1]).capacityFactor;
+  const activityFactor = metaGetActivityLevel().burdenFactor; // 저활동=1.10(부하 가산) / 왕성·작업견=0.95~0.90(부하 감산)
+  const metabolicRateFactor = ageFactor * activityFactor;
 
-  let liverRaw = massLoadPct * ageFactor;
-  let kidneyRaw = massLoadPct * ageFactor;
+  let liverRaw = massLoadPct * metabolicRateFactor;
+  let kidneyRaw = massLoadPct * metabolicRateFactor;
   let liverCapacityReduction = 0;
   let kidneyCapacityReduction = 0;
   const activeOrganConditions = [];
@@ -7216,10 +7363,10 @@ function computeOrganBurden(){
     const severityMult = e.severityMultiplier || 1.0;
     const doseFactor = metaComputeMedicationDoseFactor(e, weight); // 알 수 그대로, 또는 mg/체중 기반 정밀 보정
     const units = doseFactor * (e.freqPerDay||1);
-    // 노령견(Senior)은 약물 대사·청소율(clearance)이 지연되므로, 약물 부하에는 ageFactor를 직접 곱해요
+    // 노령견(Senior)·저활동은 대사·청소율(clearance)이 지연되므로, 약물 부하에도 같은 배율을 곱해요
     // (기존에는 사료/간식 질량 부하에만 적용돼 약물 자체의 대사 지연이 반영되지 않던 부분을 보완했어요).
-    liverRaw += w.liver * units * peak * severityMult * ageFactor;
-    kidneyRaw += w.kidney * units * peak * severityMult * ageFactor;
+    liverRaw += w.liver * units * peak * severityMult * metabolicRateFactor;
+    kidneyRaw += w.kidney * units * peak * severityMult * metabolicRateFactor;
   });
   Object.values(metaSupplementState).forEach(s=>{
     if(!s.active) return;
@@ -7260,7 +7407,7 @@ function computeOrganBurden(){
   return {
     liverPct: Math.round(Math.min(500, Math.max(0, liverPct))),
     kidneyPct: Math.round(Math.min(500, Math.max(0, kidneyPct))),
-    nutrients, ageFactor, breed, activeCombos, activeSynergies,
+    nutrients, ageFactor, activityFactor, breed, activeCombos, activeSynergies,
   };
 }
 function burdenLevel(pct){
@@ -7344,8 +7491,62 @@ function computeWaterTargetMl(burden){
   const baseMl = weight * 50;
   const proteinCorrectionMl = Math.round((burden.nutrients.totalProteinG || 0) * 1.2);
   const burdenCorrectionMl = Math.round(Math.max(0, burden.kidneyPct - 80) * 3.5);
-  const correctionMl = proteinCorrectionMl + burdenCorrectionMl;
-  return { baseMl: Math.round(baseMl), correctionMl, totalMl: Math.round(baseMl) + correctionMl };
+  // 저활동견은 순환·배설 속도가 느려 노폐물 배출을 돕기 위해 음수량을 추가로 보정해요.
+  const activityCorrectionMl = metaHealthProfile.activityLevel === 'low' ? Math.round(baseMl * 0.15) : 0;
+  const correctionMl = proteinCorrectionMl + burdenCorrectionMl + activityCorrectionMl;
+  return { baseMl: Math.round(baseMl), correctionMl, activityCorrectionMl, totalMl: Math.round(baseMl) + correctionMl };
+}
+
+/* 💡 [서온] 장기 대사 최적화 Action Plan — Health Profile(체중/나이/기저질환)과 대사 부하 계산
+   결과(간·신장 부하율/영양소 과다 칩)를 바탕으로 4가지 실행 지침을 동적으로 산출해요. */
+function computeMetaActionPlan(burden){
+  const water = computeWaterTargetMl(burden);
+  const chips = detectNutrientOverloadChips(burden);
+  const overallPct = Math.max(burden.liverPct, burden.kidneyPct);
+  const overallLevel = burdenLevel(overallPct); // {level, label, color} — safe/caution/danger = Green/Orange/Red
+
+  // 1) 💧 보정 목표 음수량 & 수분 공급 레시피
+  const isWetType = metaFoodInput.type === 'wet' || metaFoodInput.type === 'homemade' || metaFoodInput.type === 'raw';
+  const hydrationText = burden.kidneyPct > 80
+    ? `현재 신장 배설 부하가 감지되어(${burden.kidneyPct}%) 하루 최소 ${water.totalMl}mL 음수가 필수예요. ${isWetType ? '이미 수분 함량이 높은 식이를 급여 중이니, 급여와 별도로 음수량도 꼭 챙겨봐 주세요.' : '화식/습식 비중을 늘리거나 음수 전용 츄르로 사구체 여과율을 보조해주세요.'}`
+    : `현재 신장 부하는 안전 범위(${burden.kidneyPct}%)예요. 오늘의 목표 음수량 ${water.totalMl}mL를 꾸준히 유지해서 대사 부산물 배출을 도와주세요.`;
+
+  // 2) ⚖️ 장기 부하 감축 1-Click 식단 교정
+  const dietText = chips.length
+    ? `${chips.map(c=>c.label).join('/')} 대사 부하가 과다 감지됐어요. 주식 급여 비율을 조정하고 [⚡ 1-Click 자동 교정]을 실행해 DM 기준 함량을 안전 범위로 낮춰주세요.`
+    : '현재 과다 감지된 영양소가 없어요. 지금 급여 비율을 유지하면서 정기적으로 다시 체크해주세요.';
+
+  // 3) 🌿 간·신장 대사 처리 보조 영양소 안내
+  const liverHigh = burden.liverPct > 80;
+  const kidneyHigh = burden.kidneyPct > 80;
+  let organText;
+  if(liverHigh && kidneyHigh){
+    organText = `간(${burden.liverPct}%)·신장(${burden.kidneyPct}%) 부하가 모두 높아진 상태예요. 실리마린(밀크씨슬) 등 간 항산화 성분과 오메가3·신장 전용 영양제를 함께 고려해보는 걸 권장해요.`;
+  } else if(liverHigh){
+    organText = `간 대사 부하가 증가한 상태예요(${burden.liverPct}%). 실리마린(밀크씨슬)이나 항산화 영양소 보충으로 간 세포 대사 회복을 지원하는 걸 권장해요.`;
+  } else if(kidneyHigh){
+    organText = `신장 대사 부하가 증가한 상태예요(${burden.kidneyPct}%). 오메가3나 신장 전용 영양제로 사구체 부담을 완화하는 걸 권장해요.`;
+  } else {
+    organText = '간·신장 부하 모두 안전 범위예요. 지금처럼 급여 패턴을 유지하면서 예방적으로 관리해주세요.';
+  }
+
+  // 4) 🏃 세포 순환 & 대사 활성화 케어
+  const isSenior = metaHealthProfile.ageGroup === 'senior';
+  const circulationText = isSenior
+    ? '노령견 대사 지연(1.25x)이 적용되어 있어요. 식후 15분간의 가벼운 평지 산책으로 혈류 순환과 장 대사를 촉진해주세요.'
+    : (overallPct > 100
+      ? `대사 부하가 높은 상태(${overallPct}%)예요. 격렬한 운동보다는 식후 가벼운 산책으로 부담 없이 순환을 도와주세요.`
+      : '규칙적인 산책과 활동으로 기초 대사율을 건강하게 유지해주세요.');
+
+  return {
+    overallLevel,
+    items: [
+      { icon:'💧', title:'보정 목표 음수량 & 수분 공급 레시피', text: hydrationText },
+      { icon:'⚖️', title:'장기 부하 감축 1-Click 식단 교정', text: dietText },
+      { icon:'🌿', title:'간·신장 대사 처리 보조 영양소 안내', text: organText },
+      { icon:'🏃', title:'세포 순환 & 대사 활성화 케어', text: circulationText },
+    ],
+  };
 }
 function burdenGaugeHtml(label, pct, icon){
   const lv = burdenLevel(pct);
@@ -7421,6 +7622,27 @@ function renderMetaFoodInputMode(){
   const presetSelect = document.getElementById('metaFoodPresetSelect');
   const presets = metaGetPresetsForType(metaFoodInput.type);
   presetSelect.innerHTML = presets.map(p=>`<option value="${p.id}" ${metaFoodInput.selectedPresetId===p.id?'selected':''}>${p.label}</option>`).join('');
+}
+/* 화식/생식 부재료(Mix-in) 체크박스 — 건식/습식/동결건조에서는 아예 숨기고,
+   '뼈 포함'은 생식(raw)에서만 노출해요(화식은 조리 과정에서 뼈를 제거하는 게 일반적이라서예요). */
+function renderMetaMixinsGroup(){
+  const isHomemadeOrRaw = metaFoodInput.type === 'homemade' || metaFoodInput.type === 'raw';
+  document.getElementById('metaMixinsWrap').classList.toggle('hidden', !isHomemadeOrRaw);
+  if(!isHomemadeOrRaw) return;
+  const wrap = document.getElementById('metaMixinsGroup');
+  const visibleMixins = META_HOMEMADE_MIXINS.filter(m => m.id !== 'bone' || metaFoodInput.type === 'raw');
+  wrap.innerHTML = visibleMixins.map(m=>{
+    const active = !!metaFoodInput.mixins[m.id];
+    return `<button type="button" class="meta-mixin-toggle mc-chip rounded-xl py-2.5 text-xs ${active?'active':''}" data-mixin="${m.id}">${m.label}</button>`;
+  }).join('');
+  wrap.querySelectorAll('.meta-mixin-toggle').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const id = btn.dataset.mixin;
+      metaFoodInput.mixins[id] = !metaFoodInput.mixins[id];
+      renderMetaMixinsGroup();
+      renderMetaLoadPage();
+    });
+  });
 }
 
 /* ---- 처방약 입력 카드 렌더링 (직접 선택 모드: 카테고리 + 성분 + 제형 + 용량/횟수) ---- */
@@ -7695,6 +7917,16 @@ function renderMetaLoadPage(){
     ? chips.map(c=>`<span class="text-xs font-bold px-3 py-1.5 rounded-full" style="background:#C0473A14; color:#C0473A; border:1px solid #C0473A33;" title="${c.note}">⚠️ ${c.label} ${c.pct}%</span>`).join('')
     : `<span class="text-xs" style="color:#2FBF9F;">✅ 중복/초과 위험 성분이 감지되지 않았어요.</span>`;
 
+  const actionPlan = computeMetaActionPlan(burden);
+  const actionPlanCard = document.getElementById('metaActionPlanCard');
+  actionPlanCard.style.borderColor = actionPlan.overallLevel.color + '55'; // 위험도(Green/Orange/Red)에 따라 카드 테두리 색이 바뀌어요.
+  document.getElementById('metaActionPlanTitle').style.color = actionPlan.overallLevel.color;
+  document.getElementById('metaActionPlanBody').innerHTML = actionPlan.items.map(item=>`
+    <div class="rounded-xl p-3" style="background:${actionPlan.overallLevel.color}0d;">
+      <p class="text-xs font-bold mb-1" style="color:${actionPlan.overallLevel.color};">${item.icon} ${item.title}</p>
+      <p class="text-xs" style="color:#2C241F;">${item.text}</p>
+    </div>`).join('');
+
   const correction = computeCorrectionPlan(burden);
   const correctionCard = document.getElementById('metaCorrectionCard');
   if(correction){
@@ -7799,6 +8031,7 @@ function renderMetaLoadReportHtml(){
   const chips = detectNutrientOverloadChips(burden);
   const correction = computeCorrectionPlan(burden);
   const water = computeWaterTargetMl(burden);
+  const actionPlan = computeMetaActionPlan(burden);
   const petName = metaHealthProfile.name || petInsurance.name || '이름없음';
   const breed = metaGetEffectiveBreed();
   const today = new Date().toLocaleDateString('ko-KR');
@@ -7852,6 +8085,12 @@ function renderMetaLoadReportHtml(){
           <tr><td class="py-1.5 text-muted">처방약</td><td class="py-1.5 font-semibold">${meds.length ? meds.map(m=>`${m.agent ? (META_DRUG_AGENTS_BY_CATEGORY[m.category]||[]).find(a=>a.id===m.agent)?.label : META_MEDICATION_CATEGORIES.find(c=>c.id===m.category)?.label}${m.severityLabel?`(${m.severityLabel})`:''} · ${META_FORMULATION_PEAK_MULTIPLIER[m.formulation]?.label}, 1일${m.freqPerDay}회×${m.dosePerAdmin}${m.knownDoseMg?` (${m.knownDoseMg}mg/회)`:''}`).join(', ') : '없음'}</td></tr>
         </tbody>
       </table>
+
+      <p class="pdf-kicker mb-1">SECTION 7 · 💡 [서온] 장기 대사 최적화 Action Plan</p>
+      <div class="mb-2">
+        ${actionPlan.items.map(item=>`<p class="text-xs mb-1.5" style="color:${actionPlan.overallLevel.color};"><b>${item.icon} ${item.title}</b><br><span style="color:#2C241F;">${item.text}</span></p>`).join('')}
+      </div>
+
       <p class="text-[10px] text-muted mt-4">본 리포트는 참고용 추정치이며, 실제 진단·처방을 대체하지 않습니다. 간·신장 질환이 의심되면 반드시 수의사 진료를 받아주세요.</p>
       <span class="pdf-page-num">1 / 1</span>
     </div>
@@ -7901,6 +8140,15 @@ function initMetaLoadPage(){
   bindSingleSelectGroup('metaAgeGroupGroup', v=>{ metaHealthProfile.ageGroup = v; renderMetaLoadPage(); });
   document.querySelector(`#metaAgeGroupGroup button[data-val="${metaHealthProfile.ageGroup}"]`).classList.add('active');
 
+  const activityGroup = document.getElementById('metaActivityLevelGroup');
+  activityGroup.innerHTML = META_ACTIVITY_LEVELS.map(a=>`<button data-val="${a.id}" class="mc-chip rounded-xl py-2.5 text-xs">${a.label}</button>`).join('');
+  function metaUpdateActivityLevelDesc(){
+    document.getElementById('metaActivityLevelDesc').textContent = metaGetActivityLevel().desc;
+  }
+  bindSingleSelectGroup('metaActivityLevelGroup', v=>{ metaHealthProfile.activityLevel = v; metaUpdateActivityLevelDesc(); renderMetaLoadPage(); });
+  document.querySelector(`#metaActivityLevelGroup button[data-val="${metaHealthProfile.activityLevel}"]`).classList.add('active');
+  metaUpdateActivityLevelDesc();
+
   renderMetaConditionRows();
 
   document.getElementById('metaKidneyBloodworkSelect').addEventListener('change', e=>{ metaHealthProfile.bloodwork.kidneyNormal = e.target.value === '' ? null : e.target.value === 'true'; renderMetaLoadPage(); });
@@ -7910,6 +8158,7 @@ function initMetaLoadPage(){
   bindSingleSelectGroup('metaFeedTypeGroup', v=>{
     metaFoodInput.type = v;
     renderMetaFoodInputMode();
+    renderMetaMixinsGroup(); // 화식/생식 여부 및 뼈-포함(생식 전용) 노출 조건이 바뀌므로 다시 그려요.
     if(metaFoodInput.inputMode === 'brand'){
       const brands = metaGetBrandsForType(v);
       if(brands.length){ metaFoodInput.selectedBrandId = brands[0].id; metaApplyFoodMacros(brands[0]); }
@@ -7925,6 +8174,7 @@ function initMetaLoadPage(){
     renderMetaLoadPage();
   });
   document.querySelector(`#metaFeedTypeGroup button[data-val="${metaFoodInput.type}"]`).classList.add('active');
+  renderMetaMixinsGroup();
 
   bindSingleSelectGroup('metaFoodModeGroup', v=>{
     metaFoodInput.inputMode = v;
@@ -7942,7 +8192,10 @@ function initMetaLoadPage(){
   renderMetaFoodInputMode();
   document.getElementById('metaFoodBrandSelect').addEventListener('change', e=>{
     metaFoodInput.selectedBrandId = e.target.value;
-    const brand = META_FOOD_BRAND_DB.find(b=>b.id===e.target.value);
+    // ⚠️ 이전에는 META_FOOD_BRAND_DB(고정 브랜드 목록)에서만 찾아서, 화식/생식의 '[추정] 단백질원'
+    // 항목(동적으로 생성되는 목록)을 선택하면 못 찾아 값이 그대로 고정돼 보이는 버그가 있었어요.
+    // 드롭다운에 실제로 보여준 목록(metaGetBrandsForType)에서 그대로 찾아 항상 일치하게 했어요.
+    const brand = metaGetBrandsForType(metaFoodInput.type).find(b=>b.id===e.target.value);
     if(brand) metaApplyFoodMacros(brand);
     renderMetaLoadPage();
   });
