@@ -1225,21 +1225,37 @@ const SUPABASE_TABLE = "user_analytics"; // 진단 데이터를 저장/조회할
 
    -- 1) 테이블이 없다면 새로 생성
    create table if not exists public.user_analytics (
-     id             bigint generated always as identity primary key,
-     dog_name       text,
-     breed          text,
-     weight         numeric,
-     target_weight  numeric,
-     bcs            text,
-     plan_type      text,
-     extra_data     jsonb,     -- 계산 결과/사료·영양제·간식 세부/나이·중성화·질환/결제상태 등 전부 이 안에 JSON으로 저장
+     id                          bigint generated always as identity primary key,
+     dog_name                    text,
+     breed                       text,
+     weight                      numeric,
+     target_weight               numeric,
+     bcs                         text,
+     plan_type                   text,
+     guardian_name               text,    -- 보호자 이름
+     guardian_email               text,    -- 보호자 이메일 (리포트 발송용)
+     guardian_phone                text,    -- 보호자 휴대폰 번호 (선택)
+     guardian_region               text,    -- 거주 지역 (선택)
+     guardian_housing_type         text,    -- 주거 형태 (선택)
+     guardian_age_range            text,    -- 연령대 (선택)
+     guardian_consent_required     boolean, -- [필수] 개인정보 수집·이용 동의
+     guardian_consent_optional     boolean, -- [선택] 맞춤 알림·익명화 통계 활용 동의
+     extra_data     jsonb,     -- 계산 결과/사료·영양제·간식 세부/나이·중성화·질환/결제상태/보호자정보 등 전부 이 안에 JSON으로 저장
      paid           boolean default false, -- (선택) extra_data.paid와 별개로 별도 컬럼도 필터링·인덱싱용으로 두고 싶다면
      created_at     timestamptz default now()
    );
 
-   -- 2) 이미 테이블이 있고 예전 방식(평면 컬럼)만 있다면, 아래 2줄만 추가하면 충분해요.
+   -- 2) 이미 테이블이 있고 예전 방식(평면 컬럼)만 있다면, 아래 컬럼들만 추가하면 충분해요.
    alter table public.user_analytics add column if not exists extra_data jsonb;
    alter table public.user_analytics add column if not exists paid boolean default false;
+   alter table public.user_analytics add column if not exists guardian_name text;
+   alter table public.user_analytics add column if not exists guardian_email text;
+   alter table public.user_analytics add column if not exists guardian_phone text;
+   alter table public.user_analytics add column if not exists guardian_region text;
+   alter table public.user_analytics add column if not exists guardian_housing_type text;
+   alter table public.user_analytics add column if not exists guardian_age_range text;
+   alter table public.user_analytics add column if not exists guardian_consent_required boolean;
+   alter table public.user_analytics add column if not exists guardian_consent_optional boolean;
 
    -- 3) RLS를 사용 중이라면 anon 역할에 INSERT/SELECT/UPDATE 정책이 있는지 꼭 확인하세요.
    -- alter table public.user_analytics enable row level security;
@@ -2467,14 +2483,11 @@ function buildTransitionSchedule(oldG, newG){
 /* ============================================================
    4. RENDER DASHBOARD
 ============================================================ */
-function runCalculation(){
-  const r = computeResults();
-  lastComputedResult = r;
-
-  // ---- 유저 진단 제출 데이터 정규화 & 저장 (기본 정보 + 수의영양학 계산 결과 전체) ----
+function buildUserAnalyticsRecordFromCurrentState(){
+  const r = lastComputedResult;
   const proteinMinG = r.extra.type==='kidney' ? r.extra.proteinLow : r.proteinMin;
   const proteinMaxG = r.extra.type==='kidney' ? r.extra.proteinHigh : r.proteinRec;
-  saveUserAnalyticsData({
+  return {
     dog_name: dog.name,
     breed: dog.breed,
     weight: dog.weight,
@@ -2521,7 +2534,25 @@ function runCalculation(){
     on_medication: String(!!dog.onMedication),
     top_concern: dog.topConcern || '',
     monthly_budget: dog.monthlyBudget || '',
-  }).catch(err=>{
+  };
+}
+
+/* 메인 리포트 저장/보기 버튼에서 보호자 정보가 확보되면, 방금 완료한 진단 결과를
+   guardianContact와 1:1로 매핑해 다시 한 번 저장해요 (반려동물 데이터 + 보호자 데이터가
+   같은 레코드에 함께 담기도록). 아직 진단을 완료하지 않았다면(결과가 없다면) 아무 것도 하지 않아요. */
+function syncGuardianContactToAnalytics(){
+  if(!lastComputedResult) return;
+  saveUserAnalyticsData(buildUserAnalyticsRecordFromCurrentState()).catch(err=>{
+    console.error('[seon] 보호자 정보 연동 재저장 중 오류가 발생했어요:', err);
+  });
+}
+
+function runCalculation(){
+  const r = computeResults();
+  lastComputedResult = r;
+
+  // ---- 유저 진단 제출 데이터 정규화 & 저장 (기본 정보 + 수의영양학 계산 결과 전체) ----
+  saveUserAnalyticsData(buildUserAnalyticsRecordFromCurrentState()).catch(err=>{
     console.error('[seon] saveUserAnalyticsData 실행 중 처리되지 않은 오류가 발생했어요:', err);
   });
 
@@ -3706,9 +3737,9 @@ function bindDashboardEvents(r){
   document.getElementById('challengeScrollBtn')?.addEventListener('click', ()=>{
     document.getElementById('challengeSection')?.scrollIntoView({behavior:'smooth', block:'center'});
   });
-  document.getElementById('savePdfBtn')?.addEventListener('click', ()=>window.print());
-  document.getElementById('openPremiumPdf')?.addEventListener('click', ()=>openPremiumModal('pdf'));
-  document.getElementById('freeReportPremiumCtaBtn')?.addEventListener('click', ()=>openPremiumModal('pdf'));
+  document.getElementById('savePdfBtn')?.addEventListener('click', ()=>withGuardianContact(()=>{ syncGuardianContactToAnalytics(); window.print(); }));
+  document.getElementById('openPremiumPdf')?.addEventListener('click', ()=>withGuardianContact(()=>{ syncGuardianContactToAnalytics(); openPremiumModal('pdf'); }));
+  document.getElementById('freeReportPremiumCtaBtn')?.addEventListener('click', ()=>withGuardianContact(()=>{ syncGuardianContactToAnalytics(); openPremiumModal('pdf'); }));
   document.getElementById('openPremiumConsult')?.addEventListener('click', ()=>openPremiumModal('consult'));
 
   const items = AFFILIATE_MAP[dog.plan] || AFFILIATE_MAP.diet;
@@ -4970,7 +5001,16 @@ async function saveUserAnalyticsData(record){
     const dbPayload = {
       dog_name: flat.dog_name, breed: flat.breed, weight: flat.weight,
       target_weight: flat.target_weight, bcs: flat.bcs, plan_type: flat.plan_type,
-      extra_data: JSON.stringify(extractExtraData(flat)),
+      // 보호자 연락처(Demographic Data) — 이 반려동물 진단 레코드와 1:1로 매핑되는 컬럼이에요.
+      guardian_name: guardianContact.name || null,
+      guardian_email: guardianContact.email || null,
+      guardian_phone: guardianContact.phone || null,
+      guardian_region: guardianContact.region || null,
+      guardian_housing_type: guardianContact.housingType || null,
+      guardian_age_range: guardianContact.ageRange || null,
+      guardian_consent_required: !!guardianContact.consentRequired,
+      guardian_consent_optional: !!guardianContact.consentOptional,
+      extra_data: JSON.stringify({ ...extractExtraData(flat), guardianContact }),
     };
     console.log('payload:', JSON.stringify(dbPayload, null, 2));
     try{
