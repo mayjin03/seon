@@ -1295,9 +1295,9 @@ const SUPABASE_TABLE = "user_analytics"; // 진단 데이터를 저장/조회할
      guardian_region              text,   -- 거주 지역 (선택)
      guardian_housing_type        text,   -- 주거 형태 (선택)
      guardian_age_range           text,   -- 연령대 (선택)
-     guardian_consent_required    boolean, -- [필수] 개인정보 수집·이용 동의
-     guardian_consent_optional    boolean, -- [선택] 맞춤 알림·익명화 통계 활용 동의
-     extra_data                jsonb,  -- 폼 입력 전체 및 계산 결과 백업
+     consent_required             boolean, -- [필수] 개인정보 수집·이용 동의
+     consent_optional             boolean, -- [선택] 맞춤 알림·익명화 통계 활용 동의
+     extra_data                jsonb,  -- 폼 입력 전체 및 계산 결과 백업 (보호자 정보는 위 독립 컬럼에 저장되므로 여기엔 중복 포함하지 않아요)
      created_at                timestamptz default now()
    );
    alter table public.pet_health_scores add column if not exists extra_data jsonb;
@@ -1319,8 +1319,12 @@ const SUPABASE_TABLE = "user_analytics"; // 진단 데이터를 저장/조회할
    alter table public.pet_health_scores add column if not exists guardian_region text;
    alter table public.pet_health_scores add column if not exists guardian_housing_type text;
    alter table public.pet_health_scores add column if not exists guardian_age_range text;
-   alter table public.pet_health_scores add column if not exists guardian_consent_required boolean;
-   alter table public.pet_health_scores add column if not exists guardian_consent_optional boolean;
+   alter table public.pet_health_scores add column if not exists consent_required boolean;
+   alter table public.pet_health_scores add column if not exists consent_optional boolean;
+   -- (예전 스키마에 guardian_consent_required/guardian_consent_optional로 이미 만들어두셨다면
+   --  아래처럼 새 이름으로 컬럼명을 맞춰주세요. 둘 다 있어도 무방해요 — 앱은 새 이름만 사용해요.)
+   -- alter table public.pet_health_scores rename column guardian_consent_required to consent_required;
+   -- alter table public.pet_health_scores rename column guardian_consent_optional to consent_optional;
 
    -- Storage 'prescriptions' 버킷은 별도로 Public 읽기 정책이 있어야 썸네일이 보여요:
    -- create policy "public read prescriptions" on storage.objects for select to public using (bucket_id = 'prescriptions');
@@ -5350,7 +5354,9 @@ async function loadDniRecordsFromDB(){
           guardian_region: row.guardian_region || (extra.guardianContact && extra.guardianContact.region) || '',
           guardian_housing_type: row.guardian_housing_type || (extra.guardianContact && extra.guardianContact.housingType) || '',
           guardian_age_range: row.guardian_age_range || (extra.guardianContact && extra.guardianContact.ageRange) || '',
-          guardian_consent_optional: row.guardian_consent_optional ?? (extra.guardianContact && extra.guardianContact.consentOptional) ?? false,
+          // 새 컬럼명(consent_optional)을 우선 쓰고, 이전 스키마(guardian_consent_optional)나 옛 extra_data
+          // 백업값도 하위 호환으로 순서대로 확인해요.
+          consent_optional: row.consent_optional ?? row.guardian_consent_optional ?? (extra.guardianContact && extra.guardianContact.consentOptional) ?? false,
           created_at: row.created_at || extra.savedAt || new Date().toISOString(),
         };
       });
@@ -5691,7 +5697,7 @@ const STUDIO_TAB_HTML = {
                   <p class="text-[10px] font-bold mb-0.5" style="color:#3A5A40;">📩 보호자 정보</p>
                   <p class="text-[10px]" style="color:#2C241F;">${rec.guardian_name || '이름 미상'} · ${rec.guardian_email || '이메일 없음'}${rec.guardian_phone ? ` · ${rec.guardian_phone}` : ''}</p>
                   ${rec.guardian_region || rec.guardian_housing_type || rec.guardian_age_range ? `<p class="text-[10px] text-muted">${[rec.guardian_region, rec.guardian_housing_type, rec.guardian_age_range].filter(Boolean).join(' · ')}</p>` : ''}
-                  <p class="text-[9px] text-muted mt-0.5">${rec.guardian_consent_optional ? '✅ 맞춤 알림·통계 활용 동의' : '⬜ 맞춤 알림·통계 활용 미동의'}</p>
+                  <p class="text-[9px] text-muted mt-0.5">${rec.consent_optional ? '✅ 맞춤 알림·통계 활용 동의' : '⬜ 맞춤 알림·통계 활용 미동의'}</p>
                 </div>` : ''}
 
               <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block mb-2" style="background:${rec.medication_input_mode==='scan' ? '#3A5A401A' : '#2C241F0d'}; color:${rec.medication_input_mode==='scan' ? '#3A5A40' : '#6b6259'};">
@@ -7350,17 +7356,19 @@ async function submitDniChronoData(){
     prescription_image_url: dniMatrix.usedPrescriptionScan ? (dniMatrix.prescriptionImageUrl || null) : null,
     raw_ocr_extracted_data: JSON.stringify(dniMatrix.usedPrescriptionScan ? (dniMatrix.rawOcrExtractedData || []) : []),
 
-    // 보호자 연락처(Demographic Data) — 반려동물 프로필·DNI 데이터·급여량 데이터와 1:1로 매핑되는 컬럼이에요.
+    // 보호자 연락처(Demographic Data) — 반려동물 프로필·DNI 데이터·급여량 데이터와 1:1로 매핑되는 독립 컬럼이에요.
     guardian_name: guardianContact.name || null,
     guardian_email: guardianContact.email || null,
     guardian_phone: guardianContact.phone || null,
     guardian_region: guardianContact.region || null,
     guardian_housing_type: guardianContact.housingType || null,
     guardian_age_range: guardianContact.ageRange || null,
-    guardian_consent_required: !!guardianContact.consentRequired,
-    guardian_consent_optional: !!guardianContact.consentOptional,
+    consent_required: !!guardianContact.consentRequired,
+    consent_optional: !!guardianContact.consentOptional,
 
-    // 전체 폼 상태 및 계산 결과를 JSONB로 백업 보존 (컬럼이 다르거나 빠져도 데이터는 항상 남아요)
+    // 전체 폼 상태 및 계산 결과를 JSONB로 백업 보존 (컬럼이 다르거나 빠져도 데이터는 항상 남아요).
+    // 보호자 정보는 위에서 이미 독립 컬럼으로 저장되므로, 여기서는 순수 반려동물 건강 진단
+    // 상세 계산값/체크리스트 데이터만 담아 중복을 없앴어요.
     extra_data: JSON.stringify({
       petName, breed, weight, bcs, genderNeutered, medicalHistory,
       ageMonths: petInsurance.ageMonths, healthGoal: petInsurance.healthGoal,
@@ -7369,7 +7377,6 @@ async function submitDniChronoData(){
       usedPrescriptionScan: dniMatrix.usedPrescriptionScan,
       prescriptionImageUrl: dniMatrix.prescriptionImageUrl,
       rawOcrExtractedData: dniMatrix.rawOcrExtractedData,
-      guardianContact,
       savedAt: new Date().toISOString(),
     }),
   };
@@ -7385,6 +7392,9 @@ async function submitDniChronoData(){
     const minimalFallbackPayload = {
       session_id: payload.session_id,
       pet_name: payload.pet_name,
+      guardian_name: payload.guardian_name,
+      guardian_email: payload.guardian_email,
+      consent_required: payload.consent_required,
       extra_data: payload.extra_data,
     };
     const { error, usedMinimalFallback } = await upsertWithSchemaFallback('pet_health_scores', payload, 'session_id', minimalFallbackPayload);
