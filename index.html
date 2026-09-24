@@ -4925,11 +4925,23 @@ function generateSessionId(){
 async function upsertWithSchemaFallback(table, payload, conflictColumn, minimalFallbackPayload){
   let attempt = { ...payload };
   const droppedColumns = [];
+
   const tryMinimalFallback = async (reasonError)=>{
     if(!minimalFallbackPayload) return null;
     console.warn(`[seon] 전체 컬럼 저장이 실패해(${reasonError && (reasonError.code || reasonError.message)}), extra_data 중심의 최소 페이로드로 마지막 재시도를 해요.`);
     const { error: fallbackError } = await supabaseClient.from(table).upsert([minimalFallbackPayload], { onConflict: conflictColumn });
     return { error: fallbackError || null, droppedColumns, finalPayload: minimalFallbackPayload, usedMinimalFallback: true };
+  };
+
+  // ⚠️ session_id(충돌 기준 컬럼) 자체가 테이블에 아직 없거나, 있어도 UNIQUE 제약/인덱스가 없으면
+  // upsert()는 절대 성공할 수 없어요(PGRST204가 계속 반복될 뿐이에요). 이 경우 재시도를 그만두고
+  // 즉시 안전한 일반 insert로 내려가서, 최소한 저장 자체는 항상 성공하도록 해요.
+  const downgradeToPlainInsert = async (reason)=>{
+    console.warn(`[seon] '${table}' 테이블에 '${conflictColumn}' 기준 UPSERT 조건이 아직 준비되지 않았어요(${reason}). 일반 INSERT로 안전하게 전환해요 — SQL 가이드의 UNIQUE INDEX 생성 구문을 실행하면 다음부터는 중복 없는 UPSERT로 저장돼요.`);
+    const insertAttempt = { ...attempt };
+    delete insertAttempt[conflictColumn]; // 존재하지 않는(또는 제약 없는) 컬럼을 계속 보내지 않도록 제거
+    const result = await insertWithSchemaFallback(table, insertAttempt, minimalFallbackPayload ? (()=>{ const m = {...minimalFallbackPayload}; delete m[conflictColumn]; return m; })() : undefined);
+    return { ...result, downgradedToInsert: true };
   };
 
   for(let i=0; i<12; i++){
@@ -4938,6 +4950,11 @@ async function upsertWithSchemaFallback(table, payload, conflictColumn, minimalF
 
     const match = /Could not find the '([^']+)' column/i.exec(error.message || '');
     const missingCol = match && match[1];
+
+    if(missingCol === conflictColumn){
+      // 충돌 기준 컬럼 자체가 없음 → upsert가 원천적으로 성립할 수 없으니 바로 일반 insert로 전환해요.
+      return await downgradeToPlainInsert(`컬럼 '${conflictColumn}' 없음`);
+    }
     if(missingCol && Object.prototype.hasOwnProperty.call(attempt, missingCol) && Object.keys(attempt).length > 1){
       console.warn(`[seon] DB에 '${missingCol}' 컬럼이 없어서 이번 저장에서는 제외하고 자동으로 재시도해요.`);
       delete attempt[missingCol];
@@ -4945,10 +4962,10 @@ async function upsertWithSchemaFallback(table, payload, conflictColumn, minimalF
       continue;
     }
 
-    // UPSERT는 conflictColumn에 UNIQUE 제약/인덱스가 없으면 실패할 수 있어요(예: PGRST 관련 에러) —
-    // 이 경우 안내 로그를 남기고, 그래도 최소 페이로드로 한 번 더 시도해봐요.
+    // UPSERT는 conflictColumn에 UNIQUE 제약/인덱스가 없으면 이런 메시지로 실패해요 — 이 경우도
+    // 재시도 대신 바로 일반 insert로 안전하게 내려가요.
     if(/no unique|exclusion constraint|there is no unique or exclusion constraint/i.test(error.message || '')){
-      console.warn(`[seon] '${conflictColumn}' 컬럼에 UNIQUE 제약이 없어 UPSERT 충돌 감지가 안 돼요. SQL 가이드의 unique index 생성 구문을 실행해주세요.`);
+      return await downgradeToPlainInsert('UNIQUE 제약/인덱스 없음');
     }
 
     const fallbackResult = await tryMinimalFallback(error);
@@ -6329,6 +6346,7 @@ function openGuardianContactModal(onConfirm, onCancel){
 
     <p id="guardianFormError" class="text-xs mb-3 hidden" style="color:#C0473A;"></p>
     <button type="button" id="guardianConfirmBtn" class="btn-primary w-full rounded-xl py-3 text-sm font-bold">확인하고 계속하기</button>
+    <button type="button" id="guardianCancelBtn" class="w-full rounded-xl py-2.5 text-xs mt-2" style="color:#6b6259;">취소</button>
   `, true);
 
   // 확인 없이 모달을 닫아도(배경 클릭/닫기 버튼) 콜백 체인이 끊기지 않도록, 취소 시에도 정확히
@@ -6337,6 +6355,7 @@ function openGuardianContactModal(onConfirm, onCancel){
   const settleCancel = ()=>{ if(!settled){ settled = true; if(typeof onCancel === 'function') onCancel(); } };
   document.getElementById('modalCloseBtn').addEventListener('click', settleCancel);
   document.getElementById('modalOverlay').addEventListener('click', e=>{ if(e.target.id==='modalOverlay') settleCancel(); });
+  document.getElementById('guardianCancelBtn').addEventListener('click', ()=>{ settleCancel(); closeModal(); });
 
   document.getElementById('guardianConfirmBtn').addEventListener('click', ()=>{
     const name = document.getElementById('guardianNameInput').value.trim();
@@ -8404,7 +8423,9 @@ function restoreAppStateSnapshot(){
     const snap = JSON.parse(raw);
     if(snap.petInsurance && typeof snap.petInsurance === 'object') Object.assign(petInsurance, snap.petInsurance);
     if(snap.chronoInput && typeof snap.chronoInput === 'object') Object.assign(chronoInput, snap.chronoInput);
-    if(snap.guardianContact && typeof snap.guardianContact === 'object') Object.assign(guardianContact, snap.guardianContact);
+    // ⚠️ guardianContact는 의도적으로 여기서 복원하지 않아요 — 새로고침/재방문 시 모달에 이전 세션의
+    // 보호자 정보가 "정체불명의 더미 데이터"처럼 미리 채워져 보이는 문제를 막기 위해, 매 페이지 로드마다
+    // 항상 빈 값으로 시작하고 이번 세션에 실제로 입력한 값만 (세션 내에서) 기억하도록 해요.
     if(snap.mixCalcLite && typeof snap.mixCalcLite === 'object') Object.assign(mixCalc, snap.mixCalcLite);
     if(snap.dniMatrixLite && typeof snap.dniMatrixLite === 'object'){
       if(Array.isArray(snap.dniMatrixLite.supplements)) dniMatrix.supplements = snap.dniMatrixLite.supplements;
@@ -8423,7 +8444,9 @@ window.addEventListener('beforeunload', saveAppStateSnapshot);
    INIT
 ============================================================ */
 restoreAppStateSnapshot(); // 다른 init 함수들이 state를 읽어 DOM을 그리기 전에 가장 먼저 복원해요.
-restoreGuardianContactFromLocalStorage(); // 'seon_guardian_contact' 전용 키에서도 한 번 더 보강 복원해요.
+// ⚠️ restoreGuardianContactFromLocalStorage()는 의도적으로 호출하지 않아요 — 보호자 정보는
+// 페이지를 새로 열 때마다 항상 빈 값에서 시작해야, 유저가 직접 입력하기 전까지 어떤 임의의
+// 값도 모달에 보이지 않아요. (저장 자체는 계속하므로, 필요 시 백엔드/분석 용도로는 남아있어요.)
 init();
 initBcsTestPage();
 initMixCalcPage();
