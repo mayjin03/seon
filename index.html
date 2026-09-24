@@ -5080,18 +5080,25 @@ async function saveUserAnalyticsData(record){
     try{
       const { error, droppedColumns } = await upsertWithSchemaFallback(SUPABASE_TABLE, dbPayload, 'session_id');
       if(error){
-        console.error('CRITICAL_INSERT_ERROR:', JSON.stringify(error, null, 2));
+        console.error('CRITICAL_INSERT_ERROR: code=', error.code, 'message=', error.message);
+        console.error('CRITICAL_INSERT_ERROR (전체):', JSON.stringify(error, null, 2));
         alert('데이터 저장 중 오류가 발생했습니다.\n\n' + JSON.stringify(error, null, 2));
       } else {
         if(droppedColumns.length){
           console.warn('[seon] 다음 컬럼이 DB에 없어 이번 저장에서 자동으로 제외됐어요:', droppedColumns);
         }
         console.log('[seon] Supabase(user_analytics)에 진단 데이터가 저장됐어요 ✅', JSON.stringify(dbPayload, null, 2));
-        // 3) 저장 성공 시 관리자 대시보드를 실제 DB 기준으로 즉시 재조회 · 갱신
-        await loadAnalyticsFromDB();
+        // 3) 저장 성공 시 관리자 대시보드를 실제 DB 기준으로 즉시 재조회·갱신해요.
+        //    이 재조회 단계에서 오류가 나더라도 저장 자체는 이미 성공한 상태이므로, 별도로 잡아서
+        //    "저장 실패"로 잘못 보고(경고창/중단)되지 않도록 분리해요 (저장 중단 방지 핵심).
+        try{
+          await loadAnalyticsFromDB();
+        }catch(refreshErr){
+          console.warn('[seon] 저장 후 관리자 대시보드 재조회 중 오류가 있었지만, 저장 자체는 성공했어요:', safeStringifyError(refreshErr));
+        }
       }
     }catch(err){
-      console.error('CRITICAL_INSERT_ERROR:', safeStringifyError(err));
+      console.error('CRITICAL_INSERT_ERROR: code=', err && err.code, 'message=', (err && err.message) || safeStringifyError(err));
       alert('데이터 저장 중 오류가 발생했습니다.\n\n' + safeStringifyError(err));
     }
   } else {
@@ -6213,6 +6220,28 @@ const guardianContact = {
 };
 const GUARDIAN_HOUSING_OPTIONS = ["아파트", "주택/빌라", "오피스텔", "기타"];
 const GUARDIAN_AGE_RANGE_OPTIONS = ["20대 이하", "30대", "40대", "50대", "60대 이상"];
+
+/* 보호자 정보는 앱 전체 스냅샷(seonAppStateSnapshot)에도 함께 저장되지만, 요청 스펙에 맞춰
+   'seon_guardian_contact'라는 전용 키로도 단독 저장/복원해요 (8개 필드 전부 빠짐없이 매핑). */
+const GUARDIAN_CONTACT_STORAGE_KEY = 'seon_guardian_contact';
+function saveGuardianContactToLocalStorage(){
+  try{
+    localStorage.setItem(GUARDIAN_CONTACT_STORAGE_KEY, JSON.stringify(guardianContact));
+  }catch(err){
+    console.error('[seon] guardianContact 로컬 저장 실패:', safeStringifyError(err));
+  }
+}
+function restoreGuardianContactFromLocalStorage(){
+  try{
+    const raw = localStorage.getItem(GUARDIAN_CONTACT_STORAGE_KEY);
+    if(!raw) return;
+    const parsed = JSON.parse(raw);
+    if(parsed && typeof parsed === 'object') Object.assign(guardianContact, parsed);
+  }catch(err){
+    console.error('[seon] guardianContact 로컬 복원 실패:', safeStringifyError(err));
+  }
+}
+
 function isValidEmailFormat(email){
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email||'').trim());
 }
@@ -6342,8 +6371,14 @@ function openGuardianContactModal(onConfirm, onCancel){
       collectedAt: new Date().toISOString(),
     });
     saveAppStateSnapshot(); // 반려동물 프로필·DNI 데이터와 함께 즉시 로컬 백업
+    saveGuardianContactToLocalStorage(); // 보호자 정보 단독으로도 'seon_guardian_contact' 키에 저장 (요청 스펙 준수)
     closeModal();
-    if(typeof onConfirm === 'function') onConfirm();
+    try{
+      if(typeof onConfirm === 'function') onConfirm();
+    }catch(err){
+      // onConfirm 체인 내부에서 예기치 못한 동기 오류가 나도, 여기서 잡아 UI가 멈추지 않게 해요.
+      console.error('[seon] 보호자 모달 확인 후 처리 중 오류:', safeStringifyError(err));
+    }
   });
 }
 /* 보호자 정보(이름+이메일+필수동의)가 이미 수집돼 있으면 모달 없이 바로 진행하고,
@@ -7335,7 +7370,8 @@ async function submitDniChronoData(){
     };
     const { error, usedMinimalFallback } = await upsertWithSchemaFallback('pet_health_scores', payload, 'session_id', minimalFallbackPayload);
     if(error){
-      console.error('CRITICAL_INSERT_ERROR:', JSON.stringify(error, null, 2));
+      console.error('CRITICAL_INSERT_ERROR: code=', error.code, 'message=', error.message);
+      console.error('CRITICAL_INSERT_ERROR (전체):', JSON.stringify(error, null, 2));
       alert('1일 안전 투약 스케줄 저장 중 오류가 발생했습니다.\n\n' + JSON.stringify(error, null, 2));
     } else {
       if(usedMinimalFallback){
@@ -7344,7 +7380,7 @@ async function submitDniChronoData(){
       alert("🎉 1일 안전 투약 스케줄 저장 완료! 맞춤 안전 투약 타임라인이 저장되었습니다.");
     }
   }catch(err){
-    console.error('CRITICAL_INSERT_ERROR:', safeStringifyError(err));
+    console.error('CRITICAL_INSERT_ERROR: code=', err && err.code, 'message=', (err && err.message) || safeStringifyError(err));
     alert('1일 안전 투약 스케줄 저장 중 오류가 발생했습니다.\n\n' + safeStringifyError(err));
   }
 }
@@ -8387,6 +8423,7 @@ window.addEventListener('beforeunload', saveAppStateSnapshot);
    INIT
 ============================================================ */
 restoreAppStateSnapshot(); // 다른 init 함수들이 state를 읽어 DOM을 그리기 전에 가장 먼저 복원해요.
+restoreGuardianContactFromLocalStorage(); // 'seon_guardian_contact' 전용 키에서도 한 번 더 보강 복원해요.
 init();
 initBcsTestPage();
 initMixCalcPage();
