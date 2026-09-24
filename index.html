@@ -897,6 +897,20 @@
             <button data-val="freezeDried" class="mc-chip rounded-xl py-2 text-[10px]">❄️ 동결건조</button>
           </div>
 
+          <div id="metaFoodModeGroup" class="grid grid-cols-3 gap-1.5 mb-3">
+            <button data-val="brand" class="mc-chip rounded-xl py-2 text-[10px]">🔍 브랜드/제품 검색</button>
+            <button data-val="preset" class="mc-chip rounded-xl py-2 text-[10px]">⚡ 유형별 표준(Preset)</button>
+            <button data-val="manual" class="mc-chip rounded-xl py-2 text-[10px]">✍️ 직접 입력</button>
+          </div>
+          <div id="metaFoodBrandWrap" class="hidden mb-3">
+            <label class="block text-[10px] mb-1" style="color:#6b6259;">인기 브랜드/제품 선택</label>
+            <select id="metaFoodBrandSelect" class="w-full rounded-lg px-2 py-2 text-xs" style="border:1px solid #3A5A4033;"></select>
+          </div>
+          <div id="metaFoodPresetWrap" class="hidden mb-3">
+            <label class="block text-[10px] mb-1" style="color:#6b6259;">유형별 표준 사양 선택</label>
+            <select id="metaFoodPresetSelect" class="w-full rounded-lg px-2 py-2 text-xs" style="border:1px solid #3A5A4033;"></select>
+          </div>
+
           <div id="metaHomemadeMacroWrap" class="hidden mb-3">
             <p class="text-[10px] text-muted mb-2">화식/생식은 단백질원과 수분 상태를 선택하면 건물(DM) 기준 평균 DB로 조단백/조지방/나트륨/인을 정밀 추정해요.</p>
             <div class="grid grid-cols-2 gap-2">
@@ -912,7 +926,7 @@
           </div>
 
           <div id="metaPackagedMacroWrap">
-            <p class="text-[10px] text-muted mb-2">제형 선택 시 대표 성분값이 자동으로 채워져요 — 실제 제품 정보로 언제든 직접 수정하세요.</p>
+            <p class="text-[10px] text-muted mb-2">브랜드/프리셋 선택 시 아래 값이 자동으로 채워져요 — 실제 제품 정보로 언제든 직접 수정하세요.</p>
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3">
               <div><label class="block text-[10px] mb-1" style="color:#6b6259;">칼로리(kcal/kg)</label><input type="number" min="100" step="10" id="metaFoodKcalInput" class="w-full rounded-lg px-2 py-2 text-xs" style="border:1px solid #3A5A4033;"></div>
               <div><label class="block text-[10px] mb-1" style="color:#6b6259;">조단백(%)</label><input type="number" min="0" step="0.5" id="metaFoodProteinInput" class="w-full rounded-lg px-2 py-2 text-xs" style="border:1px solid #3A5A4033;"></div>
@@ -962,15 +976,8 @@
           </div>
 
           <div id="metaMedInferPanel" class="hidden">
-            <label class="block text-[11px] font-semibold mb-2" style="color:#2C241F;">진단 질환/증상 선택</label>
-            <div class="grid grid-cols-2 gap-2" id="metaConditionInferGroup">
-              <button data-val="joint_pain" class="mc-chip rounded-xl py-2.5 text-xs">🦴 슬개골/관절염</button>
-              <button data-val="skin" class="mc-chip rounded-xl py-2.5 text-xs">🐾 피부염</button>
-              <button data-val="ear" class="mc-chip rounded-xl py-2.5 text-xs">👂 귓병</button>
-              <button data-val="bladder" class="mc-chip rounded-xl py-2.5 text-xs">🚽 방광염/결석</button>
-              <button data-val="heart_disease" class="mc-chip rounded-xl py-2.5 text-xs">❤️ 심장병</button>
-            </div>
-            <div id="metaInferSeverityWrap"></div>
+            <label class="block text-[11px] font-semibold mb-2" style="color:#2C241F;">진단 질환/증상 선택 <span class="font-normal text-muted">(복수 선택 가능)</span></label>
+            <div class="grid grid-cols-1 gap-2" id="metaConditionInferGroup"></div>
           </div>
 
           <p class="text-[10px] mt-3" style="color:#C0473A;">🔒 처방약의 용량/횟수는 수의사 처방을 그대로 따르며, 1-Click 교정 시에도 절대 임의로 조정하지 않아요.</p>
@@ -6875,13 +6882,13 @@ function computeChronoDailyFoodG(){
   return (der / kcalPerKg) * 1000;
 }
 /* ============================================================
-   ⚙️ 대사 부하 검문 (Metabolic Load Screening) — 수의학적 정밀도 통합 모듈
+   ⚙️ 대사 부하 검문 (Metabolic Load Screening) — 임상 정밀 통합 모듈 v5
    — '🥣 1g 믹스 계산기'·'🛡️ 1일 안전 투약 타임라인'과 전혀 State를 공유하지 않는 완전 독립 모듈이에요.
    ⚠️ 이 수치는 실제 혈액검사/임상 지표가 아닌 참고용 추정치예요 — 실제 간·신장 질환이
    의심되면 반드시 수의사 진료를 받아주세요.
 ============================================================ */
 
-/* ---- ① 개체 생체 Baseline: 이름 + 견종(크기/대사특성 자동연동) + 생애주기 + 기저질환(단계별) ---- */
+/* ---- ① 개체 생체 Baseline: 이름 + 견종(크기/대사특성) + 생애주기 + 다중 기저질환(단계별) ---- */
 const META_BREED_DB = [
   { id:"maltese",          label:"말티즈",       size:"소형",   kidneySensitivity:1.15, liverSensitivity:1.0,  note:"소형견 - 림프/신장 민감성 높음" },
   { id:"pomeranian",       label:"포메라니안",   size:"소형",   kidneySensitivity:1.15, liverSensitivity:1.0,  note:"소형견 - 림프/신장 민감성 높음" },
@@ -6899,7 +6906,6 @@ const META_BREED_DB = [
   { id:"saint_bernard",    label:"세인트버나드", size:"초대형", kidneySensitivity:0.9,  liverSensitivity:1.0,  note:"초대형견 - 체중당 대사 여유도 높음" },
   { id:"other",            label:"기타(직접입력)", size:null,   kidneySensitivity:1.0,  liverSensitivity:1.0,  note:"" },
 ];
-const META_BREED_SIZE_OPTIONS = ["소형","중형","대형","초대형"];
 
 const META_AGE_GROUPS = [
   { id:"young", label:"어린/성장기", capacityFactor:1.0 },
@@ -6907,8 +6913,6 @@ const META_AGE_GROUPS = [
   { id:"senior", label:"노령견(Senior)", capacityFactor:1.25 },
 ];
 
-/* 기저질환별 단계(Stage)/중증도 옵션 — capacityReduction은 해당 장기의 '처리 용량'을 얼마나
-   깎아먹는지(0~1), extraBurden은 그 자체로 더해지는 부하 가중치예요. */
 const META_CONDITION_SEVERITY = {
   kidney: [
     { id:"mild",     label:"주의/초기",           capacityReduction:0.30, extraBurden:15 },
@@ -6943,19 +6947,27 @@ const META_CONDITIONS = [
   { id:"joint",  label:"관절 질환",      organ:"none"   },
   { id:"skin",   label:"피부/알레르기",  organ:"none"   },
 ];
+/* 복수 기저질환 동시 발생 시 상호작용하는 '복합 가중치(Combination Factor)' —
+   개별 부하를 단순 합산하는 것을 넘어, 특정 조합에서 실제로 임상적으로 부담이 상호 증폭되는
+   현상(예: 신장+심장 동시 이환 시 나트륨/체액 조절이 훨씬 어려워짐)을 반영해요. */
+const META_MULTIMORBIDITY_COMBOS = [
+  { pair:["kidney","heart"], liverMult:1.10, kidneyMult:1.30, note:"신장+심장 질환 동반 — 체액·나트륨 배출 부담이 상호 증폭돼요." },
+  { pair:["kidney","liver"], liverMult:1.25, kidneyMult:1.25, note:"신장+간 질환 동반 — 대사·배설 경로가 겹쳐 부담이 상호 증폭돼요." },
+  { pair:["liver","heart"],  liverMult:1.15, kidneyMult:1.10, note:"간+심장 질환 동반 — 약물 대사 및 순환 부담이 상호 증폭돼요." },
+];
 
 const metaHealthProfile = {
   name: "",
   breed: "maltese",
-  breedOtherSize: "중형", // breed==='other' 일 때만 사용
+  breedOtherSize: "중형",
   weight: 5.0,
   ageGroup: "adult",
-  conditions: {},   // { kidney:{active:false, severity:'mild'}, ... }
+  conditions: {},
   bloodwork: { kidneyNormal: null, liverNormal: null },
 };
 META_CONDITIONS.forEach(c=>{ metaHealthProfile.conditions[c.id] = { active:false, severity: (META_CONDITION_SEVERITY[c.id]||[{id:'mild'}])[0].id }; });
 
-/* ---- ② 사료/간식 정밀 인풋: 완제품(건식/습식/동결건조) + 수제(화식/생식) 단백질원 기반 DM 추정 ---- */
+/* ---- ② 사료/간식: 브랜드 DB + 스마트 프리셋 + 직접입력 + 화식/생식 DM 추정 ---- */
 const META_FEED_TYPES = [
   { id:"dry",         label:"건식",     icon:"🦴" },
   { id:"wet",          label:"습식",     icon:"🥫" },
@@ -6963,12 +6975,37 @@ const META_FEED_TYPES = [
   { id:"raw",          label:"생식",     icon:"🥩" },
   { id:"freezeDried",  label:"동결건조", icon:"❄️" },
 ];
+const META_FOOD_INPUT_MODES = [
+  { id:"brand",  label:"🔍 브랜드/제품 검색" },
+  { id:"preset", label:"⚡ 유형별 표준(Preset)" },
+  { id:"manual", label:"✍️ 직접 입력" },
+];
+/* 인기 브랜드/제품 DB — 유형(건식/습식/동결건조/화식전문)별 대표 제품의 실측 근사치예요. */
+const META_FOOD_BRAND_DB = [
+  { id:"royal_canin_indoor", label:"[로얄캐닌] 인도어 어덜트",   type:"dry",         kcalPerKg:3850, proteinPct:27, fatPct:13, sodiumMg100g:280, phosphorusMg100g:850 },
+  { id:"royal_canin_renal",  label:"[로얄캐닌] 신장 처방식(Renal)", type:"dry",      kcalPerKg:3900, proteinPct:14, fatPct:20, sodiumMg100g:150, phosphorusMg100g:250 },
+  { id:"nows_grainfree",     label:"[나우] 그레인프리 어덜트",   type:"dry",         kcalPerKg:3700, proteinPct:29, fatPct:17, sodiumMg100g:320, phosphorusMg100g:900 },
+  { id:"hills_sd",           label:"[힐스] 사이언스다이어트 어덜트", type:"dry",     kcalPerKg:3600, proteinPct:23, fatPct:14, sodiumMg100g:270, phosphorusMg100g:800 },
+  { id:"hills_kd",           label:"[힐스] k/d 신장처방식",      type:"dry",         kcalPerKg:3900, proteinPct:13, fatPct:21, sodiumMg100g:130, phosphorusMg100g:220 },
+  { id:"ziwipeak",           label:"[지위픽] 에어드라이",       type:"freezeDried", kcalPerKg:4700, proteinPct:34, fatPct:24, sodiumMg100g:400, phosphorusMg100g:1000 },
+  { id:"k9_natural",         label:"[K9내추럴] 프리즈드라이",   type:"freezeDried", kcalPerKg:4500, proteinPct:36, fatPct:22, sodiumMg100g:420, phosphorusMg100g:980 },
+  { id:"royal_canin_wet",    label:"[로얄캐닌] 웻파우치",       type:"wet",         kcalPerKg:1100, proteinPct:8,  fatPct:5,  sodiumMg100g:160, phosphorusMg100g:200 },
+  { id:"hills_wet",          label:"[힐스] 사이언스다이어트 캔", type:"wet",        kcalPerKg:1250, proteinPct:9.5,fatPct:6.5,sodiumMg100g:190, phosphorusMg100g:230 },
+  { id:"homemade_brand_a",   label:"[화식전문] 더리얼 화식",     type:"homemade",   kcalPerKg:1800, proteinPct:16, fatPct:9,  sodiumMg100g:110, phosphorusMg100g:320 },
+];
+/* 특정 제품을 못 찾을 때 쓰는 '유형별 표준 사양(Smart Preset)' — 사료 타입만 눌러도 평균 성분이 즉시 입력돼요. */
+const META_FOOD_SMART_PRESETS = [
+  { id:"dry_standard",             label:"일반 건사료(표준)",       type:"dry",         kcalPerKg:3650, proteinPct:26, fatPct:15, sodiumMg100g:300, phosphorusMg100g:900 },
+  { id:"dry_highprotein_puppy",    label:"고단백/자견용 건사료",     type:"dry",         kcalPerKg:3900, proteinPct:32, fatPct:20, sodiumMg100g:320, phosphorusMg100g:950 },
+  { id:"dry_prescription_diet",    label:"처방식/다이어트 건사료",   type:"dry",         kcalPerKg:3100, proteinPct:18, fatPct:9,  sodiumMg100g:200, phosphorusMg100g:500 },
+  { id:"wet_standard",             label:"표준 습식캔",             type:"wet",         kcalPerKg:1200, proteinPct:9,  fatPct:6,  sodiumMg100g:180, phosphorusMg100g:250 },
+  { id:"freezedried_raw",          label:"동결건조 생식",           type:"freezeDried", kcalPerKg:4200, proteinPct:34, fatPct:22, sodiumMg100g:380, phosphorusMg100g:950 },
+];
 const META_FOOD_MACRO_DEFAULTS = {
   dry:         { kcalPerKg:3650, proteinPct:26, fatPct:15, sodiumMg100g:300, phosphorusMg100g:900 },
   wet:         { kcalPerKg:1200, proteinPct:9,  fatPct:6,  sodiumMg100g:180, phosphorusMg100g:250 },
   freezeDried: { kcalPerKg:4200, proteinPct:32, fatPct:20, sodiumMg100g:350, phosphorusMg100g:950 },
 };
-/* 화식/생식(수제) 전용 — 단백질원별 건물(DM) 기준 평균 영양성분 DB */
 const META_PROTEIN_SOURCE_DM_DB = {
   chicken:        { label:"닭고기 위주",          proteinPctDM:55, fatPctDM:30, sodiumMg100gDM:400, phosphorusMg100gDM:700 },
   beef_pork:      { label:"소고기/돼지고기 위주", proteinPctDM:50, fatPctDM:35, sodiumMg100gDM:350, phosphorusMg100gDM:750 },
@@ -6980,18 +7017,14 @@ const META_MOISTURE_STATES = {
   homemade_wet: { label:"화식/습식 (수분 ~75%)", moisturePct:75 },
   raw:          { label:"생식 (수분 ~70%)",       moisturePct:70 },
 };
-/* DM(건물) 기준 성분값을 실제 급여(As-Fed) 기준으로 환산해요 — 수분 함량만큼 희석되니까요. */
 function metaComputeAsFedFromDM(dm, moisturePct){
   const dryMatterRatio = 1 - (moisturePct/100);
   return {
-    proteinPct: dm.proteinPctDM * dryMatterRatio,
-    fatPct: dm.fatPctDM * dryMatterRatio,
-    sodiumMg100g: dm.sodiumMg100gDM * dryMatterRatio,
-    phosphorusMg100g: dm.phosphorusMg100gDM * dryMatterRatio,
+    proteinPct: dm.proteinPctDM * dryMatterRatio, fatPct: dm.fatPctDM * dryMatterRatio,
+    sodiumMg100g: dm.sodiumMg100gDM * dryMatterRatio, phosphorusMg100g: dm.phosphorusMg100gDM * dryMatterRatio,
   };
 }
 
-/* ---- ③ 간식 제형별 칼로리/조단백/나트륨 가중치 (1개/1개비 기준) ---- */
 const META_TREAT_TYPES = [
   { id:"jerky",        label:"육포/포류(고단백/고나트륨)", unitLabel:"개비", kcalPerUnit:35, proteinGPerUnit:6.0, sodiumMgPerUnit:150, gramsPerUnit:8  },
   { id:"freeze_dried",  label:"동결건조 트릿",             unitLabel:"개",   kcalPerUnit:8,  proteinGPerUnit:1.5, sodiumMgPerUnit:20,  gramsPerUnit:2  },
@@ -7002,18 +7035,39 @@ const META_TREAT_TYPES = [
 
 const metaFoodInput = {
   type: "dry",
+  inputMode: "preset",   // 'brand' | 'preset' | 'manual' — 화식/생식일 땐 별도 DM 추정 UI를 써요
+  selectedBrandId: "",
+  selectedPresetId: "dry_standard",
   kcalPerKg: 3650, proteinPct: 26, fatPct: 15, sodiumMg100g: 300, phosphorusMg100g: 900,
-  proteinSource: "chicken", moistureState: "homemade_wet", // 화식/생식일 때만 사용
+  proteinSource: "chicken", moistureState: "homemade_wet",
   dailyG: 100, freqPerDay: 2,
   treatType: "jerky", treatQuantity: 0,
 };
 
-/* ---- ④ 영양제: 제품별 주요 대사 성분 자동 매핑(1단위 기준) + 제형 ---- */
+/* ---- ③ 영양제: 카테고리(중복 선택) + 대표 성분 프리셋 + 제형 + 용량×횟수 ---- */
 const META_SUPPLEMENT_CATEGORIES = [
-  { id:"joint",        label:"관절",       proteinMg:0, calciumMg:150, phosphorusMg:80,  sodiumMg:5,  vitAiu:0,   vitDiu:0,   omega3Mg:200 },
-  { id:"gut",          label:"유산균",     proteinMg:0, calciumMg:20,  phosphorusMg:10,  sodiumMg:2,  vitAiu:0,   vitDiu:0,   omega3Mg:0   },
-  { id:"skin",         label:"피부",       proteinMg:0, calciumMg:0,   phosphorusMg:0,   sodiumMg:0,  vitAiu:0,   vitDiu:0,   omega3Mg:500 },
-  { id:"multivitamin", label:"종합영양제", proteinMg:0, calciumMg:200, phosphorusMg:150, sodiumMg:10, vitAiu:800, vitDiu:400, omega3Mg:100 },
+  { id:"joint",          label:"관절/연골", presets:[
+    { id:"gcm", label:"글루코사민/콘드로이친/MSM", calciumMg:150, phosphorusMg:80, sodiumMg:5, vitAiu:0, vitDiu:0, omega3Mg:0 },
+    { id:"collagen", label:"콜라겐 기반", calciumMg:100, phosphorusMg:60, sodiumMg:5, vitAiu:0, vitDiu:0, omega3Mg:0 },
+  ]},
+  { id:"gut",            label:"유산균/장", presets:[
+    { id:"probiotic_standard", label:"프로바이오틱스(표준)", calciumMg:20, phosphorusMg:10, sodiumMg:2, vitAiu:0, vitDiu:0, omega3Mg:0 },
+  ]},
+  { id:"skin",           label:"피부/모질", presets:[
+    { id:"omega_biotin", label:"오메가3+비오틴", calciumMg:0, phosphorusMg:0, sodiumMg:0, vitAiu:0, vitDiu:0, omega3Mg:400 },
+  ]},
+  { id:"eye",            label:"눈/눈물",   presets:[
+    { id:"lutein_bilberry", label:"루테인/빌베리", calciumMg:0, phosphorusMg:0, sodiumMg:0, vitAiu:200, vitDiu:0, omega3Mg:0 },
+  ]},
+  { id:"kidney_bladder", label:"신장/방광", presets:[
+    { id:"cranberry_electrolyte", label:"크랜베리/전해질 조절", calciumMg:30, phosphorusMg:20, sodiumMg:15, vitAiu:0, vitDiu:0, omega3Mg:0 },
+  ]},
+  { id:"multivitamin",   label:"종합비타민", presets:[
+    { id:"multivit_standard", label:"지용성비타민A/D+미네랄(표준)", calciumMg:200, phosphorusMg:150, sodiumMg:10, vitAiu:800, vitDiu:400, omega3Mg:100 },
+  ]},
+  { id:"omega3",         label:"오메가3",   presets:[
+    { id:"epa_dha_standard", label:"EPA/DHA(표준)", calciumMg:0, phosphorusMg:0, sodiumMg:0, vitAiu:0, vitDiu:0, omega3Mg:600 },
+  ]},
 ];
 const META_SUPPLEMENT_FORMULATIONS = [
   { id:"tablet", label:"알약/캡슐" },
@@ -7022,13 +7076,22 @@ const META_SUPPLEMENT_FORMULATIONS = [
   { id:"chew",   label:"트릿/츄" },
 ];
 function metaEnsureCategoryState(stateMap, catId){
-  if(!stateMap[catId]) stateMap[catId] = { active:false, dosePerAdmin:1, freqPerDay:1, formulation:'tablet' };
+  if(!stateMap[catId]){
+    const def = META_SUPPLEMENT_CATEGORIES.find(c=>c.id===catId);
+    stateMap[catId] = { active:false, dosePerAdmin:1, freqPerDay:1, formulation:'tablet', presetId: def ? def.presets[0].id : null };
+  }
   return stateMap[catId];
 }
 const metaSupplementState = {};
 META_SUPPLEMENT_CATEGORIES.forEach(c=>metaEnsureCategoryState(metaSupplementState, c.id));
+function metaGetSupplementPreset(catId){
+  const def = META_SUPPLEMENT_CATEGORIES.find(c=>c.id===catId);
+  if(!def) return null;
+  const state = metaSupplementState[catId];
+  return def.presets.find(p=>p.id===(state&&state.presetId)) || def.presets[0];
+}
 
-/* ---- ⑤ 처방약: 추론 모드(질환+중증도) & 제형/투약 패턴 ---- */
+/* ---- ④ 처방약: 카테고리 + 성분(Specific Agent)별 간/신장 가중치 + 제형/투약패턴, 복수 질환 유추 ---- */
 const META_MEDICATION_CATEGORIES = [
   { id:"antibiotic", label:"항생제" },
   { id:"nsaid",      label:"NSAIDs 소염진통제" },
@@ -7037,6 +7100,7 @@ const META_MEDICATION_CATEGORIES = [
   { id:"cardiac",    label:"심장약" },
   { id:"other",      label:"기타 처방약" },
 ];
+/* 카테고리 기본 가중치(성분 미상/직접입력 시 폴백) */
 const ORGAN_LOAD_BY_MED_CATEGORY = {
   antibiotic: { liver:14, kidney:12 },
   nsaid:      { liver:16, kidney:18 },
@@ -7045,64 +7109,62 @@ const ORGAN_LOAD_BY_MED_CATEGORY = {
   cardiac:    { liver:10, kidney:14 },
   other:      { liver:6,  kidney:6  },
 };
+/* 약물 성분(Specific Agent)별 간 대사(CYP450) vs 신장 배설(Renal Clearance) 비중 — 카테고리
+   기본값보다 우선 적용돼요. '직접입력(성분 미상)' 선택 시에는 카테고리 기본값을 그대로 써요. */
+const META_DRUG_AGENTS_BY_CATEGORY = {
+  nsaid: [
+    { id:"meloxicam", label:"멜록시캄(Meloxicam)", liver:14, kidney:20 },
+    { id:"carprofen", label:"카프로펜(Carprofen)", liver:18, kidney:16 },
+  ],
+  steroid: [
+    { id:"prednisolone", label:"프레드니솔론(Prednisolone)", liver:24, kidney:6 },
+  ],
+  diuretic: [
+    { id:"furosemide", label:"푸로세미드(Furosemide)", liver:5, kidney:26 },
+  ],
+  antibiotic: [
+    { id:"amoxicillin", label:"아목시실린(Amoxicillin)", liver:10, kidney:14 },
+    { id:"cephalexin",  label:"세팔렉신(Cephalexin)",   liver:8,  kidney:16 },
+  ],
+  cardiac: [
+    { id:"pimobendan", label:"피모벤단(Pimobendan)", liver:12, kidney:10 },
+  ],
+  other: [],
+};
 const META_FORMULATION_PEAK_MULTIPLIER = {
   tablet: { label:"💊 알약(정제/캡슐)", multiplier:1.0  },
   powder: { label:"🧂 가루약(조제분말)", multiplier:1.25 },
   liquid: { label:"🧪 시럽/액상",       multiplier:1.3  },
 };
-/* 진단 질환/증상 → 대표 약물계열 + 중증도별 배율 자동 추론 */
 const META_CONDITION_TO_MED_CATEGORY = {
-  joint_pain: {
-    label:"슬개골/관절염", category:"nsaid", organRoute:"간 대사 위주 (일부 신장 배설)",
-    severities:[
-      { id:"mild",     label:"경증(단기 소염제)",          multiplier:1.0 },
-      { id:"moderate", label:"중등도(장기 NSAIDs)",        multiplier:1.3 },
-      { id:"severe",   label:"중증/급성(고용량)",          multiplier:1.6 },
-    ],
-  },
-  skin: {
-    label:"피부염", category:"steroid", organRoute:"간 대사 위주",
-    severities:[
-      { id:"mild",     label:"경증(단기 항히스타민)",              multiplier:1.0, categoryOverride:"other" },
-      { id:"moderate", label:"중등도/만성(스테로이드/아포퀠)",     multiplier:1.3 },
-      { id:"severe",   label:"중증/급성(고용량 면역억제제)",       multiplier:1.7 },
-    ],
-  },
-  ear: {
-    label:"귓병", category:"antibiotic", organRoute:"간 대사 후 신장 배설",
-    severities:[
-      { id:"mild", label:"경증", multiplier:1.0 },
-      { id:"moderate", label:"중등도", multiplier:1.2 },
-      { id:"severe", label:"중증", multiplier:1.4 },
-    ],
-  },
-  bladder: {
-    label:"방광염/결석", category:"antibiotic", organRoute:"신장 배설 위주",
-    severities:[
-      { id:"mild",     label:"단기 방광염(항생제)",             multiplier:1.0 },
-      { id:"moderate", label:"재발성/결석(전해질/조절제)",       multiplier:1.4, categoryOverride:"diuretic" },
-      { id:"severe",   label:"중증/폐색",                       multiplier:1.8 },
-    ],
-  },
-  heart_disease: {
-    label:"심장병", category:"cardiac", organRoute:"신장 배설 위주 (이뇨제 병용 흔함)",
-    severities:[
-      { id:"mild",     label:"ACVIM A~B1",           multiplier:1.0 },
-      { id:"moderate", label:"B2(약물 복용)",         multiplier:1.3, categoryOverride:"cardiac" },
-      { id:"severe",   label:"C~D(이뇨제/부종)",     multiplier:1.7, categoryOverride:"diuretic" },
-    ],
-  },
+  joint_pain: { label:"슬개골/관절염", category:"nsaid", organRoute:"간 대사 위주 (일부 신장 배설)",
+    severities:[ { id:"mild", label:"경증(단기 소염제)", multiplier:1.0 }, { id:"moderate", label:"중등도(장기 NSAIDs)", multiplier:1.3 }, { id:"severe", label:"중증/급성(고용량)", multiplier:1.6 } ] },
+  skin: { label:"피부염", category:"steroid", organRoute:"간 대사 위주",
+    severities:[ { id:"mild", label:"경증(단기 항히스타민)", multiplier:1.0, categoryOverride:"other" }, { id:"moderate", label:"중등도/만성(스테로이드/아포퀠)", multiplier:1.3 }, { id:"severe", label:"중증/급성(고용량 면역억제제)", multiplier:1.7 } ] },
+  ear: { label:"귓병", category:"antibiotic", organRoute:"간 대사 후 신장 배설",
+    severities:[ { id:"mild", label:"경증", multiplier:1.0 }, { id:"moderate", label:"중등도", multiplier:1.2 }, { id:"severe", label:"중증", multiplier:1.4 } ] },
+  bladder: { label:"방광염/결석", category:"antibiotic", organRoute:"신장 배설 위주",
+    severities:[ { id:"mild", label:"단기 방광염(항생제)", multiplier:1.0 }, { id:"moderate", label:"재발성/결석(전해질/조절제)", multiplier:1.4, categoryOverride:"diuretic" }, { id:"severe", label:"중증/폐색", multiplier:1.8 } ] },
+  heart_disease: { label:"심장병", category:"cardiac", organRoute:"신장 배설 위주 (이뇨제 병용 흔함)",
+    severities:[ { id:"mild", label:"ACVIM A~B1", multiplier:1.0 }, { id:"moderate", label:"B2(약물 복용)", multiplier:1.3, categoryOverride:"cardiac" }, { id:"severe", label:"C~D(이뇨제/부종)", multiplier:1.7, categoryOverride:"diuretic" } ] },
 };
 
 const metaLoadInput = {
   sessionId: null,
   medicationInputMode: "manual", // 'manual' | 'infer'
-  inferredCondition: null,
-  inferredSeverity: null,
-  medicationEntries: [],
+  medicationEntries: [],         // 직접 선택 모드: [{id, category, agent, formulation, freqPerDay, dosePerAdmin}]
+  inferredConditions: {},        // 복수 선택 가능: { [conditionKey]: {active, severity, dosePerAdmin, freqPerDay} }
 };
+Object.keys(META_CONDITION_TO_MED_CATEGORY).forEach(k=>{
+  metaLoadInput.inferredConditions[k] = { active:false, severity: META_CONDITION_TO_MED_CATEGORY[k].severities[0].id, dosePerAdmin:1, freqPerDay:1 };
+});
 function metaNewMedicationEntry(overrides){
-  return Object.assign({ id: 'mmed_' + Math.random().toString(36).slice(2,9), category:'antibiotic', formulation:'tablet', freqPerDay:1, dosePerAdmin:1 }, overrides||{});
+  return Object.assign({ id: 'mmed_' + Math.random().toString(36).slice(2,9), category:'antibiotic', agent:'', formulation:'tablet', freqPerDay:1, dosePerAdmin:1 }, overrides||{});
+}
+function metaGetAgentWeight(category, agentId){
+  const list = META_DRUG_AGENTS_BY_CATEGORY[category] || [];
+  const agent = list.find(a=>a.id===agentId);
+  return agent ? { liver:agent.liver, kidney:agent.kidney } : (ORGAN_LOAD_BY_MED_CATEGORY[category] || ORGAN_LOAD_BY_MED_CATEGORY.other);
 }
 
 /* ---- 계산 ---- */
@@ -7110,8 +7172,6 @@ function computeMetaPerMealG(){
   const freq = Math.max(1, metaFoodInput.freqPerDay || 1);
   return metaFoodInput.dailyG / freq;
 }
-/* 화식/생식일 때는 단백질원+수분상태 기반 DM 추정치를, 그 외에는 유저가 입력한(또는 제형 기본값)
-   값을 그대로 실제 계산에 써요. */
 function metaGetEffectiveFoodMacros(){
   if(metaFoodInput.type === 'homemade' || metaFoodInput.type === 'raw'){
     const dm = META_PROTEIN_SOURCE_DM_DB[metaFoodInput.proteinSource] || META_PROTEIN_SOURCE_DM_DB.chicken;
@@ -7120,12 +7180,10 @@ function metaGetEffectiveFoodMacros(){
   }
   return { proteinPct: metaFoodInput.proteinPct, fatPct: metaFoodInput.fatPct, sodiumMg100g: metaFoodInput.sodiumMg100g, phosphorusMg100g: metaFoodInput.phosphorusMg100g };
 }
-function metaGetActiveTreatType(){
-  return META_TREAT_TYPES.find(t=>t.id===metaFoodInput.treatType) || META_TREAT_TYPES[0];
-}
-function metaGetEffectiveBreed(){
-  return META_BREED_DB.find(b=>b.id===metaHealthProfile.breed) || META_BREED_DB[META_BREED_DB.length-1];
-}
+function metaGetActiveTreatType(){ return META_TREAT_TYPES.find(t=>t.id===metaFoodInput.treatType) || META_TREAT_TYPES[0]; }
+function metaGetEffectiveBreed(){ return META_BREED_DB.find(b=>b.id===metaHealthProfile.breed) || META_BREED_DB[META_BREED_DB.length-1]; }
+function metaGetBrandsForType(type){ return META_FOOD_BRAND_DB.filter(b=>b.type===type); }
+function metaGetPresetsForType(type){ return META_FOOD_SMART_PRESETS.filter(p=>p.type===type); }
 
 function computeMetaNutrientTotals(){
   const macros = metaGetEffectiveFoodMacros();
@@ -7145,41 +7203,43 @@ function computeMetaNutrientTotals(){
 
   Object.entries(metaSupplementState).forEach(([cat, s])=>{
     if(!s.active) return;
-    const def = META_SUPPLEMENT_CATEGORIES.find(c=>c.id===cat);
-    if(!def) return;
+    const preset = metaGetSupplementPreset(cat);
+    if(!preset) return;
     const units = (s.dosePerAdmin||1) * (s.freqPerDay||1);
-    totalCalciumMg += def.calciumMg * units;
-    totalPhosphorusMg += def.phosphorusMg * units;
-    totalSodiumMg += def.sodiumMg * units;
-    totalVitAiu += def.vitAiu * units;
-    totalVitDiu += def.vitDiu * units;
-    totalOmega3Mg += def.omega3Mg * units;
+    totalCalciumMg += preset.calciumMg * units;
+    totalPhosphorusMg += preset.phosphorusMg * units;
+    totalSodiumMg += preset.sodiumMg * units;
+    totalVitAiu += preset.vitAiu * units;
+    totalVitDiu += preset.vitDiu * units;
+    totalOmega3Mg += preset.omega3Mg * units;
   });
 
-  return {
-    foodG, totalProteinG, totalSodiumMg, totalPhosphorusMg, totalCalciumMg, totalVitAiu, totalVitDiu, totalOmega3Mg,
-    treatG, treatKcal,
-  };
+  return { foodG, totalProteinG, totalSodiumMg, totalPhosphorusMg, totalCalciumMg, totalVitAiu, totalVitDiu, totalOmega3Mg, treatG, treatKcal };
 }
 
-/* 처방약이 '진단 질환으로 자동 유추' 모드일 때, 실제 계산에 쓰일 유효 항목 목록을 만들어요. */
+/* 처방약이 '진단 질환으로 자동 유추' 모드일 때, 실제 계산에 쓰일 유효 항목 목록 —
+   복수 질환이 동시에 선택될 수 있고, 각 항목은 유저가 직접 입력한 용량/횟수를 그대로 써요. */
 function metaGetEffectiveMedicationEntries(){
-  if(metaLoadInput.medicationInputMode === 'infer' && metaLoadInput.inferredCondition){
-    const map = META_CONDITION_TO_MED_CATEGORY[metaLoadInput.inferredCondition];
-    if(map){
-      const sevId = metaLoadInput.inferredSeverity || map.severities[0].id;
-      const sev = map.severities.find(s=>s.id===sevId) || map.severities[0];
+  if(metaLoadInput.medicationInputMode === 'infer'){
+    const entries = [];
+    Object.entries(metaLoadInput.inferredConditions).forEach(([condKey, state])=>{
+      if(!state.active) return;
+      const map = META_CONDITION_TO_MED_CATEGORY[condKey];
+      if(!map) return;
+      const sev = map.severities.find(s=>s.id===state.severity) || map.severities[0];
       const category = sev.categoryOverride || map.category;
-      return [ metaNewMedicationEntry({ category, formulation:'tablet', freqPerDay:1, dosePerAdmin:1, inferred:true, inferredLabel: map.label, organRoute: map.organRoute, severityLabel: sev.label, severityMultiplier: sev.multiplier }) ];
-    }
-    return [];
+      entries.push(metaNewMedicationEntry({
+        category, agent:'', formulation:'tablet',
+        freqPerDay: state.freqPerDay || 1, dosePerAdmin: state.dosePerAdmin || 1,
+        inferred:true, inferredLabel: map.label, organRoute: map.organRoute, severityLabel: sev.label, severityMultiplier: sev.multiplier,
+      }));
+    });
+    return entries;
   }
   return metaLoadInput.medicationEntries;
 }
 
-/* 간(Liver)/신장(Kidney) 대사 부하율(%)을 추정해요.
-   기저 부하 = (질량부하 + 약물 + 영양제 + extraBurden) ÷ (1 - capacityReduction)
-   → 질환 단계가 높을수록 '처리 용량' 자체가 줄어들어 같은 섭취량도 부하율이 급격히 커져요. */
+/* 간(Liver)/신장(Kidney) 대사 부하율(%)을 추정해요. */
 function computeOrganBurden(){
   const weight = metaHealthProfile.weight || 5;
   const nutrients = computeMetaNutrientTotals();
@@ -7192,33 +7252,24 @@ function computeOrganBurden(){
   let kidneyRaw = massLoadPct * ageFactor;
   let liverCapacityReduction = 0;
   let kidneyCapacityReduction = 0;
+  const activeOrganConditions = [];
 
   META_CONDITIONS.forEach(c=>{
     const state = metaHealthProfile.conditions[c.id];
     if(!state || !state.active) return;
+    activeOrganConditions.push(c.id);
     const severities = META_CONDITION_SEVERITY[c.id] || [];
     const sev = severities.find(s=>s.id===state.severity) || severities[0] || {};
-    if(c.organ === 'kidney'){
-      kidneyCapacityReduction = Math.max(kidneyCapacityReduction, sev.capacityReduction || 0);
-      kidneyRaw += sev.extraBurden || 0;
-    } else if(c.organ === 'liver'){
-      liverCapacityReduction = Math.max(liverCapacityReduction, sev.capacityReduction || 0);
-      liverRaw += sev.extraBurden || 0;
-    } else if(c.organ === 'heart'){
-      // 심장 질환은 장기 용량보다 '나트륨 민감도'로 작용해요(칩 감지 단계에서 반영) — 기본 부하는 소폭만 가산
-      liverRaw += (sev.extraBurden||0) * 0.3;
-      kidneyRaw += sev.extraBurden || 0;
-    } else {
-      // 관절/피부: 특정 장기 용량과 무관 — 아주 소폭의 전신 부하만 반영
-      liverRaw += (sev.extraBurden||0) * 0.2;
-      kidneyRaw += (sev.extraBurden||0) * 0.2;
-    }
+    if(c.organ === 'kidney'){ kidneyCapacityReduction = Math.max(kidneyCapacityReduction, sev.capacityReduction || 0); kidneyRaw += sev.extraBurden || 0; }
+    else if(c.organ === 'liver'){ liverCapacityReduction = Math.max(liverCapacityReduction, sev.capacityReduction || 0); liverRaw += sev.extraBurden || 0; }
+    else if(c.organ === 'heart'){ liverRaw += (sev.extraBurden||0) * 0.3; kidneyRaw += sev.extraBurden || 0; }
+    else { liverRaw += (sev.extraBurden||0) * 0.2; kidneyRaw += (sev.extraBurden||0) * 0.2; }
   });
   if(metaHealthProfile.bloodwork.kidneyNormal === false) kidneyRaw += 20;
   if(metaHealthProfile.bloodwork.liverNormal === false) liverRaw += 20;
 
   metaGetEffectiveMedicationEntries().forEach(e=>{
-    const w = ORGAN_LOAD_BY_MED_CATEGORY[e.category] || ORGAN_LOAD_BY_MED_CATEGORY.other;
+    const w = e.agent ? metaGetAgentWeight(e.category, e.agent) : (ORGAN_LOAD_BY_MED_CATEGORY[e.category] || ORGAN_LOAD_BY_MED_CATEGORY.other);
     const peak = (META_FORMULATION_PEAK_MULTIPLIER[e.formulation] || META_FORMULATION_PEAK_MULTIPLIER.tablet).multiplier;
     const severityMult = e.severityMultiplier || 1.0;
     const units = (e.dosePerAdmin||1) * (e.freqPerDay||1);
@@ -7228,22 +7279,29 @@ function computeOrganBurden(){
   Object.values(metaSupplementState).forEach(s=>{
     if(!s.active) return;
     const units = (s.dosePerAdmin||1) * (s.freqPerDay||1);
-    liverRaw += 4 * units;
-    kidneyRaw += 4 * units;
+    liverRaw += 4 * units; kidneyRaw += 4 * units;
   });
 
-  // 견종별 대사 특성 가중치 반영
   liverRaw *= breed.liverSensitivity;
   kidneyRaw *= breed.kidneySensitivity;
 
-  // 질환 단계별 '처리 용량 차감'을 나눗셈으로 반영 (용량이 줄수록 같은 부하가 더 크게 나타나요)
-  const liverPct = liverRaw / Math.max(0.15, 1 - liverCapacityReduction);
-  const kidneyPct = kidneyRaw / Math.max(0.15, 1 - kidneyCapacityReduction);
+  let liverPct = liverRaw / Math.max(0.15, 1 - liverCapacityReduction);
+  let kidneyPct = kidneyRaw / Math.max(0.15, 1 - kidneyCapacityReduction);
+
+  // 복수 기저질환 복합 가중치(Combination Factor) — 특정 조합이 동시에 활성화된 경우 상호 증폭해요.
+  const activeCombos = [];
+  META_MULTIMORBIDITY_COMBOS.forEach(combo=>{
+    if(combo.pair.every(o=>activeOrganConditions.includes(o))){
+      liverPct *= combo.liverMult;
+      kidneyPct *= combo.kidneyMult;
+      activeCombos.push(combo);
+    }
+  });
 
   return {
-    liverPct: Math.round(Math.min(400, Math.max(0, liverPct))),
-    kidneyPct: Math.round(Math.min(400, Math.max(0, kidneyPct))),
-    nutrients, ageFactor, breed,
+    liverPct: Math.round(Math.min(500, Math.max(0, liverPct))),
+    kidneyPct: Math.round(Math.min(500, Math.max(0, kidneyPct))),
+    nutrients, ageFactor, breed, activeCombos,
   };
 }
 function burdenLevel(pct){
@@ -7252,10 +7310,7 @@ function burdenLevel(pct){
   return { level:'danger', label:'과다/위험', color:'#C0473A' };
 }
 
-/* 비타민D/A 상한, Ca:P 비율, 나트륨/인 과다를 실제 mg/IU 총량 기준으로 감지해요.
-   신장/간 질환·혈액검사 이상 소견이 있으면 상한선을 더 엄격히, 심장 질환 단계가 높을수록
-   나트륨 상한을 더욱 엄격히(민감도 배율) 적용해요. */
-function detectNutrientOverloadChips(){
+function detectNutrientOverloadChips(burden){
   const chips = [];
   const weight = metaHealthProfile.weight || 5;
   const n = computeMetaNutrientTotals();
@@ -7289,39 +7344,34 @@ function detectNutrientOverloadChips(){
   if(hepaticCaution && metaGetEffectiveMedicationEntries().some(e=>e.category==='nsaid' || e.category==='steroid')){
     chips.push({ label:'간 대사약 중복', pct: 120, note:'간 질환/이상 소견이 있는 상태에서 간 대사 위주 약물을 복용 중이에요.' });
   }
+  if(burden && burden.activeCombos && burden.activeCombos.length){
+    burden.activeCombos.forEach(combo=>{
+      chips.push({ label:'복합질환 상호작용', pct: Math.round(Math.max(combo.liverMult, combo.kidneyMult)*100), note: combo.note });
+    });
+  }
   return chips;
 }
 
-/* 대사 부하가 100%를 넘으면, 처방약 용량/횟수는 절대 건드리지 않고 사료량·영양제 용량·
-   대체 트릿만으로 80% 이하로 낮추는 교정안을 계산해요. */
 function computeCorrectionPlan(burden){
   const worstPct = Math.max(burden.liverPct, burden.kidneyPct);
   if(worstPct <= 100) return null;
-
   const overBy = worstPct - 80;
   const foodReductionRatio = Math.min(0.25, (overBy/100) * 0.6);
   const currentFoodG = metaFoodInput.dailyG;
   const newFoodG = currentFoodG * (1 - foodReductionRatio);
   const foodDeltaG = currentFoodG - newFoodG;
-
   const supplementReductions = [];
   Object.entries(metaSupplementState).forEach(([cat, s])=>{
-    if(s.active && (s.dosePerAdmin||1) > 1){
-      supplementReductions.push({ category: cat, label: META_SUPPLEMENT_CATEGORIES.find(c=>c.id===cat)?.label || cat, from: s.dosePerAdmin, to: s.dosePerAdmin - 1 });
-    }
+    if(s.active && (s.dosePerAdmin||1) > 1) supplementReductions.push({ category: cat, label: META_SUPPLEMENT_CATEGORIES.find(c=>c.id===cat)?.label || cat, from: s.dosePerAdmin, to: s.dosePerAdmin - 1 });
   });
-
   const lostKcal = foodDeltaG * (metaFoodInput.kcalPerKg/1000);
   const treatSuggestionG = Math.max(0, Math.round(lostKcal / (40/100)));
-
   return {
-    worstPct, overBy,
-    currentFoodG: currentFoodG.toFixed(1), newFoodG: newFoodG.toFixed(1), foodDeltaG: foodDeltaG.toFixed(1),
+    worstPct, overBy, currentFoodG: currentFoodG.toFixed(1), newFoodG: newFoodG.toFixed(1), foodDeltaG: foodDeltaG.toFixed(1),
     foodReductionRatio, supplementReductions, treatSuggestionG,
     medicationUnchangedNote: '처방약 용량/횟수는 수의사 처방을 그대로 유지했어요 — 임의로 조정하지 않았어요.',
   };
 }
-
 function computeWaterTargetMl(burden){
   const weight = metaHealthProfile.weight || 5;
   const baseMl = weight * 50;
@@ -7330,7 +7380,6 @@ function computeWaterTargetMl(burden){
   const correctionMl = proteinCorrectionMl + burdenCorrectionMl;
   return { baseMl: Math.round(baseMl), correctionMl, totalMl: Math.round(baseMl) + correctionMl };
 }
-
 function burdenGaugeHtml(label, pct, icon){
   const lv = burdenLevel(pct);
   const barPct = Math.min(100, pct);
@@ -7344,17 +7393,15 @@ function burdenGaugeHtml(label, pct, icon){
     </div>`;
 }
 
-/* ---- 렌더링: Health Profile 동적 부분(견종 상세/기타크기, 질환 단계 드롭다운) ---- */
+/* ---- 렌더링: Health Profile ---- */
 function renderMetaBreedDetail(){
   const breed = metaGetEffectiveBreed();
   const wrap = document.getElementById('metaBreedDetailWrap');
   const otherWrap = document.getElementById('metaBreedOtherSizeWrap');
   otherWrap.classList.toggle('hidden', metaHealthProfile.breed !== 'other');
-  if(metaHealthProfile.breed === 'other'){
-    wrap.innerHTML = `<p class="text-[11px]" style="color:#6b6259;">직접 입력한 견종의 크기 분류를 선택해주세요.</p>`;
-  } else {
-    wrap.innerHTML = `<p class="text-[11px]" style="color:#3A5A40;">${breed.size}견 · ${breed.note}</p>`;
-  }
+  wrap.innerHTML = metaHealthProfile.breed === 'other'
+    ? `<p class="text-[11px]" style="color:#6b6259;">직접 입력한 견종의 크기 분류를 선택해주세요.</p>`
+    : `<p class="text-[11px]" style="color:#3A5A40;">${breed.size}견 · ${breed.note}</p>`;
 }
 function renderMetaConditionRows(){
   const wrap = document.getElementById('metaConditionsWrap');
@@ -7373,22 +7420,42 @@ function renderMetaConditionRows(){
       </div>`;
   }).join('');
   wrap.querySelectorAll('.meta-condition-checkbox').forEach(cb=>{
-    cb.addEventListener('change', e=>{
-      metaHealthProfile.conditions[cb.dataset.cond].active = e.target.checked;
-      renderMetaConditionRows();
-      renderMetaLoadPage();
-    });
+    cb.addEventListener('change', e=>{ metaHealthProfile.conditions[cb.dataset.cond].active = e.target.checked; renderMetaConditionRows(); renderMetaLoadPage(); });
   });
   wrap.querySelectorAll('.meta-condition-severity-select').forEach(sel=>{
-    sel.addEventListener('change', e=>{
-      metaHealthProfile.conditions[sel.dataset.cond].severity = e.target.value;
-      renderMetaLoadPage();
-    });
+    sel.addEventListener('change', e=>{ metaHealthProfile.conditions[sel.dataset.cond].severity = e.target.value; renderMetaLoadPage(); });
   });
 }
 
-/* ---- 처방약 입력 카드 렌더링 (직접 선택 모드) ---- */
+/* ---- 사료 입력 모드(브랜드/프리셋/직접입력) 렌더링 ---- */
+function metaApplyFoodMacros(macros){
+  Object.assign(metaFoodInput, macros);
+  document.getElementById('metaFoodKcalInput').value = macros.kcalPerKg;
+  document.getElementById('metaFoodProteinInput').value = macros.proteinPct;
+  document.getElementById('metaFoodFatInput').value = macros.fatPct;
+  document.getElementById('metaFoodSodiumInput').value = macros.sodiumMg100g;
+  document.getElementById('metaFoodPhosphorusInput').value = macros.phosphorusMg100g;
+}
+function renderMetaFoodInputMode(){
+  const brandWrap = document.getElementById('metaFoodBrandWrap');
+  const presetWrap = document.getElementById('metaFoodPresetWrap');
+  brandWrap.classList.toggle('hidden', metaFoodInput.inputMode !== 'brand');
+  presetWrap.classList.toggle('hidden', metaFoodInput.inputMode !== 'preset');
+
+  const brandSelect = document.getElementById('metaFoodBrandSelect');
+  const brands = metaGetBrandsForType(metaFoodInput.type);
+  brandSelect.innerHTML = brands.length
+    ? brands.map(b=>`<option value="${b.id}" ${metaFoodInput.selectedBrandId===b.id?'selected':''}>${b.label}</option>`).join('')
+    : `<option value="">이 유형에 등록된 브랜드가 아직 없어요</option>`;
+
+  const presetSelect = document.getElementById('metaFoodPresetSelect');
+  const presets = metaGetPresetsForType(metaFoodInput.type);
+  presetSelect.innerHTML = presets.map(p=>`<option value="${p.id}" ${metaFoodInput.selectedPresetId===p.id?'selected':''}>${p.label}</option>`).join('');
+}
+
+/* ---- 처방약 입력 카드 렌더링 (직접 선택 모드: 카테고리 + 성분 + 제형 + 용량/횟수) ---- */
 function metaMedEntryCardHtml(entry){
+  const agents = META_DRUG_AGENTS_BY_CATEGORY[entry.category] || [];
   return `
     <div class="rounded-xl p-3 meta-med-card" data-id="${entry.id}" style="background:#FAF9F5;">
       <div class="grid grid-cols-2 gap-2 mb-2">
@@ -7399,6 +7466,10 @@ function metaMedEntryCardHtml(entry){
           ${Object.entries(META_FORMULATION_PEAK_MULTIPLIER).map(([id,f])=>`<option value="${id}" ${entry.formulation===id?'selected':''}>${f.label}</option>`).join('')}
         </select>
       </div>
+      <select class="meta-med-agent-select w-full rounded-lg px-2 py-2 text-xs mb-2" data-id="${entry.id}" style="border:1px solid #3A5A4033;">
+        <option value="">약물 성분 직접입력(성분 미상 — 카테고리 평균값 사용)</option>
+        ${agents.map(a=>`<option value="${a.id}" ${entry.agent===a.id?'selected':''}>${a.label}</option>`).join('')}
+      </select>
       <div class="grid grid-cols-2 gap-2 mb-2">
         <div>
           <label class="block text-[10px] font-semibold mb-1" style="color:#6b6259;">1일 투약 횟수(회/일)</label>
@@ -7417,7 +7488,11 @@ function renderMetaMedicationEntries(){
   if(!wrap) return;
   wrap.innerHTML = metaLoadInput.medicationEntries.map(metaMedEntryCardHtml).join('') || `<p class="text-xs text-muted">추가된 처방약이 없어요.</p>`;
   wrap.querySelectorAll('.meta-med-category-select').forEach(sel=>sel.addEventListener('change', e=>{
-    metaLoadInput.medicationEntries.find(x=>x.id===sel.dataset.id).category = e.target.value; renderMetaLoadPage();
+    const entry = metaLoadInput.medicationEntries.find(x=>x.id===sel.dataset.id);
+    entry.category = e.target.value; entry.agent = ''; renderMetaMedicationEntries(); renderMetaLoadPage();
+  }));
+  wrap.querySelectorAll('.meta-med-agent-select').forEach(sel=>sel.addEventListener('change', e=>{
+    metaLoadInput.medicationEntries.find(x=>x.id===sel.dataset.id).agent = e.target.value; renderMetaLoadPage();
   }));
   wrap.querySelectorAll('.meta-med-formulation-select').forEach(sel=>sel.addEventListener('change', e=>{
     metaLoadInput.medicationEntries.find(x=>x.id===sel.dataset.id).formulation = e.target.value; renderMetaLoadPage();
@@ -7439,25 +7514,48 @@ function metaSyncMedicationModePanels(){
   if(manualPanel) manualPanel.classList.toggle('hidden', metaLoadInput.medicationInputMode !== 'manual');
   if(inferPanel) inferPanel.classList.toggle('hidden', metaLoadInput.medicationInputMode !== 'infer');
 }
-function renderMetaInferSeverityOptions(){
-  const wrap = document.getElementById('metaInferSeverityWrap');
-  if(!metaLoadInput.inferredCondition){ wrap.innerHTML = ''; return; }
-  const map = META_CONDITION_TO_MED_CATEGORY[metaLoadInput.inferredCondition];
-  if(!map){ wrap.innerHTML = ''; return; }
-  if(!metaLoadInput.inferredSeverity) metaLoadInput.inferredSeverity = map.severities[0].id;
-  wrap.innerHTML = `
-    <label class="block text-[11px] font-semibold mb-1.5 mt-3" style="color:#2C241F;">중증도 / 진행 단계</label>
-    <select id="metaInferSeveritySelect" class="w-full rounded-xl px-3 py-2.5 text-sm" style="border:1px solid #3A5A4033;">
-      ${map.severities.map(s=>`<option value="${s.id}" ${metaLoadInput.inferredSeverity===s.id?'selected':''}>${s.label}</option>`).join('')}
-    </select>
-    <p class="text-[10px] text-muted mt-1">대사 경로: ${map.organRoute}</p>`;
-  document.getElementById('metaInferSeveritySelect').addEventListener('change', e=>{
-    metaLoadInput.inferredSeverity = e.target.value;
-    renderMetaLoadPage();
+/* 진단 질환 유추 모드 — 복수 질환(다중 선택) + 각 질환별 중증도/용량/횟수를 직접 입력받아요. */
+function renderMetaInferConditionRows(){
+  const wrap = document.getElementById('metaConditionInferGroup');
+  wrap.innerHTML = Object.entries(META_CONDITION_TO_MED_CATEGORY).map(([key, map])=>{
+    const state = metaLoadInput.inferredConditions[key];
+    return `
+      <div class="rounded-xl p-2.5" style="background:#FAF9F5; border:1.5px solid ${state.active ? '#3A5A40' : '#3A5A4022'};">
+        <label class="flex items-center gap-2 text-xs font-bold cursor-pointer">
+          <input type="checkbox" class="meta-infer-condition-checkbox" data-cond="${key}" ${state.active?'checked':''}> ${map.label}
+        </label>
+        ${state.active ? `
+          <select class="meta-infer-severity-select w-full mt-1.5 rounded-lg px-2 py-1.5 text-xs mb-1.5" data-cond="${key}" style="border:1px solid #3A5A4033;">
+            ${map.severities.map(s=>`<option value="${s.id}" ${state.severity===s.id?'selected':''}>${s.label}</option>`).join('')}
+          </select>
+          <div class="grid grid-cols-2 gap-1.5">
+            <div>
+              <label class="block text-[9px] mb-0.5" style="color:#6b6259;">1일 투약 횟수(회/일)</label>
+              <input type="number" min="1" max="6" step="1" class="meta-infer-freq-input w-full rounded-lg px-2 py-1.5 text-xs" data-cond="${key}" value="${state.freqPerDay}" style="border:1px solid #3A5A4033;">
+            </div>
+            <div>
+              <label class="block text-[9px] mb-0.5" style="color:#6b6259;">1회 급여 용량(알/포/ml)</label>
+              <input type="number" min="0.25" step="0.25" class="meta-infer-dose-input w-full rounded-lg px-2 py-1.5 text-xs" data-cond="${key}" value="${state.dosePerAdmin}" style="border:1px solid #3A5A4033;">
+            </div>
+          </div>
+          <p class="text-[9px] text-muted mt-1">대사 경로: ${map.organRoute}</p>` : ''}
+      </div>`;
+  }).join('');
+  wrap.querySelectorAll('.meta-infer-condition-checkbox').forEach(cb=>{
+    cb.addEventListener('change', e=>{ metaLoadInput.inferredConditions[cb.dataset.cond].active = e.target.checked; renderMetaInferConditionRows(); renderMetaLoadPage(); });
+  });
+  wrap.querySelectorAll('.meta-infer-severity-select').forEach(sel=>{
+    sel.addEventListener('change', e=>{ metaLoadInput.inferredConditions[sel.dataset.cond].severity = e.target.value; renderMetaLoadPage(); });
+  });
+  wrap.querySelectorAll('.meta-infer-freq-input').forEach(inp=>{
+    inp.addEventListener('input', e=>{ metaLoadInput.inferredConditions[inp.dataset.cond].freqPerDay = Math.max(1, Math.min(6, parseInt(e.target.value)||1)); renderMetaLoadPage(); });
+  });
+  wrap.querySelectorAll('.meta-infer-dose-input').forEach(inp=>{
+    inp.addEventListener('input', e=>{ metaLoadInput.inferredConditions[inp.dataset.cond].dosePerAdmin = Math.max(0.25, parseFloat(e.target.value)||1); renderMetaLoadPage(); });
   });
 }
 
-/* ---- 영양제 체크리스트 렌더링 (토글 + 제형 + 용량/횟수, 라벨 명시) ---- */
+/* ---- 영양제 체크리스트: 카테고리(중복 선택) + 대표 성분 프리셋 + 제형 + 용량×횟수 ---- */
 function renderMetaSupplementChecklist(){
   const wrap = document.getElementById('metaSupplementChecklist');
   wrap.innerHTML = META_SUPPLEMENT_CATEGORIES.map(c=>{
@@ -7466,6 +7564,10 @@ function renderMetaSupplementChecklist(){
       <div class="rounded-xl p-2.5" style="background:#FAF9F5; border:1.5px solid ${s.active ? '#3A5A40' : '#3A5A4022'};">
         <button type="button" class="meta-supp-toggle w-full text-left text-xs font-bold" data-cat="${c.id}" style="color:${s.active ? '#3A5A40' : '#2C241F'};">${s.active ? '✅' : '⬜'} ${c.label}</button>
         ${s.active ? `
+          ${c.presets.length > 1 ? `
+          <select class="meta-supp-preset w-full mt-1.5 rounded-lg px-2 py-1.5 text-xs" data-cat="${c.id}" style="border:1px solid #3A5A4033;">
+            ${c.presets.map(p=>`<option value="${p.id}" ${s.presetId===p.id?'selected':''}>${p.label}</option>`).join('')}
+          </select>` : `<p class="text-[10px] mt-1.5" style="color:#3A5A40;">대표 성분: ${c.presets[0].label}</p>`}
           <select class="meta-supp-formulation w-full mt-1.5 rounded-lg px-2 py-1.5 text-xs" data-cat="${c.id}" style="border:1px solid #3A5A4033;">
             ${META_SUPPLEMENT_FORMULATIONS.map(f=>`<option value="${f.id}" ${s.formulation===f.id?'selected':''}>${f.label}</option>`).join('')}
           </select>
@@ -7484,10 +7586,12 @@ function renderMetaSupplementChecklist(){
   wrap.querySelectorAll('.meta-supp-toggle').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       metaEnsureCategoryState(metaSupplementState, btn.dataset.cat).active = !metaSupplementState[btn.dataset.cat].active;
-      renderMetaSupplementChecklist();
-      renderMetaLoadPage();
+      renderMetaSupplementChecklist(); renderMetaLoadPage();
     });
   });
+  wrap.querySelectorAll('.meta-supp-preset').forEach(sel=>sel.addEventListener('change', e=>{
+    metaSupplementState[sel.dataset.cat].presetId = e.target.value; renderMetaLoadPage();
+  }));
   wrap.querySelectorAll('.meta-supp-formulation').forEach(sel=>sel.addEventListener('change', e=>{
     metaSupplementState[sel.dataset.cat].formulation = e.target.value; renderMetaLoadPage();
   }));
@@ -7506,9 +7610,8 @@ function safeComputeMetabolicLoadSnapshot(){
     const water = computeWaterTargetMl(burden);
     return {
       liverPct: burden.liverPct, kidneyPct: burden.kidneyPct,
-      nutrientOverloadChips: detectNutrientOverloadChips(),
-      correctionPlan: correction,
-      waterTargetMl: water,
+      nutrientOverloadChips: detectNutrientOverloadChips(burden),
+      correctionPlan: correction, waterTargetMl: water,
       healthProfile: JSON.parse(JSON.stringify(metaHealthProfile)),
       foodInput: { ...metaFoodInput },
       supplementState: JSON.parse(JSON.stringify(metaSupplementState)),
@@ -7529,7 +7632,7 @@ function renderMetaLoadPage(){
   const perMealEl = document.getElementById('metaPerMealGDisplay');
   if(perMealEl) perMealEl.textContent = `회당 급여량(자동계산): ${computeMetaPerMealG().toFixed(1)}g`;
 
-  const chips = detectNutrientOverloadChips();
+  const chips = detectNutrientOverloadChips(burden);
   document.getElementById('nutrientOverloadLabel').textContent = chips.length ? '⚠️ 성분 중복/초과 경고' : '';
   document.getElementById('nutrientOverloadChipsWrap').innerHTML = chips.length
     ? chips.map(c=>`<span class="text-xs font-bold px-3 py-1.5 rounded-full" style="background:#C0473A14; color:#C0473A; border:1px solid #C0473A33;" title="${c.note}">⚠️ ${c.label} ${c.pct}%</span>`).join('')
@@ -7564,16 +7667,10 @@ function applyMetaCorrection(){
   const burden = computeOrganBurden();
   const correction = computeCorrectionPlan(burden);
   const statusEl = document.getElementById('metaCorrectionStatus');
-  if(!correction){
-    statusEl.textContent = '⚠️ 현재는 교정할 대사 부하 초과가 없어요.';
-    statusEl.style.color = '#C0473A';
-    return;
-  }
+  if(!correction){ statusEl.textContent = '⚠️ 현재는 교정할 대사 부하 초과가 없어요.'; statusEl.style.color = '#C0473A'; return; }
   metaFoodInput.dailyG = parseFloat(correction.newFoodG);
   document.getElementById('metaDailyFoodGInput').value = correction.newFoodG;
-  correction.supplementReductions.forEach(r=>{
-    metaSupplementState[r.category].dosePerAdmin = r.to;
-  });
+  correction.supplementReductions.forEach(r=>{ metaSupplementState[r.category].dosePerAdmin = r.to; });
   renderMetaSupplementChecklist();
   renderMetaLoadPage();
   statusEl.textContent = '✅ 급여량/영양제 수량이 교정 레시피대로 반영됐어요! (처방약 용량은 그대로 유지했어요)';
@@ -7584,12 +7681,8 @@ function applyMetaCorrection(){
 async function saveMetabolicLoadData(){
   if(!metaLoadInput.sessionId) metaLoadInput.sessionId = generateSessionId();
   const snapshot = safeComputeMetabolicLoadSnapshot();
-
   saveAppStateSnapshot();
-
-  if(!supabaseClient){
-    return;
-  }
+  if(!supabaseClient) return;
 
   const payload = {
     session_id: metaLoadInput.sessionId,
@@ -7608,7 +7701,6 @@ async function saveMetabolicLoadData(){
     correction_plan: JSON.stringify(snapshot ? snapshot.correctionPlan : null),
     water_target_ml: snapshot ? snapshot.waterTargetMl.totalMl : null,
   };
-
   try{
     const { error } = await upsertWithSchemaFallback('metabolic_load_logs', payload, 'session_id');
     if(!error){ console.log('[seon] metabolic_load_logs에 저장됐어요 ✅'); return; }
@@ -7644,10 +7736,10 @@ async function fallbackSaveMetabolicLoadToExistingTables(snapshot){
   return false;
 }
 
-/* ---- 정밀 리포트 (대사 부하 메디컬 리포트) ---- */
+/* ---- 정밀 리포트 ---- */
 function renderMetaLoadReportHtml(){
   const burden = computeOrganBurden();
-  const chips = detectNutrientOverloadChips();
+  const chips = detectNutrientOverloadChips(burden);
   const correction = computeCorrectionPlan(burden);
   const water = computeWaterTargetMl(burden);
   const petName = metaHealthProfile.name || petInsurance.name || '이름없음';
@@ -7656,6 +7748,9 @@ function renderMetaLoadReportHtml(){
   const activeConditions = META_CONDITIONS.filter(c=>metaHealthProfile.conditions[c.id].active);
   const activeSupps = META_SUPPLEMENT_CATEGORIES.filter(c=>metaSupplementState[c.id]?.active);
   const meds = metaGetEffectiveMedicationEntries();
+  const foodSourceLabel = metaFoodInput.inputMode==='brand' && metaFoodInput.selectedBrandId
+    ? (META_FOOD_BRAND_DB.find(b=>b.id===metaFoodInput.selectedBrandId)?.label || '')
+    : metaFoodInput.inputMode==='preset' ? (META_FOOD_SMART_PRESETS.find(p=>p.id===metaFoodInput.selectedPresetId)?.label || '') : '직접 입력';
 
   return `
   <div class="pdf-report-root">
@@ -7664,8 +7759,8 @@ function renderMetaLoadReportHtml(){
       <h1 class="font-display font-bold my-3" style="font-size:1.7rem;">${petName}</h1>
       <p class="text-xs text-muted mb-6">발급일: ${today} · ${metaHealthProfile.breed==='other' ? `기타(${metaHealthProfile.breedOtherSize})` : breed.label} · ${metaHealthProfile.weight}kg · ${META_AGE_GROUPS.find(a=>a.id===metaHealthProfile.ageGroup)?.label}</p>
 
-      <p class="pdf-kicker mb-1">SECTION 1 · 개체 생체 Baseline</p>
-      <p class="text-xs mb-4">기저질환: ${activeConditions.length ? activeConditions.map(c=>`${c.label}(${(META_CONDITION_SEVERITY[c.id]||[]).find(s=>s.id===metaHealthProfile.conditions[c.id].severity)?.label || ''})`).join(', ') : '없음'} · 신장수치: ${metaHealthProfile.bloodwork.kidneyNormal===false?'이상 소견':metaHealthProfile.bloodwork.kidneyNormal===true?'정상':'미확인'} · 간수치: ${metaHealthProfile.bloodwork.liverNormal===false?'이상 소견':metaHealthProfile.bloodwork.liverNormal===true?'정상':'미확인'}</p>
+      <p class="pdf-kicker mb-1">SECTION 1 · 개체 생체 Baseline & 복수 기저질환</p>
+      <p class="text-xs mb-4">기저질환: ${activeConditions.length ? activeConditions.map(c=>`${c.label}(${(META_CONDITION_SEVERITY[c.id]||[]).find(s=>s.id===metaHealthProfile.conditions[c.id].severity)?.label || ''})`).join(', ') : '없음'}${burden.activeCombos.length ? ` · 복합질환 상호작용: ${burden.activeCombos.map(c=>c.note).join(' ')}` : ''}</p>
 
       <p class="pdf-kicker mb-1">SECTION 2 · 장기별 대사 부하 게이지</p>
       <div class="grid grid-cols-2 gap-3 mb-4">
@@ -7694,10 +7789,10 @@ function renderMetaLoadReportHtml(){
       <p class="pdf-kicker mb-1">SECTION 6 · 입력하신 섭취 정보 요약</p>
       <table class="w-full text-[11px]" style="border-collapse:collapse;">
         <tbody>
-          <tr style="border-bottom:1px solid #2C241F14;"><td class="py-1.5 text-muted" style="width:40%;">주식 급여</td><td class="py-1.5 font-semibold">${META_FEED_TYPES.find(f=>f.id===metaFoodInput.type)?.label} · ${metaFoodInput.dailyG}g/일 (1일 ${metaFoodInput.freqPerDay}회, 회당 ${computeMetaPerMealG().toFixed(1)}g)</td></tr>
+          <tr style="border-bottom:1px solid #2C241F14;"><td class="py-1.5 text-muted" style="width:40%;">주식 급여</td><td class="py-1.5 font-semibold">${foodSourceLabel} · ${metaFoodInput.dailyG}g/일 (1일 ${metaFoodInput.freqPerDay}회, 회당 ${computeMetaPerMealG().toFixed(1)}g)</td></tr>
           <tr style="border-bottom:1px solid #2C241F14;"><td class="py-1.5 text-muted">간식</td><td class="py-1.5 font-semibold">${META_TREAT_TYPES.find(t=>t.id===metaFoodInput.treatType)?.label} × ${metaFoodInput.treatQuantity}${META_TREAT_TYPES.find(t=>t.id===metaFoodInput.treatType)?.unitLabel}</td></tr>
-          <tr style="border-bottom:1px solid #2C241F14;"><td class="py-1.5 text-muted">영양제</td><td class="py-1.5 font-semibold">${activeSupps.length ? activeSupps.map(c=>`${c.label}(${META_SUPPLEMENT_FORMULATIONS.find(f=>f.id===metaSupplementState[c.id].formulation)?.label}, ${metaSupplementState[c.id].dosePerAdmin}×${metaSupplementState[c.id].freqPerDay}회)`).join(', ') : '없음'}</td></tr>
-          <tr><td class="py-1.5 text-muted">처방약</td><td class="py-1.5 font-semibold">${meds.length ? meds.map(m=>`${META_MEDICATION_CATEGORIES.find(c=>c.id===m.category)?.label}${m.severityLabel?`(${m.severityLabel})`:''} · ${META_FORMULATION_PEAK_MULTIPLIER[m.formulation]?.label}, 1일${m.freqPerDay}회×${m.dosePerAdmin}`).join(', ') : '없음'}</td></tr>
+          <tr style="border-bottom:1px solid #2C241F14;"><td class="py-1.5 text-muted">영양제</td><td class="py-1.5 font-semibold">${activeSupps.length ? activeSupps.map(c=>`${c.label}(${metaGetSupplementPreset(c.id)?.label}, ${META_SUPPLEMENT_FORMULATIONS.find(f=>f.id===metaSupplementState[c.id].formulation)?.label}, ${metaSupplementState[c.id].dosePerAdmin}×${metaSupplementState[c.id].freqPerDay}회)`).join(', ') : '없음'}</td></tr>
+          <tr><td class="py-1.5 text-muted">처방약</td><td class="py-1.5 font-semibold">${meds.length ? meds.map(m=>`${m.agent ? (META_DRUG_AGENTS_BY_CATEGORY[m.category]||[]).find(a=>a.id===m.agent)?.label : META_MEDICATION_CATEGORIES.find(c=>c.id===m.category)?.label}${m.severityLabel?`(${m.severityLabel})`:''} · ${META_FORMULATION_PEAK_MULTIPLIER[m.formulation]?.label}, 1일${m.freqPerDay}회×${m.dosePerAdmin}`).join(', ') : '없음'}</td></tr>
         </tbody>
       </table>
       <p class="text-[10px] text-muted mt-4">본 리포트는 참고용 추정치이며, 실제 진단·처방을 대체하지 않습니다. 간·신장 질환이 의심되면 반드시 수의사 진료를 받아주세요.</p>
@@ -7733,7 +7828,6 @@ function openMetaLoadReport(){
 }
 
 function initMetaLoadPage(){
-  // ① Health Profile 바인딩
   document.getElementById('metaNameInput').value = metaHealthProfile.name;
   document.getElementById('metaNameInput').addEventListener('input', e=>{ metaHealthProfile.name = e.target.value; });
 
@@ -7746,45 +7840,66 @@ function initMetaLoadPage(){
   renderMetaBreedDetail();
 
   document.getElementById('metaWeightInput').value = metaHealthProfile.weight;
-  document.getElementById('metaWeightInput').addEventListener('input', e=>{
-    metaHealthProfile.weight = Math.max(0.5, parseFloat(e.target.value) || 5);
-    renderMetaLoadPage();
-  });
+  document.getElementById('metaWeightInput').addEventListener('input', e=>{ metaHealthProfile.weight = Math.max(0.5, parseFloat(e.target.value) || 5); renderMetaLoadPage(); });
   bindSingleSelectGroup('metaAgeGroupGroup', v=>{ metaHealthProfile.ageGroup = v; renderMetaLoadPage(); });
   document.querySelector(`#metaAgeGroupGroup button[data-val="${metaHealthProfile.ageGroup}"]`).classList.add('active');
 
   renderMetaConditionRows();
 
-  document.getElementById('metaKidneyBloodworkSelect').addEventListener('change', e=>{
-    metaHealthProfile.bloodwork.kidneyNormal = e.target.value === '' ? null : e.target.value === 'true';
-    renderMetaLoadPage();
-  });
-  document.getElementById('metaLiverBloodworkSelect').addEventListener('change', e=>{
-    metaHealthProfile.bloodwork.liverNormal = e.target.value === '' ? null : e.target.value === 'true';
-    renderMetaLoadPage();
-  });
+  document.getElementById('metaKidneyBloodworkSelect').addEventListener('change', e=>{ metaHealthProfile.bloodwork.kidneyNormal = e.target.value === '' ? null : e.target.value === 'true'; renderMetaLoadPage(); });
+  document.getElementById('metaLiverBloodworkSelect').addEventListener('change', e=>{ metaHealthProfile.bloodwork.liverNormal = e.target.value === '' ? null : e.target.value === 'true'; renderMetaLoadPage(); });
 
-  // ② 사료/간식 바인딩
+  // ② 사료/간식
   bindSingleSelectGroup('metaFeedTypeGroup', v=>{
     metaFoodInput.type = v;
     const isHomemadeOrRaw = v === 'homemade' || v === 'raw';
+    document.getElementById('metaFoodModeGroup').classList.toggle('hidden', isHomemadeOrRaw);
     document.getElementById('metaPackagedMacroWrap').classList.toggle('hidden', isHomemadeOrRaw);
     document.getElementById('metaHomemadeMacroWrap').classList.toggle('hidden', !isHomemadeOrRaw);
-    const preset = META_FOOD_MACRO_DEFAULTS[v];
-    if(preset){
-      Object.assign(metaFoodInput, preset);
-      document.getElementById('metaFoodKcalInput').value = preset.kcalPerKg;
-      document.getElementById('metaFoodProteinInput').value = preset.proteinPct;
-      document.getElementById('metaFoodFatInput').value = preset.fatPct;
-      document.getElementById('metaFoodSodiumInput').value = preset.sodiumMg100g;
-      document.getElementById('metaFoodPhosphorusInput').value = preset.phosphorusMg100g;
+    if(!isHomemadeOrRaw){
+      renderMetaFoodInputMode();
+      if(metaFoodInput.inputMode === 'preset'){
+        const presets = metaGetPresetsForType(v);
+        if(presets.length){ metaFoodInput.selectedPresetId = presets[0].id; metaApplyFoodMacros(presets[0]); }
+      } else if(metaFoodInput.inputMode === 'manual'){
+        const preset = META_FOOD_MACRO_DEFAULTS[v];
+        if(preset) metaApplyFoodMacros(preset);
+      }
     }
     renderMetaLoadPage();
   });
   document.querySelector(`#metaFeedTypeGroup button[data-val="${metaFoodInput.type}"]`).classList.add('active');
   const initIsHomemadeOrRaw = metaFoodInput.type === 'homemade' || metaFoodInput.type === 'raw';
+  document.getElementById('metaFoodModeGroup').classList.toggle('hidden', initIsHomemadeOrRaw);
   document.getElementById('metaPackagedMacroWrap').classList.toggle('hidden', initIsHomemadeOrRaw);
   document.getElementById('metaHomemadeMacroWrap').classList.toggle('hidden', !initIsHomemadeOrRaw);
+
+  bindSingleSelectGroup('metaFoodModeGroup', v=>{
+    metaFoodInput.inputMode = v;
+    renderMetaFoodInputMode();
+    if(v === 'brand'){
+      const brands = metaGetBrandsForType(metaFoodInput.type);
+      if(brands.length){ metaFoodInput.selectedBrandId = brands[0].id; metaApplyFoodMacros(brands[0]); }
+    } else if(v === 'preset'){
+      const presets = metaGetPresetsForType(metaFoodInput.type);
+      if(presets.length){ metaFoodInput.selectedPresetId = presets[0].id; metaApplyFoodMacros(presets[0]); }
+    }
+    renderMetaLoadPage();
+  });
+  document.querySelector(`#metaFoodModeGroup button[data-val="${metaFoodInput.inputMode}"]`).classList.add('active');
+  renderMetaFoodInputMode();
+  document.getElementById('metaFoodBrandSelect').addEventListener('change', e=>{
+    metaFoodInput.selectedBrandId = e.target.value;
+    const brand = META_FOOD_BRAND_DB.find(b=>b.id===e.target.value);
+    if(brand) metaApplyFoodMacros(brand);
+    renderMetaLoadPage();
+  });
+  document.getElementById('metaFoodPresetSelect').addEventListener('change', e=>{
+    metaFoodInput.selectedPresetId = e.target.value;
+    const preset = META_FOOD_SMART_PRESETS.find(p=>p.id===e.target.value);
+    if(preset) metaApplyFoodMacros(preset);
+    renderMetaLoadPage();
+  });
 
   const proteinSourceSelect = document.getElementById('metaProteinSourceSelect');
   proteinSourceSelect.innerHTML = Object.entries(META_PROTEIN_SOURCE_DM_DB).map(([id,d])=>`<option value="${id}" ${metaFoodInput.proteinSource===id?'selected':''}>${d.label}</option>`).join('');
@@ -7805,19 +7920,10 @@ function initMetaLoadPage(){
     ['metaFoodKcalInput','kcalPerKg',100], ['metaFoodProteinInput','proteinPct',0], ['metaFoodFatInput','fatPct',0],
     ['metaFoodSodiumInput','sodiumMg100g',0], ['metaFoodPhosphorusInput','phosphorusMg100g',0],
   ].forEach(([id,key,min])=>{
-    document.getElementById(id).addEventListener('input', e=>{
-      metaFoodInput[key] = Math.max(min, parseFloat(e.target.value) || min);
-      renderMetaLoadPage();
-    });
+    document.getElementById(id).addEventListener('input', e=>{ metaFoodInput[key] = Math.max(min, parseFloat(e.target.value) || min); renderMetaLoadPage(); });
   });
-  document.getElementById('metaDailyFoodGInput').addEventListener('input', e=>{
-    metaFoodInput.dailyG = Math.max(0, parseFloat(e.target.value) || 0);
-    renderMetaLoadPage();
-  });
-  document.getElementById('metaFoodFreqInput').addEventListener('input', e=>{
-    metaFoodInput.freqPerDay = Math.max(1, Math.min(6, parseInt(e.target.value) || 1));
-    renderMetaLoadPage();
-  });
+  document.getElementById('metaDailyFoodGInput').addEventListener('input', e=>{ metaFoodInput.dailyG = Math.max(0, parseFloat(e.target.value) || 0); renderMetaLoadPage(); });
+  document.getElementById('metaFoodFreqInput').addEventListener('input', e=>{ metaFoodInput.freqPerDay = Math.max(1, Math.min(6, parseInt(e.target.value) || 1)); renderMetaLoadPage(); });
 
   const treatTypeSelect = document.getElementById('metaTreatTypeSelect');
   treatTypeSelect.innerHTML = META_TREAT_TYPES.map(t=>`<option value="${t.id}" ${metaFoodInput.treatType===t.id?'selected':''}>${t.label}</option>`).join('');
@@ -7828,29 +7934,19 @@ function initMetaLoadPage(){
   });
   document.getElementById('metaTreatQuantityLabel').textContent = `1일 급여량(${metaGetActiveTreatType().unitLabel})`;
   document.getElementById('metaTreatQuantityInput').value = metaFoodInput.treatQuantity;
-  document.getElementById('metaTreatQuantityInput').addEventListener('input', e=>{
-    metaFoodInput.treatQuantity = Math.max(0, parseFloat(e.target.value) || 0);
-    renderMetaLoadPage();
-  });
+  document.getElementById('metaTreatQuantityInput').addEventListener('input', e=>{ metaFoodInput.treatQuantity = Math.max(0, parseFloat(e.target.value) || 0); renderMetaLoadPage(); });
 
   renderMetaSupplementChecklist();
 
-  // ⑤ 처방약 모드/추론/직접입력 바인딩
+  // ④ 처방약
   bindSingleSelectGroup('metaMedModeGroup', v=>{ metaLoadInput.medicationInputMode = v; metaSyncMedicationModePanels(); renderMetaLoadPage(); });
   document.querySelector(`#metaMedModeGroup button[data-val="${metaLoadInput.medicationInputMode}"]`).classList.add('active');
   metaSyncMedicationModePanels();
-
-  bindSingleSelectGroup('metaConditionInferGroup', v=>{
-    metaLoadInput.inferredCondition = v;
-    metaLoadInput.inferredSeverity = null;
-    renderMetaInferSeverityOptions();
-    renderMetaLoadPage();
-  });
+  renderMetaInferConditionRows();
 
   document.getElementById('metaAddMedBtn').addEventListener('click', ()=>{
     metaLoadInput.medicationEntries.push(metaNewMedicationEntry());
-    renderMetaMedicationEntries();
-    renderMetaLoadPage();
+    renderMetaMedicationEntries(); renderMetaLoadPage();
   });
   renderMetaMedicationEntries();
 
@@ -7858,6 +7954,7 @@ function initMetaLoadPage(){
   bindGuardedReportButton('saveMetaLoadBtn', saveMetabolicLoadData);
   document.getElementById('viewMetaLoadReportBtn').addEventListener('click', ()=>withGuardianContact(openMetaLoadReport));
 }
+
 
 
 
