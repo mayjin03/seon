@@ -6949,6 +6949,12 @@ const META_MULTIMORBIDITY_COMBOS = [
   { pair:["kidney","liver"], liverMult:1.25, kidneyMult:1.25, note:"신장+간 질환 동반 — 대사·배설 경로가 겹쳐 부담이 상호 증폭돼요." },
   { pair:["liver","heart"],  liverMult:1.15, kidneyMult:1.10, note:"간+심장 질환 동반 — 약물 대사 및 순환 부담이 상호 증폭돼요." },
 ];
+/* 장기 손상 상호작용(Synergy Stress) — 이미 있는 기저질환(신장/간)에, 그 장기를 통해
+   대사·배설되는 약물계열(NSAIDs/이뇨제/스테로이드 등)이 더해지면 단순 합산을 넘어 상호 증폭돼요. */
+const META_CONDITION_MED_SYNERGY = [
+  { conditionOrgan:"kidney", medCategories:["nsaid","diuretic"], liverMult:1.05, kidneyMult:1.35, note:"신장 질환 상태에서 신장 배설 위주 약물(NSAIDs/이뇨제) 복용 시 상호작용 부담이 커져요." },
+  { conditionOrgan:"liver",  medCategories:["nsaid","steroid"],  liverMult:1.35, kidneyMult:1.05, note:"간 질환 상태에서 간 대사 위주 약물(NSAIDs/스테로이드) 복용 시 상호작용 부담이 커져요." },
+];
 
 const metaHealthProfile = {
   name: "",
@@ -7228,7 +7234,7 @@ const metaLoadInput = {
   inferredConditions: {},        // 복수 선택 가능: { [conditionKey]: {active, severity, dosePerAdmin, freqPerDay} }
 };
 Object.keys(META_CONDITION_TO_MED_CATEGORY).forEach(k=>{
-  metaLoadInput.inferredConditions[k] = { active:false, severity: META_CONDITION_TO_MED_CATEGORY[k].severities[0].id, dosePerAdmin:1, freqPerDay:1 };
+  metaLoadInput.inferredConditions[k] = { active:false, severity: META_CONDITION_TO_MED_CATEGORY[k].severities[0].id, dosePerAdmin:1, freqPerDay:1, formulation:'tablet', knownDoseMg:null };
 });
 function metaNewMedicationEntry(overrides){
   return Object.assign({ id: 'mmed_' + Math.random().toString(36).slice(2,9), category:'antibiotic', agent:'', formulation:'tablet', freqPerDay:1, dosePerAdmin:1, knownDoseMg:null }, overrides||{});
@@ -7323,7 +7329,7 @@ function metaGetEffectiveMedicationEntries(){
       const sev = map.severities.find(s=>s.id===state.severity) || map.severities[0];
       const category = sev.categoryOverride || map.category;
       entries.push(metaNewMedicationEntry({
-        category, agent:'', formulation:'tablet',
+        category, agent:'', formulation: state.formulation || 'tablet', knownDoseMg: state.knownDoseMg,
         freqPerDay: state.freqPerDay || 1, dosePerAdmin: state.dosePerAdmin || 1,
         inferred:true, inferredLabel: map.label, organRoute: map.organRoute, severityLabel: sev.label, severityMultiplier: sev.multiplier,
       }));
@@ -7368,8 +7374,10 @@ function computeOrganBurden(){
     const severityMult = e.severityMultiplier || 1.0;
     const doseFactor = metaComputeMedicationDoseFactor(e, weight); // 알 수 그대로, 또는 mg/체중 기반 정밀 보정
     const units = doseFactor * (e.freqPerDay||1);
-    liverRaw += w.liver * units * peak * severityMult;
-    kidneyRaw += w.kidney * units * peak * severityMult;
+    // 노령견(Senior)은 약물 대사·청소율(clearance)이 지연되므로, 약물 부하에는 ageFactor를 직접 곱해요
+    // (기존에는 사료/간식 질량 부하에만 적용돼 약물 자체의 대사 지연이 반영되지 않던 부분을 보완했어요).
+    liverRaw += w.liver * units * peak * severityMult * ageFactor;
+    kidneyRaw += w.kidney * units * peak * severityMult * ageFactor;
   });
   Object.values(metaSupplementState).forEach(s=>{
     if(!s.active) return;
@@ -7393,10 +7401,24 @@ function computeOrganBurden(){
     }
   });
 
+  // 장기 손상 상호작용(Synergy Stress) — 이미 존재하는 기저질환(신장/간) 상태에서, 그 장기에
+  // 부담을 주는 약물계열(NSAIDs/이뇨제/스테로이드 등)이 들어가면 단순 합산을 넘어 상호 증폭돼요.
+  const effectiveMeds = metaGetEffectiveMedicationEntries();
+  const activeSynergies = [];
+  META_CONDITION_MED_SYNERGY.forEach(syn=>{
+    const conditionActive = activeOrganConditions.includes(syn.conditionOrgan);
+    const medMatches = effectiveMeds.some(e=>syn.medCategories.includes(e.category));
+    if(conditionActive && medMatches){
+      liverPct *= syn.liverMult;
+      kidneyPct *= syn.kidneyMult;
+      activeSynergies.push(syn);
+    }
+  });
+
   return {
     liverPct: Math.round(Math.min(500, Math.max(0, liverPct))),
     kidneyPct: Math.round(Math.min(500, Math.max(0, kidneyPct))),
-    nutrients, ageFactor, breed, activeCombos,
+    nutrients, ageFactor, breed, activeCombos, activeSynergies,
   };
 }
 function burdenLevel(pct){
@@ -7445,6 +7467,11 @@ function detectNutrientOverloadChips(burden){
   if(burden && burden.activeCombos && burden.activeCombos.length){
     burden.activeCombos.forEach(combo=>{
       chips.push({ label:'복합질환 상호작용', pct: Math.round(Math.max(combo.liverMult, combo.kidneyMult)*100), note: combo.note });
+    });
+  }
+  if(burden && burden.activeSynergies && burden.activeSynergies.length){
+    burden.activeSynergies.forEach(syn=>{
+      chips.push({ label:'기저질환-약물 상호작용', pct: Math.round(Math.max(syn.liverMult, syn.kidneyMult)*100), note: syn.note });
     });
   }
   return chips;
@@ -7645,6 +7672,7 @@ function renderMetaInferConditionRows(){
   const wrap = document.getElementById('metaConditionInferGroup');
   wrap.innerHTML = Object.entries(META_CONDITION_TO_MED_CATEGORY).map(([key, map])=>{
     const state = metaLoadInput.inferredConditions[key];
+    const needsKnownDose = state.formulation === 'powder' || state.formulation === 'liquid';
     return `
       <div class="rounded-xl p-2.5" style="background:#FAF9F5; border:1.5px solid ${state.active ? '#3A5A40' : '#3A5A4022'};">
         <label class="flex items-center gap-2 text-xs font-bold cursor-pointer">
@@ -7654,16 +7682,27 @@ function renderMetaInferConditionRows(){
           <select class="meta-infer-severity-select w-full mt-1.5 rounded-lg px-2 py-1.5 text-xs mb-1.5" data-cond="${key}" style="border:1px solid #3A5A4033;">
             ${map.severities.map(s=>`<option value="${s.id}" ${state.severity===s.id?'selected':''}>${s.label}</option>`).join('')}
           </select>
+          <select class="meta-infer-formulation-select w-full rounded-lg px-2 py-1.5 text-xs mb-1.5" data-cond="${key}" style="border:1px solid #3A5A4033;">
+            ${Object.entries(META_FORMULATION_PEAK_MULTIPLIER).map(([id,f])=>`<option value="${id}" ${state.formulation===id?'selected':''}>${f.label}</option>`).join('')}
+          </select>
           <div class="grid grid-cols-2 gap-1.5">
             <div>
               <label class="block text-[9px] mb-0.5" style="color:#6b6259;">1일 투약 횟수(회/일)</label>
               <input type="number" min="1" max="6" step="1" class="meta-infer-freq-input w-full rounded-lg px-2 py-1.5 text-xs" data-cond="${key}" value="${state.freqPerDay}" style="border:1px solid #3A5A4033;">
             </div>
             <div>
-              <label class="block text-[9px] mb-0.5" style="color:#6b6259;">1회 급여 용량(알/포/ml)</label>
+              <label class="block text-[9px] mb-0.5" style="color:#6b6259;">${metaGetDoseUnitLabel(state.formulation)}</label>
               <input type="number" min="0.25" step="0.25" class="meta-infer-dose-input w-full rounded-lg px-2 py-1.5 text-xs" data-cond="${key}" value="${state.dosePerAdmin}" style="border:1px solid #3A5A4033;">
             </div>
           </div>
+          ${needsKnownDose ? `
+            <label class="flex items-center gap-2 text-[10px] mt-1.5 mb-1 cursor-pointer" style="color:#6b6259;">
+              <input type="checkbox" class="meta-infer-dose-known-checkbox" data-cond="${key}" ${state.knownDoseMg ? 'checked' : ''}> 약 봉투/병에 적힌 용량(mg)을 알아요
+            </label>
+            ${state.knownDoseMg !== null && state.knownDoseMg !== undefined ? `
+              <input type="number" min="0" step="1" class="meta-infer-known-dose-input w-full rounded-lg px-2 py-1.5 text-xs mb-1" data-cond="${key}" value="${state.knownDoseMg || ''}" placeholder="예: 50 (mg)" style="border:1px solid #3A5A4033;">
+            ` : `<p class="text-[9px] mb-1" style="color:#3A5A40;">💡 모름(보통 용량 적용) — 체중(${metaHealthProfile.weight}kg) 기준 표준 dosage로 자동 추론해요.</p>`}
+          ` : ''}
           <p class="text-[9px] text-muted mt-1">대사 경로: ${map.organRoute}</p>` : ''}
       </div>`;
   }).join('');
@@ -7673,11 +7712,27 @@ function renderMetaInferConditionRows(){
   wrap.querySelectorAll('.meta-infer-severity-select').forEach(sel=>{
     sel.addEventListener('change', e=>{ metaLoadInput.inferredConditions[sel.dataset.cond].severity = e.target.value; renderMetaLoadPage(); });
   });
+  wrap.querySelectorAll('.meta-infer-formulation-select').forEach(sel=>{
+    sel.addEventListener('change', e=>{
+      metaLoadInput.inferredConditions[sel.dataset.cond].formulation = e.target.value;
+      renderMetaInferConditionRows(); renderMetaLoadPage(); // 제형에 따라 용량 라벨/봉투용량 입력 표시가 달라지므로 카드를 다시 그려요.
+    });
+  });
   wrap.querySelectorAll('.meta-infer-freq-input').forEach(inp=>{
     inp.addEventListener('input', e=>{ metaLoadInput.inferredConditions[inp.dataset.cond].freqPerDay = Math.max(1, Math.min(6, parseInt(e.target.value)||1)); renderMetaLoadPage(); });
   });
   wrap.querySelectorAll('.meta-infer-dose-input').forEach(inp=>{
     inp.addEventListener('input', e=>{ metaLoadInput.inferredConditions[inp.dataset.cond].dosePerAdmin = Math.max(0.25, parseFloat(e.target.value)||1); renderMetaLoadPage(); });
+  });
+  wrap.querySelectorAll('.meta-infer-dose-known-checkbox').forEach(cb=>{
+    cb.addEventListener('change', e=>{
+      const state = metaLoadInput.inferredConditions[cb.dataset.cond];
+      state.knownDoseMg = e.target.checked ? (state.knownDoseMg || 0) : null;
+      renderMetaInferConditionRows(); renderMetaLoadPage();
+    });
+  });
+  wrap.querySelectorAll('.meta-infer-known-dose-input').forEach(inp=>{
+    inp.addEventListener('input', e=>{ metaLoadInput.inferredConditions[inp.dataset.cond].knownDoseMg = Math.max(0, parseFloat(e.target.value)||0); renderMetaLoadPage(); });
   });
 }
 
@@ -7952,7 +8007,7 @@ function renderMetaLoadReportHtml(){
           <tr style="border-bottom:1px solid #2C241F14;"><td class="py-1.5 text-muted" style="width:40%;">주식 급여</td><td class="py-1.5 font-semibold">${foodSourceLabel} · ${metaFoodInput.dailyG}g/일 (1일 ${metaFoodInput.freqPerDay}회, 회당 ${computeMetaPerMealG().toFixed(1)}g)</td></tr>
           <tr style="border-bottom:1px solid #2C241F14;"><td class="py-1.5 text-muted">간식</td><td class="py-1.5 font-semibold">${META_TREAT_TYPES.find(t=>t.id===metaFoodInput.treatType)?.label} × ${metaFoodInput.treatQuantity}${META_TREAT_TYPES.find(t=>t.id===metaFoodInput.treatType)?.unitLabel}</td></tr>
           <tr style="border-bottom:1px solid #2C241F14;"><td class="py-1.5 text-muted">영양제</td><td class="py-1.5 font-semibold">${activeSupps.length ? activeSupps.map(c=>`${c.label}(${metaGetSupplementPreset(c.id)?.label}, ${META_SUPPLEMENT_FORMULATIONS.find(f=>f.id===metaSupplementState[c.id].formulation)?.label}, ${metaSupplementState[c.id].dosePerAdmin}×${metaSupplementState[c.id].freqPerDay}회)`).join(', ') : '없음'}</td></tr>
-          <tr><td class="py-1.5 text-muted">처방약</td><td class="py-1.5 font-semibold">${meds.length ? meds.map(m=>`${m.agent ? (META_DRUG_AGENTS_BY_CATEGORY[m.category]||[]).find(a=>a.id===m.agent)?.label : META_MEDICATION_CATEGORIES.find(c=>c.id===m.category)?.label}${m.severityLabel?`(${m.severityLabel})`:''} · ${META_FORMULATION_PEAK_MULTIPLIER[m.formulation]?.label}, 1일${m.freqPerDay}회×${m.dosePerAdmin}`).join(', ') : '없음'}</td></tr>
+          <tr><td class="py-1.5 text-muted">처방약</td><td class="py-1.5 font-semibold">${meds.length ? meds.map(m=>`${m.agent ? (META_DRUG_AGENTS_BY_CATEGORY[m.category]||[]).find(a=>a.id===m.agent)?.label : META_MEDICATION_CATEGORIES.find(c=>c.id===m.category)?.label}${m.severityLabel?`(${m.severityLabel})`:''} · ${META_FORMULATION_PEAK_MULTIPLIER[m.formulation]?.label}, 1일${m.freqPerDay}회×${m.dosePerAdmin}${m.knownDoseMg?` (${m.knownDoseMg}mg/회)`:''}`).join(', ') : '없음'}</td></tr>
         </tbody>
       </table>
       <p class="text-[10px] text-muted mt-4">본 리포트는 참고용 추정치이며, 실제 진단·처방을 대체하지 않습니다. 간·신장 질환이 의심되면 반드시 수의사 진료를 받아주세요.</p>
