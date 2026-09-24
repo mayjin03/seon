@@ -937,8 +937,15 @@
 
           <label class="block text-[11px] font-semibold mb-1.5" style="color:#2C241F;">간식 제형/종류</label>
           <select id="metaTreatTypeSelect" class="w-full rounded-xl px-3 py-2.5 mb-2 text-sm" style="border:1px solid #3A5A4033;"></select>
+
+          <label class="block text-[11px] font-semibold mb-1.5" style="color:#2C241F;">입력 단위</label>
+          <div class="grid grid-cols-2 gap-2 mb-2" id="metaTreatUnitModeGroup">
+            <button data-val="count" class="mc-chip rounded-xl py-2 text-xs">개수(개/스틱/포)</button>
+            <button data-val="gram" class="mc-chip rounded-xl py-2 text-xs">질량(g)</button>
+          </div>
           <label id="metaTreatQuantityLabel" class="block text-[11px] font-semibold mb-1.5" style="color:#2C241F;">1일 급여량</label>
           <input type="number" min="0" step="0.5" id="metaTreatQuantityInput" class="w-full rounded-xl px-3 py-2.5 text-sm" style="border:1px solid #3A5A4033;">
+          <p id="metaTreatGramsNote" class="text-[10px] mt-1" style="color:#3A5A40;"></p>
         </div>
 
         <!-- ③ 영양제 -->
@@ -7029,11 +7036,11 @@ function metaComputeAsFedFromDM(dm, moisturePct){
 }
 
 const META_TREAT_TYPES = [
-  { id:"jerky",        label:"육포/포류(고단백/고나트륨)", unitLabel:"개비", kcalPerUnit:35, proteinGPerUnit:6.0, sodiumMgPerUnit:150, gramsPerUnit:8  },
-  { id:"freeze_dried",  label:"동결건조 트릿",             unitLabel:"개",   kcalPerUnit:8,  proteinGPerUnit:1.5, sodiumMgPerUnit:20,  gramsPerUnit:2  },
-  { id:"churu",         label:"츄르/짜먹는 간식(고수분)",  unitLabel:"개",   kcalPerUnit:10, proteinGPerUnit:0.5, sodiumMgPerUnit:60,  gramsPerUnit:14 },
-  { id:"dental_chew",   label:"덴탈츄/껌류",               unitLabel:"개",   kcalPerUnit:25, proteinGPerUnit:2.0, sodiumMgPerUnit:40,  gramsPerUnit:15 },
-  { id:"veggie_fruit",  label:"야채/과일류(저단백/저칼로리)", unitLabel:"조각", kcalPerUnit:5,  proteinGPerUnit:0.2, sodiumMgPerUnit:2,   gramsPerUnit:10 },
+  { id:"jerky",        label:"육포/포류(고단백/고나트륨)",   unitLabel:"개비", gramsPerUnit:10, kcalPer100g:350, proteinPct:55, fatPct:10, sodiumMg100g:500, phosphorusMg100g:450 },
+  { id:"freeze_dried",  label:"동결건조 트릿",               unitLabel:"개",   gramsPerUnit:2,  kcalPer100g:400, proteinPct:50, fatPct:20, sodiumMg100g:300, phosphorusMg100g:500 },
+  { id:"churu",         label:"츄르/짜먹는 간식(고수분)",    unitLabel:"개",   gramsPerUnit:14, kcalPer100g:70,  proteinPct:5,  fatPct:2,  sodiumMg100g:200, phosphorusMg100g:150 },
+  { id:"dental_chew",   label:"덴탈츄/껌류",                 unitLabel:"개",   gramsPerUnit:15, kcalPer100g:350, proteinPct:40, fatPct:5,  sodiumMg100g:150, phosphorusMg100g:300 },
+  { id:"veggie_fruit",  label:"야채/과일류(저단백/저칼로리)", unitLabel:"조각", gramsPerUnit:10, kcalPer100g:40,  proteinPct:2,  fatPct:0.5,sodiumMg100g:5,   phosphorusMg100g:20  },
 ];
 
 const metaFoodInput = {
@@ -7043,7 +7050,7 @@ const metaFoodInput = {
   selectedPresetId: "dry_standard",
   kcalPerKg: 3650, proteinPct: 26, fatPct: 15, sodiumMg100g: 300, phosphorusMg100g: 900, moisturePct: 10,
   dailyG: 100, freqPerDay: 2,
-  treatType: "jerky", treatQuantity: 0,
+  treatType: "jerky", treatUnitMode: "count", treatQuantity: 0,
 };
 /* 제형별 통상적인 수분(%) 기본값 — 직접입력 모드에서 처음 보여줄 참고값이에요(언제든 수정 가능). */
 const META_FOOD_TYPE_DEFAULT_MOISTURE = { dry:10, wet:78, homemade:75, raw:70, freezeDried:8 };
@@ -7073,8 +7080,13 @@ const META_SUPPLEMENT_CATEGORIES = [
       components:[{label:"크랜베리 추출물", amount:200, unit:"mg"}] },
   ]},
   { id:"multivitamin",   label:"종합비타민", presets:[
-    { id:"multivit_standard", label:"지용성비타민A/D+미네랄(표준)", calciumMg:150, phosphorusMg:100, sodiumMg:10, vitAiu:500, vitDiu:250, omega3Mg:100,
-      components:[{label:"비타민D", amount:250, unit:"IU"},{label:"칼슘", amount:150, unit:"mg"}] },
+    { id:"multivit_standard", label:"지용성비타민A/D+미네랄(표준)", calciumMg:150, phosphorusMg:100, sodiumMg:10, potassiumMg:20, vitAiu:500, vitDiu:250, omega3Mg:100, proteinMg:50,
+      components:[
+        {label:"비타민A", amount:500, unit:"IU"}, {label:"비타민D", amount:250, unit:"IU"},
+        {label:"칼슘", amount:150, unit:"mg"}, {label:"인", amount:100, unit:"mg"},
+        {label:"나트륨", amount:10, unit:"mg"}, {label:"칼륨", amount:20, unit:"mg"},
+        {label:"단백질/아미노산", amount:50, unit:"mg"},
+      ] },
   ]},
   { id:"omega3",         label:"오메가3",   presets:[
     { id:"epa_dha_standard", label:"EPA/DHA(표준)", calciumMg:0, phosphorusMg:0, sodiumMg:0, vitAiu:0, vitDiu:0, omega3Mg:400,
@@ -7099,7 +7111,8 @@ META_SUPPLEMENT_CATEGORIES.forEach(c=>metaEnsureCategoryState(metaSupplementStat
 /* 프리셋 성분(components) 라벨 → 실제 대사 부하 계산에 쓰이는 필드 매핑.
    매핑되지 않는 성분(글루코사민/MSM/콜라겐 등)은 안내 표기 전용이고 부하 계산에는 관여하지 않아요. */
 const META_COMPONENT_TO_CALC_FIELD = {
-  "비타민D": "vitDiu", "칼슘": "calciumMg", "인": "phosphorusMg", "나트륨": "sodiumMg",
+  "비타민A": "vitAiu", "비타민D": "vitDiu", "칼슘": "calciumMg", "인": "phosphorusMg",
+  "나트륨": "sodiumMg", "칼륨": "potassiumMg", "단백질/아미노산": "proteinMg",
   "오메가3(EPA+DHA)": "omega3Mg", "EPA+DHA": "omega3Mg",
 };
 function metaGetSupplementPreset(catId){
@@ -7121,7 +7134,7 @@ function metaGetEffectiveComponents(catId){
 function metaGetEffectiveCalcFields(catId){
   const preset = metaGetSupplementPreset(catId);
   if(!preset) return {};
-  const fields = { calciumMg:preset.calciumMg, phosphorusMg:preset.phosphorusMg, sodiumMg:preset.sodiumMg, vitAiu:preset.vitAiu, vitDiu:preset.vitDiu, omega3Mg:preset.omega3Mg };
+  const fields = { calciumMg:preset.calciumMg, phosphorusMg:preset.phosphorusMg, sodiumMg:preset.sodiumMg, potassiumMg:preset.potassiumMg||0, vitAiu:preset.vitAiu, vitDiu:preset.vitDiu, omega3Mg:preset.omega3Mg, proteinMg:preset.proteinMg||0 };
   metaGetEffectiveComponents(catId).forEach(c=>{
     const field = META_COMPONENT_TO_CALC_FIELD[c.label];
     if(field) fields[field] = c.amount;
@@ -7170,10 +7183,31 @@ const META_DRUG_AGENTS_BY_CATEGORY = {
   other: [],
 };
 const META_FORMULATION_PEAK_MULTIPLIER = {
-  tablet: { label:"💊 알약(정제/캡슐)", multiplier:1.0  },
-  powder: { label:"🧂 가루약(조제분말)", multiplier:1.25 },
-  liquid: { label:"🧪 시럽/액상",       multiplier:1.3  },
+  tablet:    { label:"💊 알약(정제/캡슐)",     multiplier:1.0  },
+  powder:    { label:"🧂 가루약(조제분말/포)", multiplier:1.25 },
+  liquid:    { label:"🧪 액상/시럽(mL)",       multiplier:1.3  },
+  injection: { label:"💉 주사/기타",           multiplier:1.4  },
 };
+/* 가루약/액상의 정확한 mg 용량을 모를 때, 체중(kg) 기반으로 표준 일일 dosage(mg/kg/day)를
+   추론하기 위한 임상 참고값이에요 — 카테고리별 통상적인 투약 범위의 중간값을 썼어요. */
+const META_STANDARD_DOSAGE_MG_PER_KG_PER_DAY = {
+  antibiotic: 20, nsaid: 0.2, steroid: 0.5, diuretic: 2, cardiac: 0.25, other: 5,
+};
+/* 처방약의 실질 투여 '단위(units)'를 계산해요.
+   - 정제/캡슐/주사: 이미 '알 수/회'가 직관적인 단위라 그대로 써요.
+   - 가루약/액상 + 봉투/병에 적힌 mg을 알고 있는 경우: 표준 1회 용량(mg) 대비 실제 mg 비율로 환산해요.
+   - 가루약/액상 + mg을 모르는 경우('모름(보통 용량 적용)'): 체중(kg) 비례 보정 계수를 대신 써요
+     (기준 체중 10kg 대비, 0.5~2.5배로 제한). */
+function metaComputeMedicationDoseFactor(entry, weight){
+  if(entry.formulation !== 'powder' && entry.formulation !== 'liquid') return (entry.dosePerAdmin||1);
+  const stdMgPerKgDay = META_STANDARD_DOSAGE_MG_PER_KG_PER_DAY[entry.category] || META_STANDARD_DOSAGE_MG_PER_KG_PER_DAY.other;
+  if(entry.knownDoseMg && entry.knownDoseMg > 0){
+    const stdDailyMg = weight * stdMgPerKgDay;
+    const stdPerAdminMg = stdDailyMg / Math.max(1, entry.freqPerDay||1);
+    return Math.max(0.25, Math.min(4, entry.knownDoseMg / Math.max(0.01, stdPerAdminMg)));
+  }
+  return Math.max(0.5, Math.min(2.5, weight / 10));
+}
 const META_CONDITION_TO_MED_CATEGORY = {
   joint_pain: { label:"슬개골/관절염", category:"nsaid", organRoute:"간 대사 위주 (일부 신장 배설)",
     severities:[ { id:"mild", label:"경증(단기 소염제)", multiplier:1.0 }, { id:"moderate", label:"중등도(장기 NSAIDs)", multiplier:1.3 }, { id:"severe", label:"중증/급성(고용량)", multiplier:1.6 } ] },
@@ -7197,7 +7231,7 @@ Object.keys(META_CONDITION_TO_MED_CATEGORY).forEach(k=>{
   metaLoadInput.inferredConditions[k] = { active:false, severity: META_CONDITION_TO_MED_CATEGORY[k].severities[0].id, dosePerAdmin:1, freqPerDay:1 };
 });
 function metaNewMedicationEntry(overrides){
-  return Object.assign({ id: 'mmed_' + Math.random().toString(36).slice(2,9), category:'antibiotic', agent:'', formulation:'tablet', freqPerDay:1, dosePerAdmin:1 }, overrides||{});
+  return Object.assign({ id: 'mmed_' + Math.random().toString(36).slice(2,9), category:'antibiotic', agent:'', formulation:'tablet', freqPerDay:1, dosePerAdmin:1, knownDoseMg:null }, overrides||{});
 }
 function metaGetAgentWeight(category, agentId){
   const list = META_DRUG_AGENTS_BY_CATEGORY[category] || [];
@@ -7225,6 +7259,12 @@ function metaBuildProteinSourceEstimateEntries(type){
   });
 }
 function metaGetActiveTreatType(){ return META_TREAT_TYPES.find(t=>t.id===metaFoodInput.treatType) || META_TREAT_TYPES[0]; }
+/* [개수] 단위로 입력했으면 제형별 1개당 평균 질량(g)으로 자동 환산하고, [질량(g)] 단위면 입력값을 그대로 써요. */
+function metaGetTreatGrams(){
+  const treatType = metaGetActiveTreatType();
+  const qty = metaFoodInput.treatQuantity || 0;
+  return metaFoodInput.treatUnitMode === 'gram' ? qty : qty * treatType.gramsPerUnit;
+}
 function metaGetEffectiveBreed(){ return META_BREED_DB.find(b=>b.id===metaHealthProfile.breed) || META_BREED_DB[META_BREED_DB.length-1]; }
 function metaGetBrandsForType(type){
   const named = META_FOOD_BRAND_DB.filter(b=>b.type===type);
@@ -7240,14 +7280,17 @@ function computeMetaNutrientTotals(){
   let totalProteinG = foodFactor * macros.proteinPct;
   let totalSodiumMg = foodFactor * macros.sodiumMg100g;
   let totalPhosphorusMg = foodFactor * macros.phosphorusMg100g;
-  let totalVitAiu = 0, totalVitDiu = 0, totalCalciumMg = 0, totalOmega3Mg = 0;
+  let totalVitAiu = 0, totalVitDiu = 0, totalCalciumMg = 0, totalOmega3Mg = 0, totalPotassiumMg = 0;
 
+  // 간식: 제형별 100g당 밀도(kcal/단백/지방/나트륨/인)를 사료와 동일한 방식으로 합산해요.
+  // [개수] 입력이면 제형별 1개당 평균 질량(g)으로 먼저 환산한 뒤 계산해요.
   const treatType = metaGetActiveTreatType();
-  const treatQty = metaFoodInput.treatQuantity || 0;
-  const treatKcal = treatQty * treatType.kcalPerUnit;
-  const treatG = treatQty * treatType.gramsPerUnit;
-  totalProteinG += treatQty * treatType.proteinGPerUnit;
-  totalSodiumMg += treatQty * treatType.sodiumMgPerUnit;
+  const treatG = metaGetTreatGrams();
+  const treatFactor = treatG / 100;
+  const treatKcal = treatFactor * treatType.kcalPer100g;
+  totalProteinG += treatFactor * treatType.proteinPct;
+  totalSodiumMg += treatFactor * treatType.sodiumMg100g;
+  totalPhosphorusMg += treatFactor * treatType.phosphorusMg100g;
 
   Object.entries(metaSupplementState).forEach(([cat, s])=>{
     if(!s.active) return;
@@ -7258,12 +7301,14 @@ function computeMetaNutrientTotals(){
     totalCalciumMg += fields.calciumMg * units;
     totalPhosphorusMg += fields.phosphorusMg * units;
     totalSodiumMg += fields.sodiumMg * units;
+    totalPotassiumMg += (fields.potassiumMg||0) * units;
     totalVitAiu += fields.vitAiu * units;
     totalVitDiu += fields.vitDiu * units;
     totalOmega3Mg += fields.omega3Mg * units;
+    totalProteinG += ((fields.proteinMg||0) / 1000) * units; // 보충 단백질/아미노산(mg) → BUN 부하 반영을 위해 g 단위로 합산
   });
 
-  return { foodG, totalProteinG, totalSodiumMg, totalPhosphorusMg, totalCalciumMg, totalVitAiu, totalVitDiu, totalOmega3Mg, treatG, treatKcal };
+  return { foodG, totalProteinG, totalSodiumMg, totalPhosphorusMg, totalCalciumMg, totalVitAiu, totalVitDiu, totalOmega3Mg, totalPotassiumMg, treatG, treatKcal };
 }
 
 /* 처방약이 '진단 질환으로 자동 유추' 모드일 때, 실제 계산에 쓰일 유효 항목 목록 —
@@ -7321,7 +7366,8 @@ function computeOrganBurden(){
     const w = e.agent ? metaGetAgentWeight(e.category, e.agent) : (ORGAN_LOAD_BY_MED_CATEGORY[e.category] || ORGAN_LOAD_BY_MED_CATEGORY.other);
     const peak = (META_FORMULATION_PEAK_MULTIPLIER[e.formulation] || META_FORMULATION_PEAK_MULTIPLIER.tablet).multiplier;
     const severityMult = e.severityMultiplier || 1.0;
-    const units = (e.dosePerAdmin||1) * (e.freqPerDay||1);
+    const doseFactor = metaComputeMedicationDoseFactor(e, weight); // 알 수 그대로, 또는 mg/체중 기반 정밀 보정
+    const units = doseFactor * (e.freqPerDay||1);
     liverRaw += w.liver * units * peak * severityMult;
     kidneyRaw += w.kidney * units * peak * severityMult;
   });
@@ -7385,6 +7431,9 @@ function detectNutrientOverloadChips(burden){
 
   const phosphorusUL = weight * (renalCaution ? 30 : 75);
   if(n.totalPhosphorusMg > phosphorusUL) chips.push({ label:'인(P)', pct: Math.round((n.totalPhosphorusMg/phosphorusUL)*100), note: renalCaution ? '신장 주의 상태라 인(P) 상한을 더 엄격히 적용했어요.' : '인(P) 섭취가 상한선을 초과했어요.' });
+
+  const potassiumUL = weight * (renalCaution ? 40 : 80);
+  if(n.totalPotassiumMg > potassiumUL) chips.push({ label:'칼륨(K)', pct: Math.round((n.totalPotassiumMg/potassiumUL)*100), note: renalCaution ? '신장 주의 상태에서는 칼륨 배출이 어려워질 수 있어 상한을 더 엄격히 적용했어요.' : '칼륨(K) 섭취가 상한선을 초과했어요.' });
 
   if(n.totalCalciumMg > 0 && n.totalPhosphorusMg > 0){
     const ratio = n.totalCalciumMg / n.totalPhosphorusMg;
@@ -7506,8 +7555,15 @@ function renderMetaFoodInputMode(){
 }
 
 /* ---- 처방약 입력 카드 렌더링 (직접 선택 모드: 카테고리 + 성분 + 제형 + 용량/횟수) ---- */
+function metaGetDoseUnitLabel(formulation){
+  if(formulation === 'powder') return '회당 급여량(포)';
+  if(formulation === 'liquid') return '회당 급여량(mL)';
+  if(formulation === 'injection') return '회당 용량(mL/회)';
+  return '회당 알 수(알)';
+}
 function metaMedEntryCardHtml(entry){
   const agents = META_DRUG_AGENTS_BY_CATEGORY[entry.category] || [];
+  const needsKnownDose = entry.formulation === 'powder' || entry.formulation === 'liquid';
   return `
     <div class="rounded-xl p-3 meta-med-card" data-id="${entry.id}" style="background:#FAF9F5;">
       <div class="grid grid-cols-2 gap-2 mb-2">
@@ -7528,10 +7584,18 @@ function metaMedEntryCardHtml(entry){
           <input type="number" min="1" max="6" step="1" class="meta-med-freq-input w-full rounded-lg px-2 py-1.5 text-xs" data-id="${entry.id}" value="${entry.freqPerDay}" style="border:1px solid #3A5A4033;">
         </div>
         <div>
-          <label class="block text-[10px] font-semibold mb-1" style="color:#6b6259;">1회 급여 용량(정/포/ml)</label>
+          <label class="block text-[10px] font-semibold mb-1" style="color:#6b6259;">${metaGetDoseUnitLabel(entry.formulation)}</label>
           <input type="number" min="0.25" step="0.25" class="meta-med-dose-input w-full rounded-lg px-2 py-1.5 text-xs" data-id="${entry.id}" value="${entry.dosePerAdmin}" style="border:1px solid #3A5A4033;">
         </div>
       </div>
+      ${needsKnownDose ? `
+        <label class="flex items-center gap-2 text-[10px] mb-1.5 cursor-pointer" style="color:#6b6259;">
+          <input type="checkbox" class="meta-med-dose-known-checkbox" data-id="${entry.id}" ${entry.knownDoseMg ? 'checked' : ''}> 약 봉투/병에 적힌 용량(mg)을 알아요
+        </label>
+        ${entry.knownDoseMg !== null && entry.knownDoseMg !== undefined ? `
+          <input type="number" min="0" step="1" class="meta-med-known-dose-input w-full rounded-lg px-2 py-1.5 text-xs mb-2" data-id="${entry.id}" value="${entry.knownDoseMg || ''}" placeholder="예: 50 (mg)" style="border:1px solid #3A5A4033;">
+        ` : `<p class="text-[9px] mb-2" style="color:#3A5A40;">💡 모름(보통 용량 적용) — 체중(${metaHealthProfile.weight}kg) 기준 표준 dosage로 자동 추론해요.</p>`}
+      ` : ''}
       <button type="button" class="meta-med-remove-btn text-[10px]" data-id="${entry.id}" style="color:#C0473A;">🗑️ 삭제</button>
     </div>`;
 }
@@ -7547,13 +7611,23 @@ function renderMetaMedicationEntries(){
     metaLoadInput.medicationEntries.find(x=>x.id===sel.dataset.id).agent = e.target.value; renderMetaLoadPage();
   }));
   wrap.querySelectorAll('.meta-med-formulation-select').forEach(sel=>sel.addEventListener('change', e=>{
-    metaLoadInput.medicationEntries.find(x=>x.id===sel.dataset.id).formulation = e.target.value; renderMetaLoadPage();
+    metaLoadInput.medicationEntries.find(x=>x.id===sel.dataset.id).formulation = e.target.value;
+    renderMetaMedicationEntries(); renderMetaLoadPage(); // 제형에 따라 용량 라벨/봉투용량 입력 표시가 달라지므로 카드 자체를 다시 그려요.
   }));
   wrap.querySelectorAll('.meta-med-freq-input').forEach(inp=>inp.addEventListener('input', e=>{
     metaLoadInput.medicationEntries.find(x=>x.id===inp.dataset.id).freqPerDay = Math.max(1, Math.min(6, parseInt(e.target.value)||1)); renderMetaLoadPage();
   }));
   wrap.querySelectorAll('.meta-med-dose-input').forEach(inp=>inp.addEventListener('input', e=>{
     metaLoadInput.medicationEntries.find(x=>x.id===inp.dataset.id).dosePerAdmin = Math.max(0.25, parseFloat(e.target.value)||1); renderMetaLoadPage();
+  }));
+  wrap.querySelectorAll('.meta-med-dose-known-checkbox').forEach(cb=>cb.addEventListener('change', e=>{
+    const entry = metaLoadInput.medicationEntries.find(x=>x.id===cb.dataset.id);
+    entry.knownDoseMg = e.target.checked ? (entry.knownDoseMg || 0) : null; // 체크 해제 시 '모름(표준 용량 적용)'으로 되돌아가요.
+    renderMetaMedicationEntries(); renderMetaLoadPage();
+  }));
+  wrap.querySelectorAll('.meta-med-known-dose-input').forEach(inp=>inp.addEventListener('input', e=>{
+    metaLoadInput.medicationEntries.find(x=>x.id===inp.dataset.id).knownDoseMg = Math.max(0, parseFloat(e.target.value) || 0);
+    renderMetaLoadPage();
   }));
   wrap.querySelectorAll('.meta-med-remove-btn').forEach(btn=>btn.addEventListener('click', ()=>{
     metaLoadInput.medicationEntries = metaLoadInput.medicationEntries.filter(x=>x.id!==btn.dataset.id);
@@ -8005,16 +8079,34 @@ function initMetaLoadPage(){
   document.getElementById('metaDailyFoodGInput').addEventListener('input', e=>{ metaFoodInput.dailyG = Math.max(0, parseFloat(e.target.value) || 0); renderMetaLoadPage(); });
   document.getElementById('metaFoodFreqInput').addEventListener('input', e=>{ metaFoodInput.freqPerDay = Math.max(1, Math.min(6, parseInt(e.target.value) || 1)); renderMetaLoadPage(); });
 
+  function metaUpdateTreatQuantityLabel(){
+    const label = metaFoodInput.treatUnitMode === 'gram' ? '1일 급여량(g)' : `1일 급여량(${metaGetActiveTreatType().unitLabel})`;
+    document.getElementById('metaTreatQuantityLabel').textContent = label;
+    const gramsNote = document.getElementById('metaTreatGramsNote');
+    gramsNote.textContent = metaFoodInput.treatUnitMode === 'count'
+      ? `≈ 총 ${metaGetTreatGrams().toFixed(1)}g로 환산돼요 (1${metaGetActiveTreatType().unitLabel} = ${metaGetActiveTreatType().gramsPerUnit}g 기준)`
+      : '';
+  }
   const treatTypeSelect = document.getElementById('metaTreatTypeSelect');
   treatTypeSelect.innerHTML = META_TREAT_TYPES.map(t=>`<option value="${t.id}" ${metaFoodInput.treatType===t.id?'selected':''}>${t.label}</option>`).join('');
   treatTypeSelect.addEventListener('change', e=>{
     metaFoodInput.treatType = e.target.value;
-    document.getElementById('metaTreatQuantityLabel').textContent = `1일 급여량(${metaGetActiveTreatType().unitLabel})`;
+    metaUpdateTreatQuantityLabel();
     renderMetaLoadPage();
   });
-  document.getElementById('metaTreatQuantityLabel').textContent = `1일 급여량(${metaGetActiveTreatType().unitLabel})`;
+  bindSingleSelectGroup('metaTreatUnitModeGroup', v=>{
+    metaFoodInput.treatUnitMode = v;
+    metaUpdateTreatQuantityLabel();
+    renderMetaLoadPage();
+  });
+  document.querySelector(`#metaTreatUnitModeGroup button[data-val="${metaFoodInput.treatUnitMode}"]`).classList.add('active');
+  metaUpdateTreatQuantityLabel();
   document.getElementById('metaTreatQuantityInput').value = metaFoodInput.treatQuantity;
-  document.getElementById('metaTreatQuantityInput').addEventListener('input', e=>{ metaFoodInput.treatQuantity = Math.max(0, parseFloat(e.target.value) || 0); renderMetaLoadPage(); });
+  document.getElementById('metaTreatQuantityInput').addEventListener('input', e=>{
+    metaFoodInput.treatQuantity = Math.max(0, parseFloat(e.target.value) || 0);
+    metaUpdateTreatQuantityLabel();
+    renderMetaLoadPage();
+  });
 
   renderMetaSupplementChecklist();
 
