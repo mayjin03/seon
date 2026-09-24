@@ -108,34 +108,6 @@
   /* ---- 메인 탭 라우팅 ---- */
   .main-tab-btn{ color:var(--c-primary-dark); transition:all .18s ease; opacity:.6; }
   .main-tab-btn.active{ background:var(--c-primary); color:#fff; opacity:1; }
-
-  /* ---- 멍생스컷 BCS 카드 프레임 ---- */
-  #bcsCard{ transition:background .25s ease, border-color .25s ease; }
-  #bcsCard.frame-normal{ background:linear-gradient(160deg, #DCF6EF, #FFE7D6); border:3px solid #2FBF9F; }
-  #bcsCard.frame-care{ background:linear-gradient(160deg, #FFF3D6, #FFE7D6); border:3px dashed #F2C14E; }
-
-  /* ---- 멍생스컷 스티커 꾸미기 ---- */
-  #bcsCard{ position:relative; }
-  #bcsStickerLayer{ position:absolute; inset:0; pointer-events:none; z-index:5; }
-  .bcs-sticker{ position:absolute; transform:translate(-50%,-50%); touch-action:none; user-select:none; pointer-events:auto; }
-  .bcs-sticker-content{ font-size:38px; line-height:1; cursor:grab; text-align:center; white-space:nowrap; }
-  .bcs-sticker-content:active{ cursor:grabbing; }
-  .bcs-sticker.is-text .bcs-sticker-content{
-    font-size:13px; font-weight:800; background:#fff; color:#1d1d1f; border-radius:14px;
-    padding:6px 12px; box-shadow:0 2px 8px rgba(0,0,0,.18); border:2px solid #1d1d1f;
-  }
-  .bcs-sticker-delete{
-    position:absolute; top:-9px; right:-9px; width:19px; height:19px; border-radius:50%;
-    background:#1d1d1f; color:#fff; font-size:11px; line-height:19px; text-align:center;
-    border:2px solid #fff; cursor:pointer; padding:0;
-  }
-  .bcs-sticker-resize{
-    position:absolute; bottom:-7px; right:-7px; width:15px; height:15px; border-radius:50%;
-    background:#fff; border:2px solid var(--c-primary); cursor:nwse-resize;
-  }
-  #bcsCard.capturing .bcs-sticker-delete, #bcsCard.capturing .bcs-sticker-resize{ display:none; }
-  .sticker-palette-btn{ font-size:22px; line-height:1; padding:8px; border-radius:12px; background:var(--surface-2); border:1.5px solid var(--border); cursor:pointer; transition:all .15s ease; }
-  .sticker-palette-btn:hover{ border-color:var(--c-primary); transform:translateY(-2px); }
   .sticker-palette-btn.is-text{ font-size:11px; font-weight:700; padding:8px 10px; white-space:nowrap; }
 
   /* ---- 1g 믹스 계산기 & 1일 안전 투약 타임라인 공용: Forest Sage & Warm Cream 테마 ---- */
@@ -339,7 +311,6 @@
         <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="mixcalc">🥣 1g 믹스 계산기</button>
         <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="metaload">⚙️ 대사 부하 검문</button>
         <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="insurance">🛡️ 1일 안전 투약 타임라인</button>
-        <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="bcs">📸 멍생스컷 BCS 테스트</button>
       </div>
     </div>
 
@@ -1211,134 +1182,6 @@
       </div>
     </div>
 
-    <!-- ===================== BCS PAGE: 멍생스컷 BCS 테스트 & 카드 생성기 ===================== -->
-    <div id="bcsPage" class="hidden">
-      <div class="text-center mb-8">
-        <div class="inline-flex items-center gap-1.5 bg-primary-light text-primary-dark text-xs font-bold px-3 py-1.5 rounded-full mb-4">
-          <span>📸</span><span>멍생스컷 BCS 테스트</span>
-        </div>
-        <h1 class="font-display font-bold mb-2" style="font-size:clamp(1.4rem,4vw,2rem);">우리 아이 체형, 3초 슬라이더로 체크해요</h1>
-        <p class="text-muted text-sm">귀여운 인생네컷 감성 카드로 결과를 저장하고 공유해보세요</p>
-      </div>
-
-      <div class="flex items-center justify-center gap-2 mb-7" id="bcsStepDots"></div>
-
-      <div class="surface rounded-[var(--radius-card)] p-6 sm:p-8 max-w-lg mx-auto">
-
-        <!-- BCS STEP 1: 슬라이더 측정 -->
-        <div id="bcsStep1" class="fade-in">
-          <p class="text-xs font-bold text-primary-dark tracking-wide mb-1">STEP 1</p>
-          <h2 class="font-display text-xl font-bold mb-1">체형 슬라이더 테스트</h2>
-          <p class="text-sm text-muted mb-6">아이를 만졌을 때·위에서 봤을 때 느낌을 슬라이더로 옮겨보세요.</p>
-
-          <div class="flex flex-col items-center mb-6">
-            <div id="bcsLiveIllustration" class="mb-2"></div>
-            <p class="text-xs text-muted">실시간 체형 미리보기</p>
-            <p class="font-display font-bold text-2xl mt-1"><span id="bcsLiveNumber">5</span><span class="text-sm font-medium text-muted">/9 단계</span></p>
-            <p id="bcsLiveLabel" class="text-xs font-semibold" style="color:var(--c-mint);">이상적</p>
-          </div>
-
-          <div class="space-y-5 mb-2">
-            <div>
-              <label class="block text-xs font-semibold mb-1.5">① 갈비뼈 터치감</label>
-              <input type="range" min="1" max="9" value="5" id="bcsSliderRib" class="w-full">
-              <div class="flex justify-between text-[10px] text-muted mt-1">
-                <span>뼈만 만져짐</span><span>살짝 살집 아래로</span><span>안 만져짐</span>
-              </div>
-            </div>
-            <div>
-              <label class="block text-xs font-semibold mb-1.5">② 위에서 본 허리 라인</label>
-              <input type="range" min="1" max="9" value="5" id="bcsSliderWaist" class="w-full">
-              <div class="flex justify-between text-[10px] text-muted mt-1">
-                <span>앙상함</span><span>완만하게 쏙</span><span>일자·불룩</span>
-              </div>
-            </div>
-            <div>
-              <label class="block text-xs font-semibold mb-1.5">③ 측면 배 라인</label>
-              <input type="range" min="1" max="9" value="5" id="bcsSliderBelly" class="w-full">
-              <div class="flex justify-between text-[10px] text-muted mt-1">
-                <span>바짝 올라감</span><span>적절한 경사</span><span>처진 배</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- BCS STEP 2: 사진/이름/프레임 -->
-        <div id="bcsStep2" class="fade-in hidden">
-          <p class="text-xs font-bold text-primary-dark tracking-wide mb-1">STEP 2</p>
-          <h2 class="font-display text-xl font-bold mb-1">멍생스컷 카드 커스텀</h2>
-          <p class="text-sm text-muted mb-6">아이 사진과 이름을 넣어 카드를 꾸며보세요.</p>
-
-          <label class="block text-sm font-semibold mb-1.5">반려견 사진 업로드</label>
-          <button type="button" id="bcsPhotoUploadBtn" class="w-full rounded-xl border-2 border-dashed border-token px-3 py-6 text-sm text-muted flex flex-col items-center gap-1.5 hover:border-primary transition mb-5">
-            <span id="bcsPhotoPreviewWrap" class="w-20 h-20 rounded-full overflow-hidden surface-2 flex items-center justify-center text-2xl mb-1">🐶</span>
-            <span>사진 선택하기</span>
-          </button>
-          <input type="file" id="bcsPhotoInput" accept="image/*" class="hidden">
-
-          <label class="block text-sm font-semibold mb-1.5">아이 이름</label>
-          <input type="text" id="bcsNameInput" placeholder="예: 포멜로" class="w-full rounded-xl px-4 py-3 mb-5 text-sm">
-
-          <div class="tooltip-box p-4">
-            <p class="text-xs font-semibold mb-1">적용될 프레임 스타일</p>
-            <p id="bcsFramePreviewText" class="text-sm font-bold"></p>
-            <p class="text-[11px] text-muted mt-1">Step1 결과에 따라 자동으로 어울리는 프레임이 적용돼요.</p>
-          </div>
-        </div>
-
-        <!-- BCS STEP 3: 카드 완성 -->
-        <div id="bcsStep3" class="fade-in hidden">
-          <p class="text-xs font-bold text-primary-dark tracking-wide mb-1">STEP 3</p>
-          <h2 class="font-display text-xl font-bold mb-4 text-center">멍생스컷 완성!</h2>
-
-          <div class="flex justify-center mb-5">
-            <div id="bcsCard" class="rounded-[28px] p-5 w-full" style="max-width:320px;">
-              <div id="bcsCardPhotoWrap" class="rounded-2xl overflow-hidden aspect-square flex items-center justify-center text-5xl mb-4"></div>
-              <p id="bcsCardResultText" class="text-center font-display font-bold text-base mb-1"></p>
-              <p id="bcsCardMessageText" class="text-center text-xs mb-4"></p>
-              <div class="flex items-center justify-center gap-1.5 pt-3" style="border-top:1px dashed rgba(0,0,0,.15);">
-                <span id="bcsCardLogoText" class="font-display font-bold text-sm">seon</span>
-              </div>
-              <div id="bcsStickerLayer"></div>
-            </div>
-          </div>
-
-          <!-- 스티커 꾸미기 팔레트 -->
-          <div class="max-w-lg mx-auto mb-6">
-            <div class="flex items-center justify-between mb-2">
-              <p class="text-xs font-bold text-muted">✨ 스티커로 꾸며보세요</p>
-              <button type="button" id="bcsStickerResetBtn" class="text-[11px] font-semibold text-muted hover:text-current underline">전체 스티커 초기화</button>
-            </div>
-            <div class="space-y-2">
-              <div>
-                <p class="text-[10px] text-muted mb-1">얼굴/볼 스티커</p>
-                <div class="flex flex-wrap gap-1.5" id="bcsStickerPaletteFace"></div>
-              </div>
-              <div>
-                <p class="text-[10px] text-muted mb-1">건강/BCS 스티커</p>
-                <div class="flex flex-wrap gap-1.5" id="bcsStickerPaletteHealth"></div>
-              </div>
-              <div>
-                <p class="text-[10px] text-muted mb-1">말풍선 스티커</p>
-                <div class="flex flex-wrap gap-1.5" id="bcsStickerPaletteText"></div>
-              </div>
-            </div>
-            <p class="text-[10px] text-muted mt-2">스티커를 눌러 추가하고, 드래그로 위치를, 우측 하단 점을 드래그해 크기를 조절해보세요.</p>
-          </div>
-
-          <div class="space-y-2 max-w-lg mx-auto">
-            <button type="button" id="bcsSaveImgBtn" class="btn-primary w-full rounded-xl py-3 text-sm">💾 멍생스컷 이미지 저장하기</button>
-            <button type="button" id="bcsGoDiagnosisBtn" class="w-full rounded-xl py-3 text-sm font-bold text-white" style="background:var(--c-mint);">🐾 우리 아이 정밀 무료 진단받기</button>
-          </div>
-        </div>
-
-        <!-- nav buttons -->
-        <div class="flex items-center justify-between mt-8 pt-5 border-t border-token" id="bcsNavRow">
-          <button type="button" id="bcsPrevBtn" class="btn-ghost rounded-xl px-5 py-2.5 text-sm">이전</button>
-          <button type="button" id="bcsNextBtn" class="btn-primary rounded-xl px-6 py-2.5 text-sm">다음</button>
-        </div>
-      </div>
-    </div>
 
   </main>
 
@@ -6271,7 +6114,7 @@ function bindStudioTabEvents(){
 }
 
 /* ============================================================
-   메인 탭 라우팅 (홈/진단 ↔ 멍생스컷 BCS 테스트)
+   메인 탭 라우팅
 ============================================================ */
 function switchMainTab(tab){
   document.querySelectorAll('.main-tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
@@ -6279,7 +6122,6 @@ function switchMainTab(tab){
   document.getElementById('mixCalcPage').classList.toggle('hidden', tab!=='mixcalc');
   document.getElementById('metaLoadPage').classList.toggle('hidden', tab!=='metaload');
   document.getElementById('insurancePage').classList.toggle('hidden', tab!=='insurance');
-  document.getElementById('bcsPage').classList.toggle('hidden', tab!=='bcs');
   if(tab === 'metaload') renderMetaLoadPage(); // 진입할 때마다 최신 프로필/DNI 데이터 기준으로 다시 계산해요.
   window.scrollTo({top:0, behavior:'smooth'});
 }
@@ -9750,342 +9592,6 @@ function openChronoDniReport(){
 
 
 /* ============================================================
-   멍생스컷 BCS 테스트 & 카드 생성기
-============================================================ */
-const bcsTest = {
-  step: 1,
-  rib: 5, waist: 5, belly: 5, result: 5,
-  photoDataUrl: null, name: "",
-  stickers: [], // {id, kind:'emoji'|'text', content, x, y, scale}
-};
-let bcsStickerSeq = 0;
-
-const STICKER_PALETTE = {
-  face: [
-    {content:"🌸"}, {content:"✨"}, {content:"🕶️"}, {content:"👑"}, {content:"🎀"},
-  ],
-  health: [
-    {content:"🍖"}, {content:"🥗"}, {content:"🏋️"}, {content:"💯"}, {content:"⚡"},
-  ],
-  text: [
-    {content:"오늘부터 다이어트!", kind:"text"},
-    {content:"귀여우면 됐지!", kind:"text"},
-    {content:"황금비율 댕댕이", kind:"text"},
-  ],
-};
-
-function updateBcsLive(){
-  bcsTest.result = Math.round((bcsTest.rib + bcsTest.waist + bcsTest.belly) / 3);
-  bcsTest.result = Math.min(9, Math.max(1, bcsTest.result));
-  document.getElementById('bcsLiveIllustration').innerHTML = bcsSilhouette(bcsTest.result, 70);
-  document.getElementById('bcsLiveNumber').textContent = bcsTest.result;
-  const info = BCS_INFO[bcsTest.result-1];
-  const labelEl = document.getElementById('bcsLiveLabel');
-  labelEl.textContent = info.label;
-  labelEl.style.color = info.tone;
-}
-
-function buildBcsStepDots(){
-  const wrap = document.getElementById('bcsStepDots');
-  wrap.innerHTML = '';
-  for(let i=1;i<=3;i++){
-    const d = document.createElement('div');
-    d.className = 'step-dot' + (i===bcsTest.step?' active':'');
-    d.id = 'bcsDot'+i;
-    wrap.appendChild(d);
-  }
-}
-function updateBcsStepDots(){
-  for(let i=1;i<=3;i++){
-    const d = document.getElementById('bcsDot'+i);
-    d.classList.toggle('active', i===bcsTest.step);
-    d.classList.toggle('done', i<bcsTest.step);
-  }
-}
-function updateBcsStepView(){
-  [1,2,3].forEach(i=>{
-    document.getElementById('bcsStep'+i).classList.toggle('hidden', i!==bcsTest.step);
-  });
-  updateBcsStepDots();
-  const navRow = document.getElementById('bcsNavRow');
-  const prevBtn = document.getElementById('bcsPrevBtn');
-  const nextBtn = document.getElementById('bcsNextBtn');
-  if(bcsTest.step === 3){
-    navRow.classList.add('hidden');
-  } else {
-    navRow.classList.remove('hidden');
-    prevBtn.style.visibility = bcsTest.step===1 ? 'hidden' : 'visible';
-    nextBtn.textContent = bcsTest.step===2 ? '멍생스컷 카드 만들기' : '다음';
-  }
-}
-function goBcsStep(n){
-  if(n<1) return;
-  bcsTest.step = n;
-  if(n===2) updateBcsFramePreview();
-  if(n===3) renderBcsCard();
-  updateBcsStepView();
-}
-function onBcsNext(){
-  if(bcsTest.step < 3){ goBcsStep(bcsTest.step+1); }
-}
-
-function updateBcsFramePreview(){
-  const isNormal = bcsTest.result===4 || bcsTest.result===5;
-  const el = document.getElementById('bcsFramePreviewText');
-  el.textContent = isNormal
-    ? '🟢 정상 범위 (BCS 4-5) — 완벽한 황금 비율 댕댕이!'
-    : '🟡 관리 필요 (BCS 1-3, 6-9) — 통통해서 더 귀여워, 지금부터 케어 시작!';
-  el.style.color = isNormal ? 'var(--c-mint)' : '#D89A1E';
-}
-
-function getSafeHexColor(varName, fallback){
-  try{
-    const val = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
-    // color-mix()/oklch() 등 html2canvas가 파싱하지 못하는 복합 색상 함수는 걸러내고, 순수 hex/rgb만 신뢰해요
-    if(/^#[0-9a-fA-F]{3,8}$/.test(val) || /^rgb/i.test(val)) return val;
-  }catch(err){ /* 무시하고 폴백 사용 */ }
-  return fallback;
-}
-
-function renderBcsCard(){
-  const isNormal = bcsTest.result===4 || bcsTest.result===5;
-  const name = bcsTest.name || '우리 아이';
-  const card = document.getElementById('bcsCard');
-  card.className = 'rounded-[28px] p-5 w-full ' + (isNormal ? 'frame-normal' : 'frame-care');
-
-  const photoWrap = document.getElementById('bcsCardPhotoWrap');
-  if(bcsTest.photoDataUrl){
-    photoWrap.innerHTML = '';
-    photoWrap.style.background = 'none';
-    photoWrap.style.backgroundImage = `url("${bcsTest.photoDataUrl}")`;
-    photoWrap.style.backgroundSize = 'cover';
-    photoWrap.style.backgroundPosition = 'center';
-    photoWrap.style.backgroundRepeat = 'no-repeat';
-  } else {
-    photoWrap.style.backgroundImage = '';
-    photoWrap.innerHTML = `<span>🐶</span>`;
-    photoWrap.style.background = '#F4EEE6'; // 고정 Hex — html2canvas 파싱 오류 방지
-  }
-
-  const resultEl = document.getElementById('bcsCardResultText');
-  const messageEl = document.getElementById('bcsCardMessageText');
-  resultEl.textContent = `[${name}]의 BCS 결과: ${bcsTest.result}단계 (${isNormal?'정상':'관리 필요'})`;
-  resultEl.style.color = '#2B2420'; // 고정 Hex
-  messageEl.textContent = isNormal
-    ? '완벽한 황금 비율 댕댕이! 지금 컨디션을 잘 유지해주세요 🎉'
-    : '통통해서 더 귀여워, 지금부터 함께 케어 시작해봐요 💪';
-  messageEl.style.color = '#7A7069'; // 고정 Hex
-
-  // seon 로고 컬러: 관리자 브랜드 컬러(순수 hex/rgb인 경우)를 우선 반영하되, color-mix 등 복합 함수라면 안전한 기본값으로 대체
-  document.getElementById('bcsCardLogoText').style.color = getSafeHexColor('--c-primary', '#2F4A34');
-}
-
-function initBcsTestPage(){
-  buildBcsStepDots();
-  updateBcsLive();
-  updateBcsStepView();
-  buildStickerPalette();
-  bindStickerLayerEvents();
-  renderStickerLayer();
-
-  document.querySelectorAll('.main-tab-btn').forEach(b=>{
-    b.addEventListener('click', ()=>navigateToTab(b.dataset.tab));
-  });
-
-  const ribInput = document.getElementById('bcsSliderRib');
-  const waistInput = document.getElementById('bcsSliderWaist');
-  const bellyInput = document.getElementById('bcsSliderBelly');
-  ribInput.addEventListener('input', e=>{ bcsTest.rib = parseInt(e.target.value); updateBcsLive(); });
-  waistInput.addEventListener('input', e=>{ bcsTest.waist = parseInt(e.target.value); updateBcsLive(); });
-  bellyInput.addEventListener('input', e=>{ bcsTest.belly = parseInt(e.target.value); updateBcsLive(); });
-
-  const photoBtn = document.getElementById('bcsPhotoUploadBtn');
-  const photoInput = document.getElementById('bcsPhotoInput');
-  photoBtn.addEventListener('click', ()=>photoInput.click());
-  photoInput.addEventListener('change', e=>{
-    const file = e.target.files[0];
-    if(!file) return;
-    const reader = new FileReader();
-    reader.onload = ev=>{
-      bcsTest.photoDataUrl = ev.target.result;
-      document.getElementById('bcsPhotoPreviewWrap').innerHTML = `<img src="${ev.target.result}" class="w-full h-full object-cover">`;
-    };
-    reader.readAsDataURL(file);
-  });
-  document.getElementById('bcsNameInput').addEventListener('input', e=>{ bcsTest.name = e.target.value.trim(); });
-
-  document.getElementById('bcsPrevBtn').addEventListener('click', ()=>goBcsStep(bcsTest.step-1));
-  document.getElementById('bcsNextBtn').addEventListener('click', onBcsNext);
-
-  document.getElementById('bcsStickerResetBtn').addEventListener('click', resetStickers);
-  document.getElementById('bcsSaveImgBtn').addEventListener('click', saveBcsCardImage);
-  document.getElementById('bcsGoDiagnosisBtn').addEventListener('click', ()=>{
-    navigateToTab('home');
-    goToDiagnosisForm();
-  });
-}
-
-/* ---- 스티커 꾸미기: 팔레트 빌드 ---- */
-function buildStickerPalette(){
-  const faceWrap = document.getElementById('bcsStickerPaletteFace');
-  const healthWrap = document.getElementById('bcsStickerPaletteHealth');
-  const textWrap = document.getElementById('bcsStickerPaletteText');
-  STICKER_PALETTE.face.forEach(def=>{
-    const btn = document.createElement('button');
-    btn.type = 'button'; btn.className = 'sticker-palette-btn'; btn.textContent = def.content;
-    btn.addEventListener('click', ()=>addSticker(def));
-    faceWrap.appendChild(btn);
-  });
-  STICKER_PALETTE.health.forEach(def=>{
-    const btn = document.createElement('button');
-    btn.type = 'button'; btn.className = 'sticker-palette-btn'; btn.textContent = def.content;
-    btn.addEventListener('click', ()=>addSticker(def));
-    healthWrap.appendChild(btn);
-  });
-  STICKER_PALETTE.text.forEach(def=>{
-    const btn = document.createElement('button');
-    btn.type = 'button'; btn.className = 'sticker-palette-btn is-text'; btn.textContent = def.content;
-    btn.addEventListener('click', ()=>addSticker(def));
-    textWrap.appendChild(btn);
-  });
-}
-
-/* ---- 스티커 추가/삭제/초기화 ---- */
-function addSticker(def){
-  const count = bcsTest.stickers.length;
-  const positions = [[30,25],[70,25],[30,50],[70,50],[50,35],[30,75],[70,75],[50,60]];
-  const pos = positions[count % positions.length];
-  bcsTest.stickers.push({
-    id: 'stk' + (bcsStickerSeq++),
-    kind: def.kind || 'emoji',
-    content: def.content,
-    x: pos[0], y: pos[1],
-    scale: 1,
-  });
-  renderStickerLayer();
-}
-function removeSticker(id){
-  bcsTest.stickers = bcsTest.stickers.filter(s=>s.id!==id);
-  renderStickerLayer();
-}
-function resetStickers(){
-  bcsTest.stickers = [];
-  const layer = document.getElementById('bcsStickerLayer');
-  if(layer) layer.innerHTML = ''; // 캔버스 상의 스티커/바운딩 박스를 즉시 완전히 비움
-  renderStickerLayer();
-}
-
-/* ---- 스티커 레이어 렌더링 + 드래그/리사이즈 인터랙션 ---- */
-function renderStickerLayer(){
-  const layer = document.getElementById('bcsStickerLayer');
-  if(!layer) return;
-  layer.innerHTML = bcsTest.stickers.map(s=>`
-    <div class="bcs-sticker ${s.kind==='text'?'is-text':''}" data-id="${s.id}" style="left:${s.x}%; top:${s.y}%;">
-      <div class="bcs-sticker-content" style="transform:scale(${s.scale});">${s.content}</div>
-      <button type="button" class="bcs-sticker-delete" data-id="${s.id}" data-html2canvas-ignore="true">×</button>
-      <div class="bcs-sticker-resize" data-id="${s.id}" data-html2canvas-ignore="true"></div>
-    </div>
-  `).join('');
-}
-
-/* ---- 스티커 레이어 이벤트 위임: 한 번만 바인딩되며, 재렌더링과 무관하게 항상 정확히 동작해요 ---- */
-function bindStickerLayerEvents(){
-  const layer = document.getElementById('bcsStickerLayer');
-  if(!layer) return;
-  layer.addEventListener('click', e=>{
-    const delBtn = e.target.closest('.bcs-sticker-delete');
-    if(!delBtn) return;
-    e.preventDefault(); e.stopPropagation();
-    removeSticker(delBtn.dataset.id);
-  });
-  layer.addEventListener('pointerdown', e=>{
-    const resizeHandle = e.target.closest('.bcs-sticker-resize');
-    if(resizeHandle){ startStickerResize(e, resizeHandle.dataset.id); return; }
-    const content = e.target.closest('.bcs-sticker-content');
-    if(content){
-      const stickerEl = content.closest('.bcs-sticker');
-      if(stickerEl) startStickerDrag(e, stickerEl.dataset.id);
-    }
-  });
-}
-
-function startStickerDrag(e, id){
-  e.preventDefault();
-  const sticker = bcsTest.stickers.find(s=>s.id===id);
-  if(!sticker) return;
-  const card = document.getElementById('bcsCard');
-  const rect = card.getBoundingClientRect();
-  const el = document.querySelector(`.bcs-sticker[data-id="${id}"]`);
-
-  const onMove = (ev)=>{
-    const xPct = Math.min(100, Math.max(0, ((ev.clientX - rect.left) / rect.width) * 100));
-    const yPct = Math.min(100, Math.max(0, ((ev.clientY - rect.top) / rect.height) * 100));
-    sticker.x = xPct; sticker.y = yPct;
-    el.style.left = xPct + '%';
-    el.style.top = yPct + '%';
-  };
-  const onUp = ()=>{
-    window.removeEventListener('pointermove', onMove);
-    window.removeEventListener('pointerup', onUp);
-  };
-  window.addEventListener('pointermove', onMove);
-  window.addEventListener('pointerup', onUp);
-}
-
-function startStickerResize(e, id){
-  e.preventDefault(); e.stopPropagation();
-  const sticker = bcsTest.stickers.find(s=>s.id===id);
-  if(!sticker) return;
-  const el = document.querySelector(`.bcs-sticker[data-id="${id}"] .bcs-sticker-content`);
-  const stickerEl = document.querySelector(`.bcs-sticker[data-id="${id}"]`);
-  const centerRect = stickerEl.getBoundingClientRect();
-  const centerX = centerRect.left + centerRect.width/2;
-  const centerY = centerRect.top + centerRect.height/2;
-  const startDist = Math.hypot(e.clientX-centerX, e.clientY-centerY) || 1;
-  const startScale = sticker.scale;
-
-  const onMove = (ev)=>{
-    const dist = Math.hypot(ev.clientX-centerX, ev.clientY-centerY);
-    let newScale = startScale * (dist / startDist);
-    newScale = Math.min(2.5, Math.max(0.5, newScale));
-    sticker.scale = newScale;
-    el.style.transform = `scale(${newScale})`;
-  };
-  const onUp = ()=>{
-    window.removeEventListener('pointermove', onMove);
-    window.removeEventListener('pointerup', onUp);
-  };
-  window.addEventListener('pointermove', onMove);
-  window.addEventListener('pointerup', onUp);
-}
-
-async function saveBcsCardImage(){
-  const card = document.getElementById('bcsCard');
-  if(!card) return;
-  if(typeof html2canvas === 'undefined'){ alert('이미지 저장 기능을 불러오지 못했어요. 잠시 후 다시 시도해주세요.'); return; }
-  const dogName = bcsTest.name || '멍생스컷';
-
-  card.classList.add('capturing'); // 캡처 중에는 스티커의 삭제(X)/리사이즈 핸들 등 편집용 UI를 숨겨요 (data-html2canvas-ignore와 이중 안전장치)
-  try{
-    const canvas = await html2canvas(card, {
-      useCORS: true,
-      allowTaint: true,
-      backgroundColor: null,
-      scale: 2,
-    });
-    const link = document.createElement('a');
-    link.download = `${dogName}_BCS_결과.png`;
-    link.href = canvas.toDataURL('image/png');
-    link.click();
-  }catch(err){
-    console.error(err);
-    alert('이미지 저장 중 오류가 발생했습니다. 다시 시도해 주세요.');
-  }finally{
-    card.classList.remove('capturing');
-  }
-}
-
-/* ============================================================
    🔗 URL 라우팅 (Hash 기반) — 정적 파일로 배포돼도 서버 설정 없이
    뒤로가기/앞으로가기·딥링크가 그대로 동작하도록 History API 대신 해시 라우팅을 써요.
    (History API 방식은 새로고침/직접 접속 시 서버가 모든 경로를 index.html로
@@ -10093,8 +9599,8 @@ async function saveBcsCardImage(){
 ============================================================ */
 /* '1일 안전 투약 타임라인'의 정식 경로는 #/safe-timeline이에요. 예전 링크(#/chrono)로 들어와도
    깨지지 않도록 과거 경로도 계속 인식하되, 화면에는 항상 새 경로로 자동 리다이렉트해요. */
-const ROUTE_TO_TAB = { '': 'home', 'main': 'home', 'safe-timeline': 'insurance', 'chrono': 'insurance', 'mix-calc': 'mixcalc', 'metabolic-load': 'metaload', 'bcs': 'bcs' };
-const TAB_TO_ROUTE = { home: '', insurance: 'safe-timeline', mixcalc: 'mix-calc', metaload: 'metabolic-load', bcs: 'bcs' };
+const ROUTE_TO_TAB = { '': 'home', 'main': 'home', 'safe-timeline': 'insurance', 'chrono': 'insurance', 'mix-calc': 'mixcalc', 'metabolic-load': 'metaload' };
+const TAB_TO_ROUTE = { home: '', insurance: 'safe-timeline', mixcalc: 'mix-calc', metaload: 'metabolic-load' };
 const LEGACY_ROUTES = { 'chrono': 'safe-timeline' }; // 구 경로 → 신 경로 매핑 (자동 리다이렉트용)
 
 function getTabFromCurrentHash(){
@@ -10112,6 +9618,9 @@ function navigateToTab(tab, opts){
   }
   switchMainTab(tab);
 }
+document.querySelectorAll('.main-tab-btn').forEach(b=>{
+  b.addEventListener('click', ()=>navigateToTab(b.dataset.tab));
+});
 /* 예전 #/chrono 링크로 접속했다면, 히스토리에 새 항목을 쌓지 않고(replaceState) 조용히
    #/safe-timeline으로 바꿔서 이후 공유·새로고침부터는 항상 새 경로가 쓰이게 해요. */
 function redirectLegacyRouteIfNeeded(){
@@ -10197,7 +9706,6 @@ restoreAppStateSnapshot(); // 다른 init 함수들이 state를 읽어 DOM을 �
 // 페이지를 새로 열 때마다 항상 빈 값에서 시작해야, 유저가 직접 입력하기 전까지 어떤 임의의
 // 값도 모달에 보이지 않아요. (저장 자체는 계속하므로, 필요 시 백엔드/분석 용도로는 남아있어요.)
 init();
-initBcsTestPage();
 initMixCalcPage();
 initMetaLoadPage();
 initInsurancePage();
