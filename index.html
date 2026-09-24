@@ -337,6 +337,7 @@
       <div class="inline-flex bg-primary-light rounded-full p-1 gap-1">
         <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="home">🏠 홈 / 진단</button>
         <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="mixcalc">🥣 1g 믹스 계산기</button>
+        <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="metaload">⚙️ 대사 부하 검문</button>
         <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="insurance">🛡️ 1일 안전 투약 타임라인</button>
         <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="bcs">📸 멍생스컷 BCS 테스트</button>
       </div>
@@ -808,6 +809,87 @@
           <p class="font-bold text-sm mb-2" id="mcRecipeName" style="color:#2C241F;">황태 오이 쿨링 토핑 <span class="text-xs font-normal" style="color:#6b6259;">(체중 조절 및 관절 케어용)</span></p>
           <p class="text-xs mb-2" style="color:#3A5A40;"><b>재료:</b> <span id="mcRecipeIngredients">염분 뺀 황태채 5g + 얇게 썬 오이 10g</span></p>
           <p class="text-xs" style="color:#6b6259;" id="mcRecipeInstructions">황태채를 20분간 물에 우려 염분을 완전히 뺀 뒤, 오이와 함께 살짝 데쳐 사료 위에 토핑으로 올려주세요. (오늘 사료량에서 약 8g 차감 반영됨)</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== 대사 부하 검문 PAGE: 장기별 대사 부하 게이지 & 1-Click 교정 & 목표 음수량 ===================== -->
+    <div id="metaLoadPage" class="hidden">
+      <div class="text-center mb-8">
+        <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full mb-4" style="background:#3A5A401A; color:#3A5A40;">
+          <span>⚙️</span><span class="text-xs font-bold">Metabolic Load Screening</span>
+        </div>
+        <h1 class="font-display font-bold mb-2" style="font-size:clamp(1.4rem,4vw,2rem); color:#2C241F;">대사 부하 검문</h1>
+        <p class="text-sm" style="color:#6b6259;">오늘 먹인 사료·간식·영양제·처방약을 전부 합산해 간·신장에 걸리는 대사 부하를 한눈에 확인해요.</p>
+      </div>
+
+      <div class="max-w-5xl mx-auto space-y-5">
+        <!-- ⓪ 대사 부하 검문 전용 인풋 (1g 믹스 계산기와 완전히 독립) -->
+        <div class="rounded-[var(--radius-card)] p-6" style="background:#FFFFFF; border:1px solid #3A5A401f;">
+          <p class="font-bold text-sm mb-1" style="color:#2C241F;">📝 오늘 급여 정보 입력</p>
+          <p class="text-xs text-muted mb-4">'🥣 1g 믹스 계산기'와는 완전히 별개의 독립 입력이에요 — 여기서 직접 입력한 값만 사용해서 계산해요.</p>
+
+          <label class="block text-[11px] font-semibold mb-1.5" style="color:#2C241F;">주식 급여 방식</label>
+          <div class="grid grid-cols-3 gap-2 mb-3" id="metaFeedTypeGroup">
+            <button data-val="dry" class="mc-chip rounded-xl py-2.5 text-xs">🦴 건사료</button>
+            <button data-val="wet" class="mc-chip rounded-xl py-2.5 text-xs">🥫 습식</button>
+            <button data-val="homemade" class="mc-chip rounded-xl py-2.5 text-xs">🍲 화식</button>
+          </div>
+
+          <label class="block text-[11px] font-semibold mb-1.5" style="color:#2C241F;">하루 총 급여량(g)</label>
+          <input type="number" min="0" step="1" id="metaDailyFoodGInput" value="100" class="w-full rounded-xl px-3 py-2.5 mb-3 text-sm" style="border:1px solid #3A5A4033;">
+
+          <label class="block text-[11px] font-semibold mb-1.5" style="color:#2C241F;">주식 칼로리/단백질 수준</label>
+          <div class="grid grid-cols-3 gap-2 mb-2" id="metaFoodLevelGroup">
+            <button data-val="normal" class="mc-chip rounded-xl py-2.5 text-xs">보통</button>
+            <button data-val="highProtein" class="mc-chip rounded-xl py-2.5 text-xs">고단백</button>
+            <button data-val="diet" class="mc-chip rounded-xl py-2.5 text-xs">다이어트용</button>
+          </div>
+          <div class="relative mb-3">
+            <input type="number" min="100" step="10" id="metaFoodKcalInput" value="3650" class="w-full rounded-xl px-3 py-2.5 text-sm" style="border:1px solid #3A5A4033;">
+            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px]" style="color:#6b6259;">kcal/kg (직접 수정 가능)</span>
+          </div>
+
+          <label class="block text-[11px] font-semibold mb-1.5" style="color:#2C241F;">하루 총 간식 급여량(g)</label>
+          <input type="number" min="0" step="1" id="metaDailyTreatGInput" value="0" class="w-full rounded-xl px-3 py-2.5 mb-4 text-sm" style="border:1px solid #3A5A4033;">
+
+          <label class="block text-[11px] font-semibold mb-2" style="color:#2C241F;">복용 중인 영양제 <span class="font-normal text-muted">(해당 시 선택 후 1일 섭취 개수 입력)</span></label>
+          <div class="grid grid-cols-2 gap-2 mb-4" id="metaSupplementChecklist"></div>
+
+          <label class="block text-[11px] font-semibold mb-2" style="color:#2C241F;">복용 중인 처방약 카테고리 <span class="font-normal text-muted">(해당 시 선택 후 1일 복용 개수 입력)</span></label>
+          <div class="grid grid-cols-2 gap-2" id="metaMedicationChecklist"></div>
+        </div>
+
+        <!-- ① 장기별 대사 부하 게이지 -->
+        <div class="rounded-[var(--radius-card)] p-6" style="background:#FFFFFF; border:1px solid #3A5A401f;">
+          <p class="font-bold text-sm mb-4" style="color:#2C241F;">🫀 장기별 대사 부하 게이지</p>
+          <div class="grid sm:grid-cols-2 gap-4 mb-5">
+            <div id="liverBurdenCard"></div>
+            <div id="kidneyBurdenCard"></div>
+          </div>
+          <p class="text-xs font-bold text-muted mb-2" id="nutrientOverloadLabel"></p>
+          <div id="nutrientOverloadChipsWrap" class="flex flex-wrap gap-2"></div>
+        </div>
+
+        <!-- ② 1-Click 영양 부하 자동 교정 레시피 -->
+        <div id="metaCorrectionCard" class="hidden rounded-[var(--radius-card)] p-6" style="background:#FFFFFF; border:1.5px solid #C0473A44;">
+          <p class="font-bold text-sm mb-1" style="color:#C0473A;">⚡ 1-Click 영양 부하 자동 교정 레시피</p>
+          <p class="text-xs text-muted mb-3">제품을 빼지 않고, 급여량/알약 수 조정만으로 안전 범위(80% 이하)까지 낮춰드려요.</p>
+          <div id="metaCorrectionBody" class="space-y-2 mb-4"></div>
+          <button type="button" id="applyMetaCorrectionBtn" class="btn-primary w-full rounded-xl py-3 text-sm font-bold">⚡ 이 레시피로 1-Click 자동 교정 및 반영</button>
+          <p id="metaCorrectionStatus" class="text-xs text-center mt-2 min-h-[16px]" style="color:#3A5A40;"></p>
+        </div>
+
+        <!-- ③ 목표 음수량 -->
+        <div class="rounded-[var(--radius-card)] p-6" style="background:#FFFFFF; border:1px solid #3A5A401f;">
+          <p class="font-bold text-sm mb-3" style="color:#2C241F;">💧 오늘의 목표 음수량</p>
+          <div id="waterTargetCard"></div>
+        </div>
+
+        <!-- 액션 버튼: 전용 저장 & 리포트 다운로드 -->
+        <div class="flex flex-wrap items-center justify-center gap-2 pt-2">
+          <button type="button" id="saveMetaLoadBtn" class="rounded-xl px-6 py-3 text-sm font-bold" style="background:#3A5A40; color:#fff;">💾 대사 부하 진단 결과 저장하기</button>
+          <button type="button" id="viewMetaLoadReportBtn" class="rounded-xl px-6 py-3 text-sm font-bold" style="background:#FAF9F5; border:1.5px solid #3A5A4055; color:#3A5A40;">📄 대사 부하 메디컬 리포트 다운로드 (PDF)</button>
         </div>
       </div>
     </div>
@@ -1329,6 +1411,43 @@ const SUPABASE_TABLE = "user_analytics"; // 진단 데이터를 저장/조회할
    -- Storage 'prescriptions' 버킷은 별도로 Public 읽기 정책이 있어야 썸네일이 보여요:
    -- create policy "public read prescriptions" on storage.objects for select to public using (bucket_id = 'prescriptions');
    -- create policy "anon upload prescriptions" on storage.objects for insert to anon with check (bucket_id = 'prescriptions');
+
+   🫀 metabolic_load_logs 테이블 (⚙️ 대사 부하 검문 전용 — Supabase 대시보드 → SQL Editor에서 실행)
+   ------------------------------------------------------------
+   이 테이블이 없거나 컬럼이 부족해도 앱이 절대 에러를 띄우지 않아요 — saveMetabolicLoadData()가
+   자동으로 user_analytics/pet_health_scores의 extra_data.metabolic_load 필드로 안전 우회 저장해요.
+   그래도 전용 테이블에 정식으로 쌓이길 원하시면 아래를 실행해주세요.
+
+   create table if not exists public.metabolic_load_logs (
+     id                    bigint generated always as identity primary key,
+     session_id            text unique,  -- UPSERT 충돌키 — 같은 세션 재저장 시 새 행이 아니라 이 행을 덮어써요.
+     guardian_name          text,
+     guardian_email          text,
+     guardian_phone           text,
+     guardian_region          text,
+     guardian_housing_type    text,
+     guardian_age_range       text,
+     consent_required         boolean,
+     consent_optional         boolean,
+     organ_burden_liver    numeric,      -- 간 대사 부하율(%)
+     organ_burden_kidney   numeric,      -- 신장 대사 부하율(%)
+     input_summary         jsonb,        -- 유저가 직접 입력한 사료/간식/영양제/처방약 요약
+     correction_plan       jsonb,        -- 1-Click 자동 교정 레시피 (null이면 교정 불필요 상태였음을 의미)
+     water_target_ml       numeric,      -- 오늘의 목표 음수량(ml)
+     created_at            timestamptz default now()
+   );
+   create unique index if not exists metabolic_load_logs_session_id_key on public.metabolic_load_logs(session_id);
+
+   -- RLS(행 수준 보안)를 켜 두셨다면, anon 역할이 insert/upsert·select 할 수 있도록 정책을 열어주세요.
+   -- (RLS를 아예 안 쓰신다면 이 블록은 건너뛰어도 돼요.)
+   alter table public.metabolic_load_logs enable row level security;
+   create policy "anon insert metabolic_load_logs" on public.metabolic_load_logs for insert to anon with check (true);
+   create policy "anon update metabolic_load_logs" on public.metabolic_load_logs for update to anon using (true) with check (true);
+   create policy "anon select metabolic_load_logs" on public.metabolic_load_logs for select to anon using (true);
+
+   -- ⚠️ 테이블을 새로 만들거나 컬럼을 추가한 직후에는 PostgREST의 스키마 캐시가 아직 갱신되지 않아
+   -- PGRST204/PGRST205/42703 같은 에러가 잠깐 날 수 있어요. 이때도 앱은 자동으로 user_analytics/
+   -- pet_health_scores의 extra_data로 안전하게 우회 저장하니, 화면에는 에러가 뜨지 않아요.
 
    -- ⚠️ 테이블을 새로 만들거나 컬럼을 추가한 직후에는 PostgREST의 스키마 캐시가 아직 갱신되지
    -- 않아 PGRST205("Could not find the table ... in the schema cache") 에러가 잠깐 날 수 있어요.
@@ -5095,7 +5214,7 @@ async function saveUserAnalyticsData(record){
       guardian_age_range: guardianContact.ageRange || null,
       guardian_consent_required: !!guardianContact.consentRequired,
       guardian_consent_optional: !!guardianContact.consentOptional,
-      extra_data: JSON.stringify({ ...extractExtraData(flat), guardianContact }),
+      extra_data: JSON.stringify({ ...extractExtraData(flat), guardianContact, metabolicLoad: safeComputeMetabolicLoadSnapshot() }),
     };
     console.log('payload:', JSON.stringify(dbPayload, null, 2));
     try{
@@ -5233,6 +5352,7 @@ function refreshAnalyticsIfOpen(){
   const isOpen = drawer && drawer.style.transform === 'translateX(0)';
   if(isOpen && studioTab === 'analytics') loadAnalyticsFromDB();
   if(isOpen && studioTab === 'dni') loadDniRecordsFromDB();
+  if(isOpen && studioTab === 'metaload') loadMetaLoadRecordsFromDB();
 }
 
 /* ---- Supabase SELECT: 데이터 분석 탭을 열 때(또는 새 진단이 들어올 때) 실제 DB 데이터를 조회 ---- */
@@ -5368,6 +5488,107 @@ async function loadDniRecordsFromDB(){
   }
   if(studioTab === 'dni') renderStudioBody();
 }
+
+/* ---- 🫀 대사 부하 검문 관리자 조회: 전용 테이블 우선, 없으면 기존 두 테이블의 extra_data.metabolic_load로 대체 ---- */
+let metaLoadRecords = [];
+let metaLoadDbStatus = 'idle';
+let metaLoadDbErrorMsg = '';
+function parseMaybeJsonSafe(val, fallback){
+  if(val === undefined || val === null) return fallback;
+  if(typeof val === 'string'){ try{ return JSON.parse(val); }catch(e){ return fallback; } }
+  return val;
+}
+async function loadMetaLoadRecordsFromDB(){
+  if(!supabaseClient){
+    metaLoadDbStatus = 'nodb';
+    if(studioTab==='metaload') renderStudioBody();
+    return;
+  }
+  metaLoadDbStatus = 'loading';
+  if(studioTab==='metaload') renderStudioBody();
+
+  const records = [];
+  let dedicatedTableFound = false;
+
+  // 1) 전용 테이블(metabolic_load_logs) 우선 조회
+  try{
+    const { data, error } = await supabaseClient.from('metabolic_load_logs').select('*').order('created_at', { ascending:false }).limit(200);
+    if(!error && data){
+      dedicatedTableFound = true;
+      data.forEach(row=>{
+        const inputSummary = parseMaybeJsonSafe(row.input_summary, {});
+        records.push({
+          source: 'metabolic_load_logs',
+          created_at: row.created_at,
+          dog_name: inputSummary.dogName || '',
+          guardian_email: row.guardian_email || '',
+          guardian_phone: row.guardian_phone || '',
+          liverPct: row.organ_burden_liver, kidneyPct: row.organ_burden_kidney,
+          waterTargetMl: row.water_target_ml,
+          inputSummary,
+          nutrientOverloadChips: inputSummary.nutrientOverloadChips || [],
+          correctionPlan: parseMaybeJsonSafe(row.correction_plan, null),
+        });
+      });
+    } else if(error){
+      console.warn('[seon] metabolic_load_logs 조회 실패(테이블 미생성 가능) — 기존 테이블의 extra_data.metabolic_load로 대체 표시해요:', error.message);
+    }
+  }catch(err){
+    console.warn('[seon] metabolic_load_logs 조회 중 예외:', safeStringifyError(err));
+  }
+
+  // 2) 하위 호환 Fallback: user_analytics.extra_data.metabolic_load
+  try{
+    const { data } = await supabaseClient.from(SUPABASE_TABLE).select('*').order('created_at', { ascending:false }).limit(100);
+    (data || []).forEach(row=>{
+      const extra = parseMaybeJsonSafe(row.extra_data, {});
+      if(extra && extra.metabolic_load){
+        const m = extra.metabolic_load;
+        records.push({
+          source: 'user_analytics(extra_data)',
+          created_at: row.created_at,
+          dog_name: row.dog_name || '',
+          guardian_email: row.guardian_email || '',
+          guardian_phone: row.guardian_phone || '',
+          liverPct: m.liverPct, kidneyPct: m.kidneyPct,
+          waterTargetMl: m.waterTargetMl ? m.waterTargetMl.totalMl : null,
+          inputSummary: m.inputSummary || {},
+          nutrientOverloadChips: m.nutrientOverloadChips || [],
+          correctionPlan: m.correctionPlan || null,
+        });
+      }
+    });
+  }catch(err){ /* 조용히 건너뛰어요 — 이 테이블은 애초에 없을 수도 있어요 */ }
+
+  // 3) 하위 호환 Fallback: pet_health_scores.extra_data.metabolic_load
+  try{
+    const { data } = await supabaseClient.from('pet_health_scores').select('*').order('created_at', { ascending:false }).limit(100);
+    (data || []).forEach(row=>{
+      const extra = parseMaybeJsonSafe(row.extra_data, {});
+      if(extra && extra.metabolic_load){
+        const m = extra.metabolic_load;
+        records.push({
+          source: 'pet_health_scores(extra_data)',
+          created_at: row.created_at,
+          dog_name: row.pet_name || '',
+          guardian_email: row.guardian_email || '',
+          guardian_phone: row.guardian_phone || '',
+          liverPct: m.liverPct, kidneyPct: m.kidneyPct,
+          waterTargetMl: m.waterTargetMl ? m.waterTargetMl.totalMl : null,
+          inputSummary: m.inputSummary || {},
+          nutrientOverloadChips: m.nutrientOverloadChips || [],
+          correctionPlan: m.correctionPlan || null,
+        });
+      }
+    });
+  }catch(err){ /* 조용히 건너뛰어요 */ }
+
+  records.sort((a,b)=> new Date(b.created_at || 0) - new Date(a.created_at || 0));
+  metaLoadRecords = records;
+  metaLoadDbStatus = dedicatedTableFound || records.length ? 'loaded' : 'loaded'; // 폴백만으로 채워졌어도 정상 표시해요
+  if(studioTab === 'metaload') renderStudioBody();
+}
+
 function analyticsStatusBanner(){
   const map = {
     idle:    {icon:'💾', text:'로컬 데이터 기준으로 표시 중', tone:'muted'},
@@ -5480,6 +5701,7 @@ const STUDIO_TABS = [
   {id:'sections', label:'섹션'},
   {id:'analytics', label:'📊 데이터 분석'},
   {id:'dni', label:'🧬 DNI 데이터'},
+  {id:'metaload', label:'⚙️ 대사 부하 검문'},
   {id:'data', label:'데이터'},
 ];
 let studioTab = 'brand';
@@ -5499,6 +5721,7 @@ function renderStudioTab(){
   renderStudioBody();
   if(studioTab === 'analytics') loadAnalyticsFromDB();
   if(studioTab === 'dni') loadDniRecordsFromDB();
+  if(studioTab === 'metaload') loadMetaLoadRecordsFromDB();
 }
 function renderStudioBody(){
   const body = document.getElementById('studioBody');
@@ -5765,6 +5988,71 @@ const STUDIO_TAB_HTML = {
     </div>`;
   },
 
+  metaload: ()=>{
+    const statusMap = {
+      idle:    {icon:'💾', text:'대사 부하 검문 탭을 열면 자동으로 조회해요'},
+      nodb:    {icon:'💾', text:'Supabase가 연결되지 않았어요'},
+      loading: {icon:'🔄', text:'Supabase에서 대사 부하 검문 데이터를 불러오는 중...'},
+      loaded:  {icon:'✅', text:`최신 데이터 ${metaLoadRecords.length}건 로드 완료 (전용 테이블 + 기존 테이블 폴백 통합)`},
+      error:   {icon:'⚠️', text:`조회 실패: ${metaLoadDbErrorMsg}`},
+    };
+    const banner = statusMap[metaLoadDbStatus] || statusMap.idle;
+    const rows = metaLoadRecords.slice(0, 15);
+    const burdenBadge = (pct)=>{
+      const lv = pct==null ? null : (pct<=80?{c:'#2FBF9F',l:'안전'}:pct<=100?{c:'#D89A1E',l:'주의'}:{c:'#C0473A',l:'위험'});
+      return pct==null ? `<span class="text-[10px] text-muted">-</span>` : `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full" style="background:${lv.c}1A; color:${lv.c};">${pct}% ${lv.l}</span>`;
+    };
+
+    return `<div class="space-y-5">
+      <div class="tooltip-box p-3 text-xs flex items-center gap-2">
+        <span>${banner.icon}</span><span>${banner.text}</span>
+      </div>
+
+      <div>
+        <p class="text-xs font-semibold text-muted mb-2">🫀 대사 부하 검문 제출 데이터 (최근 15건)</p>
+        <div class="overflow-x-auto">
+          <table class="w-full text-[11px]" style="border-collapse:collapse;">
+            <thead>
+              <tr style="border-bottom:1.5px solid #2C241F;">
+                <th class="text-left py-1.5 pr-2">작성일시</th>
+                <th class="text-left py-1.5 pr-2">반려동물</th>
+                <th class="text-left py-1.5 pr-2">보호자 연락처</th>
+                <th class="text-center py-1.5 pr-2">간 부하</th>
+                <th class="text-center py-1.5 pr-2">신장 부하</th>
+                <th class="text-left py-1.5 pr-2">성분 과다</th>
+                <th class="text-center py-1.5 pr-2">목표 음수량</th>
+                <th class="text-left py-1.5">입력 요약</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows.length ? rows.map(rec=>{
+                const s = rec.inputSummary || {};
+                const chips = rec.nutrientOverloadChips || [];
+                const summaryText = `${META_FEED_TYPES.find(f=>f.id===s.feedType)?.label || s.feedType || '-'} · ${s.dailyFoodG ?? '-'}g · 간식 ${s.dailyTreatG ?? 0}g`;
+                return `
+                <tr style="border-bottom:1px solid #2C241F14;">
+                  <td class="py-2 pr-2 text-muted whitespace-nowrap">${rec.created_at ? new Date(rec.created_at).toLocaleString('ko-KR') : '-'}</td>
+                  <td class="py-2 pr-2 font-semibold">${rec.dog_name || '이름없음'}</td>
+                  <td class="py-2 pr-2">${rec.guardian_email || '-'}${rec.guardian_phone ? `<br><span class="text-muted">${rec.guardian_phone}</span>` : ''}</td>
+                  <td class="py-2 pr-2 text-center">${burdenBadge(rec.liverPct)}</td>
+                  <td class="py-2 pr-2 text-center">${burdenBadge(rec.kidneyPct)}</td>
+                  <td class="py-2 pr-2">${chips.length ? chips.map(c=>`<span class="text-[10px]" style="color:#C0473A;">⚠️${c.label}</span>`).join(' ') : `<span class="text-[10px]" style="color:#2FBF9F;">없음</span>`}</td>
+                  <td class="py-2 pr-2 text-center whitespace-nowrap">${rec.waterTargetMl ? rec.waterTargetMl+'ml' : '-'}</td>
+                  <td class="py-2 text-muted">${summaryText} <span class="text-[9px]">(${rec.source})</span></td>
+                </tr>`;
+              }).join('') : `<tr><td colspan="8" class="py-6 text-center text-muted text-xs">아직 제출된 대사 부하 검문 데이터가 없어요.</td></tr>`}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="tooltip-box p-3 text-xs text-muted">
+        전용 테이블 <code>metabolic_load_logs</code>가 준비되지 않았거나 컬럼이 부족해도, 기존 <code>user_analytics</code>/<code>pet_health_scores</code>의
+        <code>extra_data.metabolic_load</code>에 안전하게 우회 저장된 데이터를 자동으로 함께 조회해 표시해요(각 행의 출처는 우측에 작게 표기돼요).
+      </div>
+    </div>`;
+  },
+
   data: ()=>{
     return `<div class="space-y-3">
       <button id="adm_save_btn" class="btn-primary w-full rounded-xl py-2.5 text-sm flex items-center justify-center gap-2">${icon('check')} 설정 업데이트 · 저장 (영구 반영)</button>
@@ -5869,8 +6157,10 @@ function switchMainTab(tab){
   document.querySelectorAll('.main-tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
   document.getElementById('homePage').classList.toggle('hidden', tab!=='home');
   document.getElementById('mixCalcPage').classList.toggle('hidden', tab!=='mixcalc');
+  document.getElementById('metaLoadPage').classList.toggle('hidden', tab!=='metaload');
   document.getElementById('insurancePage').classList.toggle('hidden', tab!=='insurance');
   document.getElementById('bcsPage').classList.toggle('hidden', tab!=='bcs');
+  if(tab === 'metaload') renderMetaLoadPage(); // 진입할 때마다 최신 프로필/DNI 데이터 기준으로 다시 계산해요.
   window.scrollTo({top:0, behavior:'smooth'});
 }
 
@@ -6276,7 +6566,7 @@ function isValidEmailFormat(email){
    최상위 함수 선언(호이스팅)으로 둬서, 어느 init 함수가 먼저 실행되든 항상 안전하게 쓸 수 있어요. */
 let isSubmittingReport = false;
 function setReportButtonsBusy(busy){
-  ['savePdfBtn','openPremiumPdf','freeReportPremiumCtaBtn','insSubmitBtn'].forEach(id=>{
+  ['savePdfBtn','openPremiumPdf','freeReportPremiumCtaBtn','insSubmitBtn','saveMetaLoadBtn'].forEach(id=>{
     const btn = document.getElementById(id);
     if(!btn) return;
     if(busy){
@@ -6465,6 +6755,487 @@ function computeChronoDailyFoodG(){
   const kcalPerKg = chronoInput.foodKcalPerKg > 0 ? chronoInput.foodKcalPerKg : 3650;
   return (der / kcalPerKg) * 1000;
 }
+/* ============================================================
+   ⚙️ 대사 부하 검문 (Metabolic Load Screening) — 완전 독립 모듈
+   — '🥣 1g 믹스 계산기'·'🛡️ 1일 안전 투약 타임라인'과 전혀 State를 공유하지 않고,
+   이 탭 자체에서 직접 입력받은 사료/간식/영양제/처방약 정보만으로 간·신장 대사 부하율(%)을
+   추정하고, 초과 시 급여량/영양제 수량 조정만으로 안전 범위로 되돌리는 교정안을 제시해요.
+   (반려동물의 체중/BCS만 [홈/진단] 프로필을 그대로 참조해요 — 이건 앱 전체가 공유하는
+   "이 아이가 누구인지"에 대한 단일 진실 공급원이라 별도 입력을 받지 않아요.)
+   ⚠️ 이 수치는 실제 혈액검사/임상 지표가 아닌 참고용 추정치예요 — 실제 간·신장 질환이
+   의심되면 반드시 수의사 진료를 받아주세요.
+============================================================ */
+
+const META_FEED_TYPES = [
+  { id:"dry",      label:"건사료", icon:"🦴" },
+  { id:"wet",      label:"습식",   icon:"🥫" },
+  { id:"homemade", label:"화식",   icon:"🍲" },
+];
+const META_FOOD_LEVEL_PRESETS = {
+  normal:      { label:"보통",       kcalPerKg:3650, proteinFactor:1.0  },
+  highProtein: { label:"고단백",     kcalPerKg:3850, proteinFactor:1.3  },
+  diet:        { label:"다이어트용", kcalPerKg:3100, proteinFactor:0.85 },
+};
+const META_SUPPLEMENT_CATEGORIES = [
+  { id:"joint",        label:"관절" },
+  { id:"gut",          label:"유산균" },
+  { id:"skin",         label:"피부" },
+  { id:"multivitamin", label:"종합영양제" },
+];
+const META_MEDICATION_CATEGORIES = [
+  { id:"antibiotic", label:"항생제" },
+  { id:"nsaid",      label:"NSAIDs 소염진통제" },
+  { id:"steroid",    label:"스테로이드" },
+  { id:"diuretic",   label:"이뇨제" },
+  { id:"other",      label:"기타 처방약" },
+];
+/* 약물 카테고리별 간/신장 대사 부하 가중치 (임상적으로 해당 장기를 통해 주로 대사·배설되는 계열 기준) */
+const ORGAN_LOAD_BY_MED_CATEGORY = {
+  antibiotic: { liver:14, kidney:12 },
+  nsaid:      { liver:16, kidney:18 },
+  steroid:    { liver:20, kidney:8  },
+  diuretic:   { liver:6,  kidney:22 },
+  other:      { liver:6,  kidney:6  },
+};
+const ORGAN_LOAD_PER_SUPPLEMENT = { liver:4, kidney:4 };
+
+const metaLoadInput = {
+  sessionId: null,
+  feedType: "dry",
+  dailyFoodG: 100,
+  foodLevel: "normal",
+  foodKcalPerKg: 3650,
+  dailyTreatG: 0,
+  supplementCategories: {}, // { [catId]: {active:false, count:1} }
+  medicationCategories: {}, // { [catId]: {active:false, count:1} }
+};
+function metaEnsureCategoryState(stateMap, catId){
+  if(!stateMap[catId]) stateMap[catId] = { active:false, count:1 };
+  return stateMap[catId];
+}
+META_SUPPLEMENT_CATEGORIES.forEach(c=>metaEnsureCategoryState(metaLoadInput.supplementCategories, c.id));
+META_MEDICATION_CATEGORIES.forEach(c=>metaEnsureCategoryState(metaLoadInput.medicationCategories, c.id));
+
+/* 오늘 급여/투약되는 모든 것(사료+간식+영양제+처방약)의 총 질량(g)을 합산해요. */
+function computeMetaTotalDailyMassG(){
+  const foodG = metaLoadInput.dailyFoodG || 0;
+  const treatG = metaLoadInput.dailyTreatG || 0;
+  const suppCount = Object.values(metaLoadInput.supplementCategories).filter(s=>s.active).reduce((sum,s)=>sum+(s.count||1), 0);
+  const medCount = Object.values(metaLoadInput.medicationCategories).filter(m=>m.active).reduce((sum,m)=>sum+(m.count||1), 0);
+  // 영양제/처방약 1회 복용분을 대략 1.2g(정제 기준)으로 가정해 총 질량에 더해요.
+  const suppMassG = suppCount * 1.2;
+  const medMassG = medCount * 1.2;
+  return { foodG, treatG, suppMassG, medMassG, totalG: foodG + treatG + suppMassG + medMassG, suppCount, medCount };
+}
+
+/* 간(Liver)/신장(Kidney) 대사 부하율(%)을 추정해요. */
+function computeOrganBurden(){
+  const weight = petInsurance.weight || 10; // 체중/BCS는 [홈/진단] 프로필을 그대로 참조하는 공유 값이에요.
+  const mass = computeMetaTotalDailyMassG();
+  const referenceMassG = weight * 25; // 체중 대비 통상적인 1일 총 급여 질량 기준선(g)
+  const proteinFactor = (META_FOOD_LEVEL_PRESETS[metaLoadInput.foodLevel] || META_FOOD_LEVEL_PRESETS.normal).proteinFactor;
+  const massLoadPct = (mass.totalG / referenceMassG) * 70 * proteinFactor;
+
+  let liverPct = massLoadPct;
+  let kidneyPct = massLoadPct;
+  Object.entries(metaLoadInput.medicationCategories).forEach(([cat, m])=>{
+    if(!m.active) return;
+    const w = ORGAN_LOAD_BY_MED_CATEGORY[cat] || ORGAN_LOAD_BY_MED_CATEGORY.other;
+    liverPct += w.liver * (m.count || 1);
+    kidneyPct += w.kidney * (m.count || 1);
+  });
+  Object.entries(metaLoadInput.supplementCategories).forEach(([cat, s])=>{
+    if(!s.active) return;
+    liverPct += ORGAN_LOAD_PER_SUPPLEMENT.liver * (s.count || 1);
+    kidneyPct += ORGAN_LOAD_PER_SUPPLEMENT.kidney * (s.count || 1);
+  });
+
+  return {
+    liverPct: Math.round(Math.min(200, Math.max(0, liverPct))),
+    kidneyPct: Math.round(Math.min(200, Math.max(0, kidneyPct))),
+    mass,
+  };
+}
+function burdenLevel(pct){
+  if(pct <= 80) return { level:'safe', label:'안전', color:'#2FBF9F' };
+  if(pct <= 100) return { level:'caution', label:'주의', color:'#D89A1E' };
+  return { level:'danger', label:'과다/위험', color:'#C0473A' };
+}
+
+/* 카테고리 수준의 입력만으로 비타민D/나트륨/인 등 중복·초과 위험을 간단히 감지해요. */
+function detectNutrientOverloadChips(){
+  const chips = [];
+  const supp = metaLoadInput.supplementCategories;
+  const med = metaLoadInput.medicationCategories;
+
+  const multi = supp.multivitamin;
+  if(multi && multi.active && (multi.count||1) >= 2){
+    chips.push({ label:'비타민D', pct: 100 + (multi.count*35), note:'종합영양제를 하루 2회 이상 급여하면 비타민D가 중복 초과될 수 있어요.' });
+  }
+  if(multi && multi.active && supp.joint && supp.joint.active){
+    chips.push({ label:'칼슘', pct: 118, note:'종합영양제와 관절 보조제를 함께 급여하면 칼슘이 중복될 수 있어요.' });
+  }
+  const hasRenalOrCardiacMed = (med.diuretic && med.diuretic.active);
+  const isWetOrHomemade = metaLoadInput.feedType === 'wet' || metaLoadInput.feedType === 'homemade';
+  if(hasRenalOrCardiacMed && isWetOrHomemade){
+    chips.push({ label:'나트륨', pct: 128, note:'이뇨제 복용 중 나트륨 함량이 높은 습식/화식을 함께 급여하고 있어요.' });
+  }
+  if(med.nsaid && med.nsaid.active && supp.joint && supp.joint.active){
+    chips.push({ label:'인(P)', pct: 112, note:'NSAIDs 복용 중 관절 보조제의 인(P) 성분이 신장 배출 부담을 더할 수 있어요.' });
+  }
+  return chips;
+}
+
+/* 대사 부하가 100%를 넘으면, 제품을 빼지 않고 급여량/영양제 수량 조정만으로 80% 이하로
+   낮추는 교정안을 계산해요. (처방약 용량은 절대 임의로 조정하지 않아요 — 영양제/사료만 조정) */
+function computeCorrectionPlan(burden){
+  const worstPct = Math.max(burden.liverPct, burden.kidneyPct);
+  if(worstPct <= 100) return null;
+
+  const overBy = worstPct - 80;
+  const foodReductionRatio = Math.min(0.25, (overBy/100) * 0.6); // 안전을 위해 최대 25%까지만 감량 제안
+  const currentFoodG = metaLoadInput.dailyFoodG;
+  const newFoodG = currentFoodG * (1 - foodReductionRatio);
+  const foodDeltaG = currentFoodG - newFoodG;
+
+  const supplementReductions = [];
+  Object.entries(metaLoadInput.supplementCategories).forEach(([cat, s])=>{
+    if(s.active && (s.count||1) > 1){
+      supplementReductions.push({ category: cat, label: META_SUPPLEMENT_CATEGORIES.find(c=>c.id===cat)?.label || cat, from: s.count, to: s.count - 1 });
+    }
+  });
+
+  const lostKcal = foodDeltaG * (metaLoadInput.foodKcalPerKg/1000);
+  const treatSuggestionG = Math.max(0, Math.round(lostKcal / (40/100))); // 오이/양배추(약 40kcal/100g) 기준 대체량
+
+  return {
+    worstPct, overBy,
+    currentFoodG: currentFoodG.toFixed(1), newFoodG: newFoodG.toFixed(1), foodDeltaG: foodDeltaG.toFixed(1),
+    foodReductionRatio,
+    supplementReductions,
+    treatSuggestionG,
+  };
+}
+
+/* 대사 부산물 배출을 돕기 위한 오늘의 보정 목표 음수량(ml)을 계산해요. */
+function computeWaterTargetMl(burden){
+  const weight = petInsurance.weight || 10;
+  const baseMl = weight * 50;
+  const correctionMl = Math.round(Math.max(0, burden.kidneyPct - 80) * 3.5);
+  return { baseMl: Math.round(baseMl), correctionMl, totalMl: Math.round(baseMl) + correctionMl };
+}
+
+function burdenGaugeHtml(label, pct, icon){
+  const lv = burdenLevel(pct);
+  const barPct = Math.min(100, pct);
+  return `
+    <div class="rounded-xl p-4" style="background:#FAF9F5;">
+      <p class="text-xs font-bold mb-2" style="color:#2C241F;">${icon} ${label} 대사 부하</p>
+      <div class="w-full rounded-full overflow-hidden mb-2" style="height:14px; background:#3A5A401A;">
+        <div style="width:${barPct}%; height:100%; background:${lv.color}; transition:width .3s ease;"></div>
+      </div>
+      <p class="font-display font-bold text-2xl" style="color:${lv.color};">${pct}%<span class="text-xs font-bold ml-2 px-2 py-0.5 rounded-full" style="background:${lv.color}1A; color:${lv.color};">${lv.label}</span></p>
+    </div>`;
+}
+
+/* ---- 영양제/처방약 체크리스트 렌더링 (토글 + 개수 입력) ---- */
+function renderMetaChecklist(containerId, categories, stateMap, unitLabel){
+  const wrap = document.getElementById(containerId);
+  wrap.innerHTML = categories.map(c=>{
+    const s = metaEnsureCategoryState(stateMap, c.id);
+    return `
+      <div class="rounded-xl p-2.5" style="background:#FAF9F5; border:1.5px solid ${s.active ? '#3A5A40' : '#3A5A4022'};">
+        <button type="button" class="meta-chk-toggle w-full text-left text-xs font-bold" data-container="${containerId}" data-cat="${c.id}" style="color:${s.active ? '#3A5A40' : '#2C241F'};">${s.active ? '✅' : '⬜'} ${c.label}</button>
+        ${s.active ? `<input type="number" min="1" max="10" step="1" class="meta-chk-count w-full mt-1.5 rounded-lg px-2 py-1.5 text-xs" data-container="${containerId}" data-cat="${c.id}" value="${s.count}" placeholder="1일 ${unitLabel} 개수" style="border:1px solid #3A5A4033;">` : ''}
+      </div>`;
+  }).join('');
+  wrap.querySelectorAll('.meta-chk-toggle').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const stateObj = btn.dataset.container === 'metaSupplementChecklist' ? metaLoadInput.supplementCategories : metaLoadInput.medicationCategories;
+      const s = metaEnsureCategoryState(stateObj, btn.dataset.cat);
+      s.active = !s.active;
+      renderMetaChecklist(containerId, categories, stateMap, unitLabel);
+      renderMetaLoadPage();
+    });
+  });
+  wrap.querySelectorAll('.meta-chk-count').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      const stateObj = inp.dataset.container === 'metaSupplementChecklist' ? metaLoadInput.supplementCategories : metaLoadInput.medicationCategories;
+      metaEnsureCategoryState(stateObj, inp.dataset.cat).count = Math.max(1, Math.min(10, parseInt(e.target.value) || 1));
+      renderMetaLoadPage();
+    });
+  });
+}
+
+/* DB 저장 시점마다 간/신장 부하 지수와 교정 레시피를 함께 백업해요. 계산 중 어떤 이유로든
+   예외가 나더라도 저장 자체(펫 프로필/DNI 데이터)가 막히면 안 되므로 안전하게 감싸요. */
+function safeComputeMetabolicLoadSnapshot(){
+  try{
+    const burden = computeOrganBurden();
+    const correction = computeCorrectionPlan(burden);
+    const water = computeWaterTargetMl(burden);
+    return {
+      liverPct: burden.liverPct, kidneyPct: burden.kidneyPct,
+      nutrientOverloadChips: detectNutrientOverloadChips(),
+      correctionPlan: correction,
+      waterTargetMl: water,
+      inputSummary: { ...metaLoadInput },
+    };
+  }catch(err){
+    console.warn('[seon] 대사부하 스냅샷 계산 중 오류(저장은 계속 진행돼요):', safeStringifyError(err));
+    return null;
+  }
+}
+
+function renderMetaLoadPage(){
+  const burden = computeOrganBurden();
+  document.getElementById('liverBurdenCard').innerHTML = burdenGaugeHtml('간(Liver)', burden.liverPct, '🫀');
+  document.getElementById('kidneyBurdenCard').innerHTML = burdenGaugeHtml('신장(Kidney)', burden.kidneyPct, '🫘');
+
+  const chips = detectNutrientOverloadChips();
+  document.getElementById('nutrientOverloadLabel').textContent = chips.length ? '⚠️ 성분 중복/초과 경고' : '';
+  document.getElementById('nutrientOverloadChipsWrap').innerHTML = chips.length
+    ? chips.map(c=>`<span class="text-xs font-bold px-3 py-1.5 rounded-full" style="background:#C0473A14; color:#C0473A; border:1px solid #C0473A33;" title="${c.note}">⚠️ ${c.label} 중복 초과 ${c.pct}%</span>`).join('')
+    : `<span class="text-xs" style="color:#2FBF9F;">✅ 중복/초과 위험 성분이 감지되지 않았어요.</span>`;
+
+  const correction = computeCorrectionPlan(burden);
+  const correctionCard = document.getElementById('metaCorrectionCard');
+  if(correction){
+    correctionCard.classList.remove('hidden');
+    const lines = [];
+    lines.push(`<div class="rounded-lg p-2.5" style="background:#FAF9F5;"><p class="text-xs">🍚 사료 <b>${correction.currentFoodG}g → ${correction.newFoodG}g</b> 감량 (-${correction.foodDeltaG}g)</p></div>`);
+    correction.supplementReductions.forEach(r=>{
+      lines.push(`<div class="rounded-lg p-2.5" style="background:#FAF9F5;"><p class="text-xs">💊 ${r.label} <b>${r.from}개 → ${r.to}개</b> 감량</p></div>`);
+    });
+    if(correction.treatSuggestionG > 0){
+      lines.push(`<div class="rounded-lg p-2.5" style="background:#FAF9F5;"><p class="text-xs">🥒 부족한 칼로리는 오이/양배추 트릿 약 <b>${correction.treatSuggestionG}g</b>으로 대체해보세요.</p></div>`);
+    }
+    document.getElementById('metaCorrectionBody').innerHTML = lines.join('');
+  } else {
+    correctionCard.classList.add('hidden');
+  }
+
+  const water = computeWaterTargetMl(burden);
+  document.getElementById('waterTargetCard').innerHTML = `
+    <p class="font-display font-bold text-2xl mb-1" style="color:#2C241F;">${water.totalMl}ml</p>
+    <p class="text-xs text-muted mb-3">기본 ${water.baseMl}ml ${water.correctionMl > 0 ? `+ 대사 보정 +${water.correctionMl}ml` : ''}</p>
+    <p class="text-xs" style="color:#3A5A40;">💡 하루 2~3회로 나눠 신선한 물을 제공하고, 사료를 물에 살짝 불려주면 자연스럽게 음수량을 늘릴 수 있어요.</p>`;
+}
+
+function applyMetaCorrection(){
+  const burden = computeOrganBurden();
+  const correction = computeCorrectionPlan(burden);
+  const statusEl = document.getElementById('metaCorrectionStatus');
+  if(!correction){
+    statusEl.textContent = '⚠️ 현재는 교정할 대사 부하 초과가 없어요.';
+    statusEl.style.color = '#C0473A';
+    return;
+  }
+  metaLoadInput.dailyFoodG = parseFloat(correction.newFoodG);
+  document.getElementById('metaDailyFoodGInput').value = correction.newFoodG;
+  correction.supplementReductions.forEach(r=>{
+    metaLoadInput.supplementCategories[r.category].count = r.to;
+  });
+  renderMetaChecklist('metaSupplementChecklist', META_SUPPLEMENT_CATEGORIES, metaLoadInput.supplementCategories, '섭취');
+  renderMetaLoadPage();
+  statusEl.textContent = '✅ 급여량/영양제 수량이 교정 레시피대로 반영됐어요!';
+  statusEl.style.color = '#3A5A40';
+}
+
+/* ---- 전용 저장 (metabolic_load_logs → 실패 시 user_analytics/pet_health_scores extra_data로 안전 우회) ---- */
+async function saveMetabolicLoadData(){
+  if(!metaLoadInput.sessionId) metaLoadInput.sessionId = generateSessionId();
+  const snapshot = safeComputeMetabolicLoadSnapshot();
+
+  saveAppStateSnapshot(); // metaLoadInput은 세션 스냅샷에 함께 포함돼요(아래 saveAppStateSnapshot 수정 참고).
+
+  if(!supabaseClient){
+    return; // 로컬 저장만으로 조용히 종료 (에러 팝업 없음)
+  }
+
+  const payload = {
+    session_id: metaLoadInput.sessionId,
+    guardian_name: guardianContact.name || null,
+    guardian_email: guardianContact.email || null,
+    guardian_phone: guardianContact.phone || null,
+    guardian_region: guardianContact.region || null,
+    guardian_housing_type: guardianContact.housingType || null,
+    guardian_age_range: guardianContact.ageRange || null,
+    consent_required: !!guardianContact.consentRequired,
+    consent_optional: !!guardianContact.consentOptional,
+    organ_burden_liver: snapshot ? snapshot.liverPct : null,
+    organ_burden_kidney: snapshot ? snapshot.kidneyPct : null,
+    input_summary: JSON.stringify(snapshot ? { ...snapshot.inputSummary, nutrientOverloadChips: snapshot.nutrientOverloadChips } : metaLoadInput),
+    correction_plan: JSON.stringify(snapshot ? snapshot.correctionPlan : null),
+    water_target_ml: snapshot ? snapshot.waterTargetMl.totalMl : null,
+  };
+
+  try{
+    const { error } = await upsertWithSchemaFallback('metabolic_load_logs', payload, 'session_id');
+    if(!error){
+      console.log('[seon] metabolic_load_logs에 저장됐어요 ✅');
+      return;
+    }
+    console.warn('[seon] metabolic_load_logs 저장 실패 — user_analytics/pet_health_scores로 안전 우회해요:', error.code || error.message);
+    await fallbackSaveMetabolicLoadToExistingTables(snapshot);
+  }catch(err){
+    console.warn('[seon] metabolic_load_logs 저장 중 예외 — 안전 우회해요:', safeStringifyError(err));
+    await fallbackSaveMetabolicLoadToExistingTables(snapshot);
+  }
+}
+/* metabolic_load_logs 테이블/컬럼이 아직 준비되지 않았을 때, 이미 검증된 user_analytics 또는
+   pet_health_scores의 extra_data.metabolic_load 필드로 안전하게 우회 저장해요(유저에게는 절대
+   에러를 보여주지 않아요). 기존 extra_data를 먼저 읽어와 병합하므로 다른 데이터는 보존돼요. */
+async function mergeMetabolicLoadIntoExtraData(table, sessionId, snapshot){
+  if(!supabaseClient || !sessionId || !snapshot) return false;
+  try{
+    const { data, error: selectError } = await supabaseClient.from(table).select('extra_data').eq('session_id', sessionId).limit(1);
+    if(selectError || !data || !data.length) return false;
+    let existing = {};
+    try{ existing = data[0].extra_data ? (typeof data[0].extra_data === 'string' ? JSON.parse(data[0].extra_data) : data[0].extra_data) : {}; }catch(e){ existing = {}; }
+    existing.metabolic_load = snapshot;
+    const { error: updateError } = await updateWithSchemaFallback(table, { extra_data: JSON.stringify(existing) }, 'session_id', sessionId);
+    return !updateError;
+  }catch(err){
+    console.warn(`[seon] '${table}' extra_data 병합 폴백 실패:`, safeStringifyError(err));
+    return false;
+  }
+}
+async function fallbackSaveMetabolicLoadToExistingTables(snapshot){
+  if(!snapshot) return false;
+  const okAnalytics = await mergeMetabolicLoadIntoExtraData(SUPABASE_TABLE, dog.sessionId, snapshot);
+  if(okAnalytics){ console.log('[seon] user_analytics.extra_data로 안전 우회 저장했어요 ✅'); return true; }
+  const okDni = await mergeMetabolicLoadIntoExtraData('pet_health_scores', dniMatrix.sessionId, snapshot);
+  if(okDni){ console.log('[seon] pet_health_scores.extra_data로 안전 우회 저장했어요 ✅'); return true; }
+  console.warn('[seon] 우회 저장할 기존 세션(user_analytics/pet_health_scores)도 없어 로컬 저장만 유지돼요.');
+  return false;
+}
+
+/* ---- 정밀 리포트 (대사 부하 메디컬 리포트) ---- */
+function renderMetaLoadReportHtml(){
+  const burden = computeOrganBurden();
+  const chips = detectNutrientOverloadChips();
+  const correction = computeCorrectionPlan(burden);
+  const water = computeWaterTargetMl(burden);
+  const petName = petInsurance.name || '이름없음';
+  const today = new Date().toLocaleDateString('ko-KR');
+
+  const activeSupps = META_SUPPLEMENT_CATEGORIES.filter(c=>metaLoadInput.supplementCategories[c.id]?.active);
+  const activeMeds = META_MEDICATION_CATEGORIES.filter(c=>metaLoadInput.medicationCategories[c.id]?.active);
+
+  return `
+  <div class="pdf-report-root">
+    <div class="pdf-page">
+      <p class="text-xs font-bold tracking-widest" style="color:#3A5A40;">SEON · 대사 부하 검문 메디컬 리포트</p>
+      <h1 class="font-display font-bold my-3" style="font-size:1.7rem;">${petName}</h1>
+      <p class="text-xs text-muted mb-6">발급일: ${today}</p>
+
+      <p class="pdf-kicker mb-1">SECTION 1 · 장기별 대사 부하 게이지</p>
+      <div class="grid grid-cols-2 gap-3 mb-4">
+        ${burdenGaugeHtml('간(Liver)', burden.liverPct, '🫀')}
+        ${burdenGaugeHtml('신장(Kidney)', burden.kidneyPct, '🫘')}
+      </div>
+
+      <p class="pdf-kicker mb-1">SECTION 2 · 성분 중복/초과 경고</p>
+      <div class="mb-4">
+        ${chips.length ? chips.map(c=>`<p class="text-xs mb-1" style="color:#C0473A;">⚠️ ${c.label} 중복 초과 ${c.pct}% — ${c.note}</p>`).join('') : `<p class="text-xs" style="color:#2FBF9F;">✅ 중복/초과 위험 성분이 감지되지 않았어요.</p>`}
+      </div>
+
+      <p class="pdf-kicker mb-1">SECTION 3 · 1-Click 자동 교정 레시피</p>
+      <div class="mb-4">
+        ${correction ? `
+          <p class="text-xs mb-1">🍚 사료 ${correction.currentFoodG}g → ${correction.newFoodG}g 감량 (-${correction.foodDeltaG}g)</p>
+          ${correction.supplementReductions.map(r=>`<p class="text-xs mb-1">💊 ${r.label} ${r.from}개 → ${r.to}개 감량</p>`).join('')}
+          ${correction.treatSuggestionG > 0 ? `<p class="text-xs mb-1">🥒 부족 칼로리는 오이/양배추 트릿 약 ${correction.treatSuggestionG}g으로 대체</p>` : ''}
+        ` : `<p class="text-xs" style="color:#2FBF9F;">✅ 현재 대사 부하가 안전 범위 이내라 별도 교정이 필요하지 않아요.</p>`}
+      </div>
+
+      <p class="pdf-kicker mb-1">SECTION 4 · 맞춤 목표 음수량</p>
+      <p class="text-xs mb-4">오늘의 목표 음수량: <b>${water.totalMl}ml</b> (기본 ${water.baseMl}ml${water.correctionMl>0?` + 대사 보정 +${water.correctionMl}ml`:''})</p>
+
+      <p class="pdf-kicker mb-1">SECTION 5 · 입력하신 섭취 정보 요약</p>
+      <table class="w-full text-[11px]" style="border-collapse:collapse;">
+        <tbody>
+          <tr style="border-bottom:1px solid #2C241F14;"><td class="py-1.5 text-muted" style="width:40%;">주식 급여 방식</td><td class="py-1.5 font-semibold">${META_FEED_TYPES.find(f=>f.id===metaLoadInput.feedType)?.label || metaLoadInput.feedType}</td></tr>
+          <tr style="border-bottom:1px solid #2C241F14;"><td class="py-1.5 text-muted">하루 총 급여량</td><td class="py-1.5 font-semibold">${metaLoadInput.dailyFoodG}g (${META_FOOD_LEVEL_PRESETS[metaLoadInput.foodLevel]?.label} · ${metaLoadInput.foodKcalPerKg}kcal/kg)</td></tr>
+          <tr style="border-bottom:1px solid #2C241F14;"><td class="py-1.5 text-muted">하루 간식 급여량</td><td class="py-1.5 font-semibold">${metaLoadInput.dailyTreatG}g</td></tr>
+          <tr style="border-bottom:1px solid #2C241F14;"><td class="py-1.5 text-muted">복용 중인 영양제</td><td class="py-1.5 font-semibold">${activeSupps.length ? activeSupps.map(c=>`${c.label}(${metaLoadInput.supplementCategories[c.id].count}개)`).join(', ') : '없음'}</td></tr>
+          <tr><td class="py-1.5 text-muted">복용 중인 처방약</td><td class="py-1.5 font-semibold">${activeMeds.length ? activeMeds.map(c=>`${c.label}(${metaLoadInput.medicationCategories[c.id].count}개)`).join(', ') : '없음'}</td></tr>
+        </tbody>
+      </table>
+      <p class="text-[10px] text-muted mt-4">본 리포트는 참고용 추정치이며, 실제 진단·처방을 대체하지 않습니다. 간·신장 질환이 의심되면 반드시 수의사 진료를 받아주세요.</p>
+      <span class="pdf-page-num">1 / 1</span>
+    </div>
+  </div>`;
+}
+function openMetaLoadReport(){
+  const existing = document.getElementById('metaLoadReportOverlay');
+  if(existing) existing.remove();
+  const overlay = document.createElement('div');
+  overlay.id = 'metaLoadReportOverlay';
+  overlay.className = 'pdf-report-overlay';
+  overlay.innerHTML = `
+    <div class="pdf-toolbar surface flex items-center justify-between px-4 py-3 mb-2">
+      <p class="text-sm font-bold">📄 ${petInsurance.name || '이름없음'}의 대사 부하 검문 리포트</p>
+      <div class="flex gap-2">
+        <button id="metaLoadReportPrintBtn" class="btn-primary rounded-xl px-4 py-2 text-xs">📥 PDF 다운로드 / 인쇄</button>
+        <button id="metaLoadReportCloseBtn" class="btn-ghost rounded-xl px-4 py-2 text-xs">닫기</button>
+      </div>
+    </div>
+    <div id="metaLoadReportBody">${renderMetaLoadReportHtml()}</div>
+  `;
+  document.body.appendChild(overlay);
+  document.getElementById('metaLoadReportCloseBtn').addEventListener('click', ()=>document.getElementById('metaLoadReportOverlay').remove());
+  document.getElementById('metaLoadReportPrintBtn').addEventListener('click', ()=>{
+    document.body.classList.add('print-mode-premium');
+    const cleanup = ()=> document.body.classList.remove('print-mode-premium');
+    window.addEventListener('afterprint', cleanup, {once:true});
+    window.print();
+    setTimeout(cleanup, 2000);
+  });
+}
+
+function initMetaLoadPage(){
+  // LocalStorage에서 복원된 값이 있을 수 있으니, 하드코딩된 기본값 대신 실제 state를 화면에 먼저 반영해요.
+  document.getElementById('metaDailyFoodGInput').value = metaLoadInput.dailyFoodG;
+  document.getElementById('metaFoodKcalInput').value = metaLoadInput.foodKcalPerKg;
+  document.getElementById('metaDailyTreatGInput').value = metaLoadInput.dailyTreatG;
+
+  bindSingleSelectGroup('metaFeedTypeGroup', v=>{ metaLoadInput.feedType = v; renderMetaLoadPage(); });
+  document.querySelector(`#metaFeedTypeGroup button[data-val="${metaLoadInput.feedType}"]`).classList.add('active');
+
+  document.getElementById('metaDailyFoodGInput').addEventListener('input', e=>{
+    metaLoadInput.dailyFoodG = Math.max(0, parseFloat(e.target.value) || 0);
+    renderMetaLoadPage();
+  });
+
+  bindSingleSelectGroup('metaFoodLevelGroup', v=>{
+    metaLoadInput.foodLevel = v;
+    const preset = META_FOOD_LEVEL_PRESETS[v];
+    if(preset){ metaLoadInput.foodKcalPerKg = preset.kcalPerKg; document.getElementById('metaFoodKcalInput').value = preset.kcalPerKg; }
+    renderMetaLoadPage();
+  });
+  document.querySelector(`#metaFoodLevelGroup button[data-val="${metaLoadInput.foodLevel}"]`).classList.add('active');
+
+  document.getElementById('metaFoodKcalInput').addEventListener('input', e=>{
+    metaLoadInput.foodKcalPerKg = Math.max(100, parseFloat(e.target.value) || 3650);
+    renderMetaLoadPage();
+  });
+
+  document.getElementById('metaDailyTreatGInput').addEventListener('input', e=>{
+    metaLoadInput.dailyTreatG = Math.max(0, parseFloat(e.target.value) || 0);
+    renderMetaLoadPage();
+  });
+
+  renderMetaChecklist('metaSupplementChecklist', META_SUPPLEMENT_CATEGORIES, metaLoadInput.supplementCategories, '섭취');
+  renderMetaChecklist('metaMedicationChecklist', META_MEDICATION_CATEGORIES, metaLoadInput.medicationCategories, '복용');
+
+  document.getElementById('applyMetaCorrectionBtn').addEventListener('click', applyMetaCorrection);
+  bindGuardedReportButton('saveMetaLoadBtn', saveMetabolicLoadData);
+  document.getElementById('viewMetaLoadReportBtn').addEventListener('click', ()=>withGuardianContact(openMetaLoadReport));
+}
+
+
 function parseTimeToMinutes(hhmm){
   const [h, m] = String(hhmm||'08:00').split(':').map(Number);
   return (Number.isFinite(h) ? h : 8) * 60 + (Number.isFinite(m) ? m : 0);
@@ -6853,8 +7624,9 @@ function renderSupplementDetailRows(){
   const wrap = document.getElementById('dniSuppDetailWrap');
   const activeCats = dniMatrix.supplements.filter(s=>s!=='none');
   wrap.innerHTML = activeCats.map(cat=>{
-    if(!dniMatrix.supplementDetails[cat]) dniMatrix.supplementDetails[cat] = { ingredient: SUPPLEMENT_INGREDIENTS_BY_CATEGORY[cat][0], customIngredient:'', productName:'' };
+    if(!dniMatrix.supplementDetails[cat]) dniMatrix.supplementDetails[cat] = { ingredient: SUPPLEMENT_INGREDIENTS_BY_CATEGORY[cat][0], customIngredient:'', productName:'', dailyCount:1 };
     const detail = dniMatrix.supplementDetails[cat];
+    if(detail.dailyCount === undefined) detail.dailyCount = 1; // 이전 세션에서 저장된 데이터 하위 호환
     const catLabel = SUPPLEMENT_CATEGORIES.find(c=>c.id===cat)?.label || cat;
     const options = [...SUPPLEMENT_INGREDIENTS_BY_CATEGORY[cat], '직접입력'];
     return `
@@ -6864,7 +7636,9 @@ function renderSupplementDetailRows(){
           ${options.map(o=>`<option value="${o}" ${detail.ingredient===o?'selected':''}>${o}</option>`).join('')}
         </select>
         ${detail.ingredient==='직접입력' ? `<input type="text" class="dni-supp-custom-input w-full rounded-lg px-2 py-2 text-xs mb-2" data-cat="${cat}" placeholder="주성분명을 입력해주세요" value="${detail.customIngredient||''}" style="border:1px solid #3A5A4033;">` : ''}
-        <input type="text" class="dni-supp-product-input w-full rounded-lg px-2 py-2 text-xs" data-cat="${cat}" placeholder="제품명 (선택 입력)" value="${detail.productName||''}" style="border:1px solid #3A5A4033;">
+        <input type="text" class="dni-supp-product-input w-full rounded-lg px-2 py-2 text-xs mb-2" data-cat="${cat}" placeholder="제품명 (선택 입력)" value="${detail.productName||''}" style="border:1px solid #3A5A4033;">
+        <label class="block text-[10px] font-semibold mb-1" style="color:#6b6259;">1일 섭취 횟수(정/캡슐 수)</label>
+        <input type="number" min="1" max="10" step="1" class="dni-supp-count-input w-full rounded-lg px-2 py-2 text-xs" data-cat="${cat}" value="${detail.dailyCount}" style="border:1px solid #3A5A4033;">
       </div>`;
   }).join('');
 
@@ -6884,6 +7658,12 @@ function renderSupplementDetailRows(){
   wrap.querySelectorAll('.dni-supp-product-input').forEach(inp=>{
     inp.addEventListener('input', e=>{
       dniMatrix.supplementDetails[inp.dataset.cat].productName = e.target.value;
+      updateInsuranceOutputs();
+    });
+  });
+  wrap.querySelectorAll('.dni-supp-count-input').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      dniMatrix.supplementDetails[inp.dataset.cat].dailyCount = Math.max(1, Math.min(10, parseInt(e.target.value) || 1));
       updateInsuranceOutputs();
     });
   });
@@ -7377,6 +8157,7 @@ async function submitDniChronoData(){
       usedPrescriptionScan: dniMatrix.usedPrescriptionScan,
       prescriptionImageUrl: dniMatrix.prescriptionImageUrl,
       rawOcrExtractedData: dniMatrix.rawOcrExtractedData,
+      metabolicLoad: safeComputeMetabolicLoadSnapshot(),
       savedAt: new Date().toISOString(),
     }),
   };
@@ -8362,8 +9143,8 @@ async function saveBcsCardImage(){
 ============================================================ */
 /* '1일 안전 투약 타임라인'의 정식 경로는 #/safe-timeline이에요. 예전 링크(#/chrono)로 들어와도
    깨지지 않도록 과거 경로도 계속 인식하되, 화면에는 항상 새 경로로 자동 리다이렉트해요. */
-const ROUTE_TO_TAB = { '': 'home', 'main': 'home', 'safe-timeline': 'insurance', 'chrono': 'insurance', 'mix-calc': 'mixcalc', 'bcs': 'bcs' };
-const TAB_TO_ROUTE = { home: '', insurance: 'safe-timeline', mixcalc: 'mix-calc', bcs: 'bcs' };
+const ROUTE_TO_TAB = { '': 'home', 'main': 'home', 'safe-timeline': 'insurance', 'chrono': 'insurance', 'mix-calc': 'mixcalc', 'metabolic-load': 'metaload', 'bcs': 'bcs' };
+const TAB_TO_ROUTE = { home: '', insurance: 'safe-timeline', mixcalc: 'mix-calc', metaload: 'metabolic-load', bcs: 'bcs' };
 const LEGACY_ROUTES = { 'chrono': 'safe-timeline' }; // 구 경로 → 신 경로 매핑 (자동 리다이렉트용)
 
 function getTabFromCurrentHash(){
@@ -8419,6 +9200,7 @@ function saveAppStateSnapshot(){
         supplementDetails: dniMatrix.supplementDetails,
         medicationEntries: dniMatrix.medicationEntries,
       },
+      metaLoadInput,
       savedAt: new Date().toISOString(),
     };
     localStorage.setItem(LOCAL_STATE_SNAPSHOT_KEY, JSON.stringify(snapshot));
@@ -8442,6 +9224,7 @@ function restoreAppStateSnapshot(){
       if(snap.dniMatrixLite.supplementDetails) dniMatrix.supplementDetails = snap.dniMatrixLite.supplementDetails;
       if(Array.isArray(snap.dniMatrixLite.medicationEntries)) dniMatrix.medicationEntries = snap.dniMatrixLite.medicationEntries;
     }
+    if(snap.metaLoadInput && typeof snap.metaLoadInput === 'object') Object.assign(metaLoadInput, snap.metaLoadInput);
   }catch(err){
     // 저장된 데이터가 손상돼 있으면 조용히 무시하고 기본값으로 진행해요 (에러로 앱이 죽지 않도록).
   }
@@ -8460,6 +9243,7 @@ restoreAppStateSnapshot(); // 다른 init 함수들이 state를 읽어 DOM을 �
 init();
 initBcsTestPage();
 initMixCalcPage();
+initMetaLoadPage();
 initInsurancePage();
 redirectLegacyRouteIfNeeded(); // #/chrono로 딥링크 접속해도 조용히 #/safe-timeline으로 갱신
 navigateToTab(getTabFromCurrentHash(), { skipHashUpdate: true }); // 딥링크(#/safe-timeline 등) 지원 + 뒤로가기 루프 방지
