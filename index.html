@@ -820,47 +820,138 @@
           <span>⚙️</span><span class="text-xs font-bold">Metabolic Load Screening</span>
         </div>
         <h1 class="font-display font-bold mb-2" style="font-size:clamp(1.4rem,4vw,2rem); color:#2C241F;">대사 부하 검문</h1>
-        <p class="text-sm" style="color:#6b6259;">오늘 먹인 사료·간식·영양제·처방약을 전부 합산해 간·신장에 걸리는 대사 부하를 한눈에 확인해요.</p>
+        <p class="text-sm" style="color:#6b6259;">개체 생체 정보와 오늘 먹인 사료·간식·영양제·처방약을 정밀 입력해 간·신장 대사 부하를 임상 수준으로 확인해요.</p>
       </div>
 
       <div class="max-w-5xl mx-auto space-y-5">
-        <!-- ⓪ 대사 부하 검문 전용 인풋 (1g 믹스 계산기와 완전히 독립) -->
+        <!-- ① 개체 생체 Baseline -->
         <div class="rounded-[var(--radius-card)] p-6" style="background:#FFFFFF; border:1px solid #3A5A401f;">
-          <p class="font-bold text-sm mb-1" style="color:#2C241F;">📝 오늘 급여 정보 입력</p>
-          <p class="text-xs text-muted mb-4">'🥣 1g 믹스 계산기'와는 완전히 별개의 독립 입력이에요 — 여기서 직접 입력한 값만 사용해서 계산해요.</p>
+          <p class="font-bold text-sm mb-1" style="color:#2C241F;">🐾 개체 생체 Baseline</p>
+          <p class="text-xs text-muted mb-4">'🥣 1g 믹스 계산기'·'🛡️ 1일 안전 투약 타임라인'과는 완전히 별개의 독립 입력이에요.</p>
 
-          <label class="block text-[11px] font-semibold mb-1.5" style="color:#2C241F;">주식 급여 방식</label>
-          <div class="grid grid-cols-3 gap-2 mb-3" id="metaFeedTypeGroup">
-            <button data-val="dry" class="mc-chip rounded-xl py-2.5 text-xs">🦴 건사료</button>
-            <button data-val="wet" class="mc-chip rounded-xl py-2.5 text-xs">🥫 습식</button>
-            <button data-val="homemade" class="mc-chip rounded-xl py-2.5 text-xs">🍲 화식</button>
+          <div class="grid sm:grid-cols-2 gap-3 mb-3">
+            <div>
+              <label class="block text-[11px] font-semibold mb-1.5" style="color:#2C241F;">견종 (Breed)</label>
+              <input type="text" id="metaBreedInput" placeholder="예: 말티즈" class="w-full rounded-xl px-3 py-2.5 text-sm" style="border:1px solid #3A5A4033;">
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold mb-1.5" style="color:#2C241F;">현재 체중(kg)</label>
+              <input type="number" min="0.5" step="0.1" id="metaWeightInput" class="w-full rounded-xl px-3 py-2.5 text-sm" style="border:1px solid #3A5A4033;">
+            </div>
           </div>
 
-          <label class="block text-[11px] font-semibold mb-1.5" style="color:#2C241F;">하루 총 급여량(g)</label>
-          <input type="number" min="0" step="1" id="metaDailyFoodGInput" value="100" class="w-full rounded-xl px-3 py-2.5 mb-3 text-sm" style="border:1px solid #3A5A4033;">
-
-          <label class="block text-[11px] font-semibold mb-1.5" style="color:#2C241F;">주식 칼로리/단백질 수준</label>
-          <div class="grid grid-cols-3 gap-2 mb-2" id="metaFoodLevelGroup">
-            <button data-val="normal" class="mc-chip rounded-xl py-2.5 text-xs">보통</button>
-            <button data-val="highProtein" class="mc-chip rounded-xl py-2.5 text-xs">고단백</button>
-            <button data-val="diet" class="mc-chip rounded-xl py-2.5 text-xs">다이어트용</button>
-          </div>
-          <div class="relative mb-3">
-            <input type="number" min="100" step="10" id="metaFoodKcalInput" value="3650" class="w-full rounded-xl px-3 py-2.5 text-sm" style="border:1px solid #3A5A4033;">
-            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px]" style="color:#6b6259;">kcal/kg (직접 수정 가능)</span>
+          <label class="block text-[11px] font-semibold mb-1.5" style="color:#2C241F;">나이 / 생애주기</label>
+          <div class="grid grid-cols-3 gap-2 mb-3" id="metaAgeGroupGroup">
+            <button data-val="young" class="mc-chip rounded-xl py-2.5 text-xs">어린/성장기</button>
+            <button data-val="adult" class="mc-chip rounded-xl py-2.5 text-xs">성견</button>
+            <button data-val="senior" class="mc-chip rounded-xl py-2.5 text-xs">노령견(Senior)</button>
           </div>
 
-          <label class="block text-[11px] font-semibold mb-1.5" style="color:#2C241F;">하루 총 간식 급여량(g)</label>
-          <input type="number" min="0" step="1" id="metaDailyTreatGInput" value="0" class="w-full rounded-xl px-3 py-2.5 mb-4 text-sm" style="border:1px solid #3A5A4033;">
+          <label class="block text-[11px] font-semibold mb-2" style="color:#2C241F;">기저 질환 (해당 시 모두 선택)</label>
+          <div class="grid grid-cols-2 gap-2 mb-4">
+            <label class="flex items-center gap-2 rounded-xl p-2.5 text-xs cursor-pointer" style="background:#FAF9F5;"><input type="checkbox" class="meta-condition-checkbox" data-cond="kidney"> 신장 질환/주의</label>
+            <label class="flex items-center gap-2 rounded-xl p-2.5 text-xs cursor-pointer" style="background:#FAF9F5;"><input type="checkbox" class="meta-condition-checkbox" data-cond="liver"> 간 질환/주의</label>
+            <label class="flex items-center gap-2 rounded-xl p-2.5 text-xs cursor-pointer" style="background:#FAF9F5;"><input type="checkbox" class="meta-condition-checkbox" data-cond="heart"> 심장 질환</label>
+            <label class="flex items-center gap-2 rounded-xl p-2.5 text-xs cursor-pointer" style="background:#FAF9F5;"><input type="checkbox" class="meta-condition-checkbox" data-cond="joint"> 관절 질환</label>
+            <label class="flex items-center gap-2 rounded-xl p-2.5 text-xs cursor-pointer" style="background:#FAF9F5;"><input type="checkbox" class="meta-condition-checkbox" data-cond="skin"> 피부/알레르기</label>
+          </div>
 
-          <label class="block text-[11px] font-semibold mb-2" style="color:#2C241F;">복용 중인 영양제 <span class="font-normal text-muted">(해당 시 선택 후 1일 섭취 개수 입력)</span></label>
-          <div class="grid grid-cols-2 gap-2 mb-4" id="metaSupplementChecklist"></div>
-
-          <label class="block text-[11px] font-semibold mb-2" style="color:#2C241F;">복용 중인 처방약 카테고리 <span class="font-normal text-muted">(해당 시 선택 후 1일 복용 개수 입력)</span></label>
-          <div class="grid grid-cols-2 gap-2" id="metaMedicationChecklist"></div>
+          <label class="block text-[11px] font-semibold mb-2" style="color:#2C241F;">최근 혈액검사 수치 경험 <span class="font-normal text-muted">(선택)</span></label>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[10px] mb-1" style="color:#6b6259;">신장 수치(BUN/SDMA/Cr)</label>
+              <select id="metaKidneyBloodworkSelect" class="w-full rounded-xl px-3 py-2.5 text-sm" style="border:1px solid #3A5A4033;">
+                <option value="">모름/선택 안 함</option>
+                <option value="true">정상</option>
+                <option value="false">이상 소견</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] mb-1" style="color:#6b6259;">간 수치(ALT/ALP)</label>
+              <select id="metaLiverBloodworkSelect" class="w-full rounded-xl px-3 py-2.5 text-sm" style="border:1px solid #3A5A4033;">
+                <option value="">모름/선택 안 함</option>
+                <option value="true">정상</option>
+                <option value="false">이상 소견</option>
+              </select>
+            </div>
+          </div>
         </div>
 
-        <!-- ① 장기별 대사 부하 게이지 -->
+        <!-- ② 사료/간식 정밀 인풋 -->
+        <div class="rounded-[var(--radius-card)] p-6" style="background:#FFFFFF; border:1px solid #3A5A401f;">
+          <p class="font-bold text-sm mb-4" style="color:#2C241F;">🍽️ 주식 & 간식 정밀 입력</p>
+
+          <label class="block text-[11px] font-semibold mb-1.5" style="color:#2C241F;">제형 선택</label>
+          <div class="grid grid-cols-5 gap-1.5 mb-3" id="metaFeedTypeGroup">
+            <button data-val="dry" class="mc-chip rounded-xl py-2 text-[10px]">🦴 건식</button>
+            <button data-val="wet" class="mc-chip rounded-xl py-2 text-[10px]">🥫 습식</button>
+            <button data-val="homemade" class="mc-chip rounded-xl py-2 text-[10px]">🍲 화식</button>
+            <button data-val="raw" class="mc-chip rounded-xl py-2 text-[10px]">🥩 생식</button>
+            <button data-val="freezeDried" class="mc-chip rounded-xl py-2 text-[10px]">❄️ 동결건조</button>
+          </div>
+          <p class="text-[10px] text-muted mb-2">제형 선택 시 대표 성분값이 자동으로 채워져요 — 실제 제품 정보로 언제든 직접 수정하세요.</p>
+
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3">
+            <div><label class="block text-[10px] mb-1" style="color:#6b6259;">칼로리(kcal/kg)</label><input type="number" min="100" step="10" id="metaFoodKcalInput" class="w-full rounded-lg px-2 py-2 text-xs" style="border:1px solid #3A5A4033;"></div>
+            <div><label class="block text-[10px] mb-1" style="color:#6b6259;">조단백(%)</label><input type="number" min="0" step="0.5" id="metaFoodProteinInput" class="w-full rounded-lg px-2 py-2 text-xs" style="border:1px solid #3A5A4033;"></div>
+            <div><label class="block text-[10px] mb-1" style="color:#6b6259;">조지방(%)</label><input type="number" min="0" step="0.5" id="metaFoodFatInput" class="w-full rounded-lg px-2 py-2 text-xs" style="border:1px solid #3A5A4033;"></div>
+            <div><label class="block text-[10px] mb-1" style="color:#6b6259;">나트륨(mg/100g)</label><input type="number" min="0" step="10" id="metaFoodSodiumInput" class="w-full rounded-lg px-2 py-2 text-xs" style="border:1px solid #3A5A4033;"></div>
+            <div><label class="block text-[10px] mb-1" style="color:#6b6259;">인(mg/100g)</label><input type="number" min="0" step="10" id="metaFoodPhosphorusInput" class="w-full rounded-lg px-2 py-2 text-xs" style="border:1px solid #3A5A4033;"></div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 mb-1">
+            <div>
+              <label class="block text-[11px] font-semibold mb-1.5" style="color:#2C241F;">하루 총 급여량(g)</label>
+              <input type="number" min="0" step="1" id="metaDailyFoodGInput" class="w-full rounded-xl px-3 py-2.5 text-sm" style="border:1px solid #3A5A4033;">
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold mb-1.5" style="color:#2C241F;">1일 급여 횟수</label>
+              <input type="number" min="1" max="6" step="1" id="metaFoodFreqInput" class="w-full rounded-xl px-3 py-2.5 text-sm" style="border:1px solid #3A5A4033;">
+            </div>
+          </div>
+          <p id="metaPerMealGDisplay" class="text-[11px] mb-4" style="color:#3A5A40;"></p>
+
+          <label class="block text-[11px] font-semibold mb-1.5" style="color:#2C241F;">하루 총 간식 급여량(g)</label>
+          <input type="number" min="0" step="1" id="metaDailyTreatGInput" class="w-full rounded-xl px-3 py-2.5 text-sm" style="border:1px solid #3A5A4033;">
+        </div>
+
+        <!-- ③ 영양제 -->
+        <div class="rounded-[var(--radius-card)] p-6" style="background:#FFFFFF; border:1px solid #3A5A401f;">
+          <p class="font-bold text-sm mb-1" style="color:#2C241F;">💊 영양제</p>
+          <p class="text-xs text-muted mb-3">해당 시 선택 후 1회 용량과 1일 횟수를 입력해주세요 — 주요 대사 성분이 자동으로 매핑돼요.</p>
+          <div class="grid grid-cols-2 gap-2" id="metaSupplementChecklist"></div>
+        </div>
+
+        <!-- ④ 처방약 -->
+        <div class="rounded-[var(--radius-card)] p-6" style="background:#FFFFFF; border:1px solid #3A5A401f;">
+          <p class="font-bold text-sm mb-3" style="color:#2C241F;">🩺 처방약</p>
+
+          <div class="grid grid-cols-2 gap-2 mb-4" id="metaMedModeGroup">
+            <button data-val="manual" class="mc-chip rounded-xl py-2.5 text-xs">약 성분 직접 선택</button>
+            <button data-val="infer" class="mc-chip rounded-xl py-2.5 text-xs">진단 질환으로 자동 유추</button>
+          </div>
+
+          <div id="metaMedManualPanel">
+            <div id="metaMedEntriesWrap" class="space-y-2 mb-3"></div>
+            <button type="button" id="metaAddMedBtn" class="w-full rounded-xl py-2.5 text-xs font-bold" style="background:#FAF9F5; border:1.5px dashed #3A5A4055; color:#3A5A40;">➕ 처방약 추가</button>
+          </div>
+
+          <div id="metaMedInferPanel" class="hidden">
+            <label class="block text-[11px] font-semibold mb-2" style="color:#2C241F;">진단 질환/증상 선택</label>
+            <div class="grid grid-cols-2 gap-2" id="metaConditionInferGroup">
+              <button data-val="joint_pain" class="mc-chip rounded-xl py-2.5 text-xs">🦴 슬개골/관절염</button>
+              <button data-val="skin" class="mc-chip rounded-xl py-2.5 text-xs">🐾 피부염</button>
+              <button data-val="ear" class="mc-chip rounded-xl py-2.5 text-xs">👂 귓병</button>
+              <button data-val="bladder" class="mc-chip rounded-xl py-2.5 text-xs">🚽 방광염</button>
+              <button data-val="heart_disease" class="mc-chip rounded-xl py-2.5 text-xs">❤️ 심장병</button>
+            </div>
+            <p class="text-[10px] text-muted mt-2">선택하시면 대표 약물계열과 대사 경로(간 대사 vs 신장 배설)를 자동으로 유추해 계산에 반영해요.</p>
+          </div>
+
+          <p class="text-[10px] mt-3" style="color:#C0473A;">🔒 처방약의 용량/횟수는 수의사 처방을 그대로 따르며, 1-Click 교정 시에도 절대 임의로 조정하지 않아요.</p>
+        </div>
+
+        <!-- ⑤ 장기별 대사 부하 게이지 -->
         <div class="rounded-[var(--radius-card)] p-6" style="background:#FFFFFF; border:1px solid #3A5A401f;">
           <p class="font-bold text-sm mb-4" style="color:#2C241F;">🫀 장기별 대사 부하 게이지</p>
           <div class="grid sm:grid-cols-2 gap-4 mb-5">
@@ -871,16 +962,16 @@
           <div id="nutrientOverloadChipsWrap" class="flex flex-wrap gap-2"></div>
         </div>
 
-        <!-- ② 1-Click 영양 부하 자동 교정 레시피 -->
+        <!-- ⑥ 1-Click 영양 부하 자동 교정 레시피 -->
         <div id="metaCorrectionCard" class="hidden rounded-[var(--radius-card)] p-6" style="background:#FFFFFF; border:1.5px solid #C0473A44;">
           <p class="font-bold text-sm mb-1" style="color:#C0473A;">⚡ 1-Click 영양 부하 자동 교정 레시피</p>
-          <p class="text-xs text-muted mb-3">제품을 빼지 않고, 급여량/알약 수 조정만으로 안전 범위(80% 이하)까지 낮춰드려요.</p>
+          <p class="text-xs text-muted mb-3">처방약 용량/횟수는 그대로 유지하고, 사료·영양제·트릿 조정만으로 안전 범위(80% 이하)까지 낮춰드려요.</p>
           <div id="metaCorrectionBody" class="space-y-2 mb-4"></div>
           <button type="button" id="applyMetaCorrectionBtn" class="btn-primary w-full rounded-xl py-3 text-sm font-bold">⚡ 이 레시피로 1-Click 자동 교정 및 반영</button>
           <p id="metaCorrectionStatus" class="text-xs text-center mt-2 min-h-[16px]" style="color:#3A5A40;"></p>
         </div>
 
-        <!-- ③ 목표 음수량 -->
+        <!-- ⑦ 목표 음수량 -->
         <div class="rounded-[var(--radius-card)] p-6" style="background:#FFFFFF; border:1px solid #3A5A401f;">
           <p class="font-bold text-sm mb-3" style="color:#2C241F;">💧 오늘의 목표 음수량</p>
           <div id="waterTargetCard"></div>
@@ -1421,6 +1512,7 @@ const SUPABASE_TABLE = "user_analytics"; // 진단 데이터를 저장/조회할
    create table if not exists public.metabolic_load_logs (
      id                    bigint generated always as identity primary key,
      session_id            text unique,  -- UPSERT 충돌키 — 같은 세션 재저장 시 새 행이 아니라 이 행을 덮어써요.
+     dog_name              text,
      guardian_name          text,
      guardian_email          text,
      guardian_phone           text,
@@ -5520,7 +5612,7 @@ async function loadMetaLoadRecordsFromDB(){
         records.push({
           source: 'metabolic_load_logs',
           created_at: row.created_at,
-          dog_name: inputSummary.dogName || '',
+          dog_name: row.dog_name || '',
           guardian_email: row.guardian_email || '',
           guardian_phone: row.guardian_phone || '',
           liverPct: row.organ_burden_liver, kidneyPct: row.organ_burden_kidney,
@@ -6027,8 +6119,10 @@ const STUDIO_TAB_HTML = {
             <tbody>
               ${rows.length ? rows.map(rec=>{
                 const s = rec.inputSummary || {};
+                const food = s.foodInput || {};
+                const hp = s.healthProfile || {};
                 const chips = rec.nutrientOverloadChips || [];
-                const summaryText = `${META_FEED_TYPES.find(f=>f.id===s.feedType)?.label || s.feedType || '-'} · ${s.dailyFoodG ?? '-'}g · 간식 ${s.dailyTreatG ?? 0}g`;
+                const summaryText = `${META_FEED_TYPES.find(f=>f.id===food.type)?.label || food.type || '-'} · ${food.dailyG ?? '-'}g · 간식 ${food.dailyTreatG ?? 0}g`;
                 return `
                 <tr style="border-bottom:1px solid #2C241F14;">
                   <td class="py-2 pr-2 text-muted whitespace-nowrap">${rec.created_at ? new Date(rec.created_at).toLocaleString('ko-KR') : '-'}</td>
@@ -6756,37 +6850,82 @@ function computeChronoDailyFoodG(){
   return (der / kcalPerKg) * 1000;
 }
 /* ============================================================
-   ⚙️ 대사 부하 검문 (Metabolic Load Screening) — 완전 독립 모듈
-   — '🥣 1g 믹스 계산기'·'🛡️ 1일 안전 투약 타임라인'과 전혀 State를 공유하지 않고,
-   이 탭 자체에서 직접 입력받은 사료/간식/영양제/처방약 정보만으로 간·신장 대사 부하율(%)을
-   추정하고, 초과 시 급여량/영양제 수량 조정만으로 안전 범위로 되돌리는 교정안을 제시해요.
-   (반려동물의 체중/BCS만 [홈/진단] 프로필을 그대로 참조해요 — 이건 앱 전체가 공유하는
-   "이 아이가 누구인지"에 대한 단일 진실 공급원이라 별도 입력을 받지 않아요.)
+   ⚙️ 대사 부하 검문 (Metabolic Load Screening) — 임상 영양·약학 수준 통합 모듈
+   — '🥣 1g 믹스 계산기'·'🛡️ 1일 안전 투약 타임라인'과 전혀 State를 공유하지 않는 완전 독립 모듈이에요.
+   개체 생체 Baseline(견종/체중/생애주기/기저질환/혈액검사 이력)부터 사료·간식·영양제·처방약의
+   정밀 성분/제형/투약패턴까지 입력받아 간·신장 대사 부하를 추정해요.
    ⚠️ 이 수치는 실제 혈액검사/임상 지표가 아닌 참고용 추정치예요 — 실제 간·신장 질환이
    의심되면 반드시 수의사 진료를 받아주세요.
 ============================================================ */
 
-const META_FEED_TYPES = [
-  { id:"dry",      label:"건사료", icon:"🦴" },
-  { id:"wet",      label:"습식",   icon:"🥫" },
-  { id:"homemade", label:"화식",   icon:"🍲" },
+/* ---- ① 개체 생체 Baseline ---- */
+const META_AGE_GROUPS = [
+  { id:"young", label:"어린/성장기", capacityFactor:1.0 },
+  { id:"adult", label:"성견", capacityFactor:1.0 },
+  { id:"senior", label:"노령견(Senior)", capacityFactor:1.25 }, // 노령견은 간/신장 처리 용량이 낮아져 부하가 더 크게 계산돼요
 ];
-const META_FOOD_LEVEL_PRESETS = {
-  normal:      { label:"보통",       kcalPerKg:3650, proteinFactor:1.0  },
-  highProtein: { label:"고단백",     kcalPerKg:3850, proteinFactor:1.3  },
-  diet:        { label:"다이어트용", kcalPerKg:3100, proteinFactor:0.85 },
+const META_CONDITIONS = [
+  { id:"kidney", label:"신장 질환/주의", liver:0,  kidney:25 },
+  { id:"liver",  label:"간 질환/주의",   liver:25, kidney:0  },
+  { id:"heart",  label:"심장 질환",      liver:5,  kidney:10 },
+  { id:"joint",  label:"관절 질환",      liver:0,  kidney:0  },
+  { id:"skin",   label:"피부/알레르기",  liver:5,  kidney:0  },
+];
+
+const metaHealthProfile = {
+  breed: "",
+  weight: 5.0,
+  ageGroup: "adult",
+  conditions: {}, // { kidney:false, liver:false, heart:false, joint:false, skin:false }
+  bloodwork: { kidneyNormal: null, liverNormal: null }, // null=선택안함, true=정상, false=이상 소견
 };
-const META_SUPPLEMENT_CATEGORIES = [
-  { id:"joint",        label:"관절" },
-  { id:"gut",          label:"유산균" },
-  { id:"skin",         label:"피부" },
-  { id:"multivitamin", label:"종합영양제" },
+META_CONDITIONS.forEach(c=>{ metaHealthProfile.conditions[c.id] = false; });
+
+/* ---- ② 사료/간식 정밀 인풋 ---- */
+const META_FEED_TYPES = [
+  { id:"dry",         label:"건식",     icon:"🦴" },
+  { id:"wet",          label:"습식",     icon:"🥫" },
+  { id:"homemade",     label:"화식",     icon:"🍲" },
+  { id:"raw",          label:"생식",     icon:"🥩" },
+  { id:"freezeDried",  label:"동결건조", icon:"❄️" },
 ];
+/* 제형별 대표 영양 성분(100g 기준) — 제품 미상 시 자동으로 채워주는 기본값. 언제든 직접 수정 가능해요. */
+const META_FOOD_MACRO_DEFAULTS = {
+  dry:         { kcalPerKg:3650, proteinPct:26, fatPct:15, sodiumMg100g:300, phosphorusMg100g:900 },
+  wet:         { kcalPerKg:1200, proteinPct:9,  fatPct:6,  sodiumMg100g:180, phosphorusMg100g:250 },
+  homemade:    { kcalPerKg:1800, proteinPct:18, fatPct:10, sodiumMg100g:120, phosphorusMg100g:350 },
+  raw:         { kcalPerKg:1600, proteinPct:20, fatPct:12, sodiumMg100g:100, phosphorusMg100g:400 },
+  freezeDried: { kcalPerKg:4200, proteinPct:32, fatPct:20, sodiumMg100g:350, phosphorusMg100g:950 },
+};
+
+const metaFoodInput = {
+  type: "dry",
+  kcalPerKg: 3650, proteinPct: 26, fatPct: 15, sodiumMg100g: 300, phosphorusMg100g: 900,
+  dailyG: 100, freqPerDay: 2, // 회당 급여량은 dailyG/freqPerDay로 자동 계산(항상 화면에 표시)
+  dailyTreatG: 0,
+};
+
+/* ---- ③ 영양제: 제품별 주요 대사 성분 자동 매핑 (1회 급여분 기준) ---- */
+const META_SUPPLEMENT_CATEGORIES = [
+  { id:"joint",        label:"관절",       proteinMg:0,   calciumMg:150, phosphorusMg:80,  sodiumMg:5,  vitAiu:0,   vitDiu:0,   omega3Mg:200 },
+  { id:"gut",          label:"유산균",     proteinMg:0,   calciumMg:20,  phosphorusMg:10,  sodiumMg:2,  vitAiu:0,   vitDiu:0,   omega3Mg:0   },
+  { id:"skin",         label:"피부",       proteinMg:0,   calciumMg:0,   phosphorusMg:0,   sodiumMg:0,  vitAiu:0,   vitDiu:0,   omega3Mg:500 },
+  { id:"multivitamin", label:"종합영양제", proteinMg:0,   calciumMg:200, phosphorusMg:150, sodiumMg:10, vitAiu:800, vitDiu:400, omega3Mg:100 },
+];
+function metaEnsureCategoryState(stateMap, catId){
+  if(!stateMap[catId]) stateMap[catId] = { active:false, dosePerAdmin:1, freqPerDay:1 };
+  return stateMap[catId];
+}
+const metaSupplementState = {};
+META_SUPPLEMENT_CATEGORIES.forEach(c=>metaEnsureCategoryState(metaSupplementState, c.id));
+
+/* ---- ④ 처방약: 추론 모드 & 제형/투약 패턴 ---- */
 const META_MEDICATION_CATEGORIES = [
   { id:"antibiotic", label:"항생제" },
   { id:"nsaid",      label:"NSAIDs 소염진통제" },
   { id:"steroid",    label:"스테로이드" },
   { id:"diuretic",   label:"이뇨제" },
+  { id:"cardiac",    label:"심장약" },
   { id:"other",      label:"기타 처방약" },
 ];
 /* 약물 카테고리별 간/신장 대사 부하 가중치 (임상적으로 해당 장기를 통해 주로 대사·배설되는 계열 기준) */
@@ -6795,65 +6934,124 @@ const ORGAN_LOAD_BY_MED_CATEGORY = {
   nsaid:      { liver:16, kidney:18 },
   steroid:    { liver:20, kidney:8  },
   diuretic:   { liver:6,  kidney:22 },
+  cardiac:    { liver:10, kidney:14 },
   other:      { liver:6,  kidney:6  },
 };
-const ORGAN_LOAD_PER_SUPPLEMENT = { liver:4, kidney:4 };
+/* 제형별 흡수 속도(Kinetics) 가중치 — 가루약/시럽은 알약보다 초기 대사 부하 피크가 높아요. */
+const META_FORMULATION_PEAK_MULTIPLIER = {
+  tablet: { label:"💊 알약(정제/캡슐)", multiplier:1.0  },
+  powder: { label:"🧂 가루약(조제분말)", multiplier:1.25 },
+  liquid: { label:"🧪 시럽/액상",       multiplier:1.3  },
+};
+/* 진단 질환/증상 → 대표 약물계열 자동 추론 (Chrono-DNI의 증상 기반 입력과 동일한 개념) */
+const META_CONDITION_TO_MED_CATEGORY = {
+  joint_pain:   { label:"슬개골/관절염",   category:"nsaid",    organRoute:"간 대사 위주 (일부 신장 배설)" },
+  skin:         { label:"피부염",          category:"steroid",  organRoute:"간 대사 위주" },
+  ear:          { label:"귓병",            category:"antibiotic", organRoute:"간 대사 후 신장 배설" },
+  bladder:      { label:"방광염",          category:"antibiotic", organRoute:"신장 배설 위주" },
+  heart_disease:{ label:"심장병",          category:"cardiac",  organRoute:"신장 배설 위주 (이뇨제 병용 흔함)" },
+};
 
 const metaLoadInput = {
   sessionId: null,
-  feedType: "dry",
-  dailyFoodG: 100,
-  foodLevel: "normal",
-  foodKcalPerKg: 3650,
-  dailyTreatG: 0,
-  supplementCategories: {}, // { [catId]: {active:false, count:1} }
-  medicationCategories: {}, // { [catId]: {active:false, count:1} }
+  medicationInputMode: "manual", // 'manual' | 'infer'
+  inferredCondition: null,       // META_CONDITION_TO_MED_CATEGORY의 key
+  medicationEntries: [],         // [{id, category, formulation, freqPerDay, dosePerAdmin}]
 };
-function metaEnsureCategoryState(stateMap, catId){
-  if(!stateMap[catId]) stateMap[catId] = { active:false, count:1 };
-  return stateMap[catId];
-}
-META_SUPPLEMENT_CATEGORIES.forEach(c=>metaEnsureCategoryState(metaLoadInput.supplementCategories, c.id));
-META_MEDICATION_CATEGORIES.forEach(c=>metaEnsureCategoryState(metaLoadInput.medicationCategories, c.id));
-
-/* 오늘 급여/투약되는 모든 것(사료+간식+영양제+처방약)의 총 질량(g)을 합산해요. */
-function computeMetaTotalDailyMassG(){
-  const foodG = metaLoadInput.dailyFoodG || 0;
-  const treatG = metaLoadInput.dailyTreatG || 0;
-  const suppCount = Object.values(metaLoadInput.supplementCategories).filter(s=>s.active).reduce((sum,s)=>sum+(s.count||1), 0);
-  const medCount = Object.values(metaLoadInput.medicationCategories).filter(m=>m.active).reduce((sum,m)=>sum+(m.count||1), 0);
-  // 영양제/처방약 1회 복용분을 대략 1.2g(정제 기준)으로 가정해 총 질량에 더해요.
-  const suppMassG = suppCount * 1.2;
-  const medMassG = medCount * 1.2;
-  return { foodG, treatG, suppMassG, medMassG, totalG: foodG + treatG + suppMassG + medMassG, suppCount, medCount };
+function metaNewMedicationEntry(overrides){
+  return Object.assign({ id: 'mmed_' + Math.random().toString(36).slice(2,9), category:'antibiotic', formulation:'tablet', freqPerDay:1, dosePerAdmin:1 }, overrides||{});
 }
 
-/* 간(Liver)/신장(Kidney) 대사 부하율(%)을 추정해요. */
-function computeOrganBurden(){
-  const weight = petInsurance.weight || 10; // 체중/BCS는 [홈/진단] 프로필을 그대로 참조하는 공유 값이에요.
-  const mass = computeMetaTotalDailyMassG();
-  const referenceMassG = weight * 25; // 체중 대비 통상적인 1일 총 급여 질량 기준선(g)
-  const proteinFactor = (META_FOOD_LEVEL_PRESETS[metaLoadInput.foodLevel] || META_FOOD_LEVEL_PRESETS.normal).proteinFactor;
-  const massLoadPct = (mass.totalG / referenceMassG) * 70 * proteinFactor;
+/* ---- 계산 ---- */
+/* 회당 급여량은 항상 하루 총 급여량 ÷ 급여 횟수로 자동 계산돼요(직접 수정 불필요, 화면에 참고용으로 표시). */
+function computeMetaPerMealG(){
+  const freq = Math.max(1, metaFoodInput.freqPerDay || 1);
+  return metaFoodInput.dailyG / freq;
+}
 
-  let liverPct = massLoadPct;
-  let kidneyPct = massLoadPct;
-  Object.entries(metaLoadInput.medicationCategories).forEach(([cat, m])=>{
-    if(!m.active) return;
-    const w = ORGAN_LOAD_BY_MED_CATEGORY[cat] || ORGAN_LOAD_BY_MED_CATEGORY.other;
-    liverPct += w.liver * (m.count || 1);
-    kidneyPct += w.kidney * (m.count || 1);
-  });
-  Object.entries(metaLoadInput.supplementCategories).forEach(([cat, s])=>{
+/* 오늘 섭취하는 주요 영양소 총량(mg, IU, kcal 등)을 합산해요. */
+function computeMetaNutrientTotals(){
+  const foodG = metaFoodInput.dailyG || 0;
+  const foodFactor = foodG / 100;
+  let totalProteinG = foodFactor * (metaFoodInput.proteinPct/100) * 100; // g
+  let totalSodiumMg = foodFactor * metaFoodInput.sodiumMg100g;
+  let totalPhosphorusMg = foodFactor * metaFoodInput.phosphorusMg100g;
+  let totalVitAiu = 0;
+  let totalVitDiu = 0;
+  let totalCalciumMg = 0;
+  let totalOmega3Mg = 0;
+
+  Object.entries(metaSupplementState).forEach(([cat, s])=>{
     if(!s.active) return;
-    liverPct += ORGAN_LOAD_PER_SUPPLEMENT.liver * (s.count || 1);
-    kidneyPct += ORGAN_LOAD_PER_SUPPLEMENT.kidney * (s.count || 1);
+    const def = META_SUPPLEMENT_CATEGORIES.find(c=>c.id===cat);
+    if(!def) return;
+    const units = (s.dosePerAdmin||1) * (s.freqPerDay||1);
+    totalCalciumMg += def.calciumMg * units;
+    totalPhosphorusMg += def.phosphorusMg * units;
+    totalSodiumMg += def.sodiumMg * units;
+    totalVitAiu += def.vitAiu * units;
+    totalVitDiu += def.vitDiu * units;
+    totalOmega3Mg += def.omega3Mg * units;
   });
 
   return {
-    liverPct: Math.round(Math.min(200, Math.max(0, liverPct))),
-    kidneyPct: Math.round(Math.min(200, Math.max(0, kidneyPct))),
-    mass,
+    foodG, totalProteinG,
+    totalSodiumMg, totalPhosphorusMg, totalCalciumMg, totalVitAiu, totalVitDiu, totalOmega3Mg,
+    treatG: metaFoodInput.dailyTreatG || 0,
+  };
+}
+
+/* 처방약이 '진단 질환으로 자동 유추' 모드일 때, 실제 계산에 쓰일 유효 항목 목록을 만들어요.
+   (직접 선택 모드에서는 metaLoadInput.medicationEntries를 그대로 써요) */
+function metaGetEffectiveMedicationEntries(){
+  if(metaLoadInput.medicationInputMode === 'infer' && metaLoadInput.inferredCondition){
+    const map = META_CONDITION_TO_MED_CATEGORY[metaLoadInput.inferredCondition];
+    if(map){
+      // 추론 모드는 성분/제형/횟수를 정확히 모르는 상태이므로, 대표 계열 기준으로 '보통 알약 1일 1회 1정' 가정치를 써요.
+      return [ metaNewMedicationEntry({ category: map.category, formulation:'tablet', freqPerDay:1, dosePerAdmin:1, inferred:true, inferredLabel: map.label, organRoute: map.organRoute }) ];
+    }
+    return [];
+  }
+  return metaLoadInput.medicationEntries;
+}
+
+/* 간(Liver)/신장(Kidney) 대사 부하율(%)을 추정해요.
+   = 기저 질량 부하(DM 기준) × 노령견 용량 계수 + 기저질환/혈액검사 가중치 + 약물(제형별 피크 가중치 반영) + 영양제 */
+function computeOrganBurden(){
+  const weight = metaHealthProfile.weight || 5;
+  const nutrients = computeMetaNutrientTotals();
+  const referenceMassG = weight * 25; // 체중 대비 통상적인 1일 총 급여 질량 기준선(g)
+  const massLoadPct = ((nutrients.foodG + nutrients.treatG) / referenceMassG) * 60;
+
+  const ageFactor = (META_AGE_GROUPS.find(a=>a.id===metaHealthProfile.ageGroup) || META_AGE_GROUPS[1]).capacityFactor;
+
+  let liverPct = massLoadPct * ageFactor;
+  let kidneyPct = massLoadPct * ageFactor;
+
+  META_CONDITIONS.forEach(c=>{
+    if(metaHealthProfile.conditions[c.id]){ liverPct += c.liver; kidneyPct += c.kidney; }
+  });
+  if(metaHealthProfile.bloodwork.kidneyNormal === false) kidneyPct += 20;
+  if(metaHealthProfile.bloodwork.liverNormal === false) liverPct += 20;
+
+  metaGetEffectiveMedicationEntries().forEach(e=>{
+    const w = ORGAN_LOAD_BY_MED_CATEGORY[e.category] || ORGAN_LOAD_BY_MED_CATEGORY.other;
+    const peak = (META_FORMULATION_PEAK_MULTIPLIER[e.formulation] || META_FORMULATION_PEAK_MULTIPLIER.tablet).multiplier;
+    const units = (e.dosePerAdmin||1) * (e.freqPerDay||1);
+    liverPct += w.liver * units * peak;
+    kidneyPct += w.kidney * units * peak;
+  });
+  Object.values(metaSupplementState).forEach(s=>{
+    if(!s.active) return;
+    const units = (s.dosePerAdmin||1) * (s.freqPerDay||1);
+    liverPct += 4 * units;
+    kidneyPct += 4 * units;
+  });
+
+  return {
+    liverPct: Math.round(Math.min(300, Math.max(0, liverPct))),
+    kidneyPct: Math.round(Math.min(300, Math.max(0, kidneyPct))),
+    nutrients, ageFactor,
   };
 }
 function burdenLevel(pct){
@@ -6862,51 +7060,64 @@ function burdenLevel(pct){
   return { level:'danger', label:'과다/위험', color:'#C0473A' };
 }
 
-/* 카테고리 수준의 입력만으로 비타민D/나트륨/인 등 중복·초과 위험을 간단히 감지해요. */
+/* 비타민D/A 상한, Ca:P 비율, 나트륨/인 과다를 실제 mg/IU 총량 기준으로 감지해요.
+   신장/간 질환이 있거나 혈액검사 이상 소견이 있으면 상한선을 더 엄격하게(보수적으로) 적용해요. */
 function detectNutrientOverloadChips(){
   const chips = [];
-  const supp = metaLoadInput.supplementCategories;
-  const med = metaLoadInput.medicationCategories;
+  const weight = metaHealthProfile.weight || 5;
+  const n = computeMetaNutrientTotals();
+  const renalCaution = metaHealthProfile.conditions.kidney || metaHealthProfile.bloodwork.kidneyNormal === false;
+  const hepaticCaution = metaHealthProfile.conditions.liver || metaHealthProfile.bloodwork.liverNormal === false;
 
-  const multi = supp.multivitamin;
-  if(multi && multi.active && (multi.count||1) >= 2){
-    chips.push({ label:'비타민D', pct: 100 + (multi.count*35), note:'종합영양제를 하루 2회 이상 급여하면 비타민D가 중복 초과될 수 있어요.' });
+  const vitDUL = weight * 20; // IU/kg/day 참고 상한
+  if(n.totalVitDiu > vitDUL){
+    chips.push({ label:'비타민D', pct: Math.round((n.totalVitDiu/vitDUL)*100), note:'권장 상한선 대비 비타민D 섭취가 초과됐어요.' });
   }
-  if(multi && multi.active && supp.joint && supp.joint.active){
-    chips.push({ label:'칼슘', pct: 118, note:'종합영양제와 관절 보조제를 함께 급여하면 칼슘이 중복될 수 있어요.' });
+  const vitAUL = weight * 1000;
+  if(n.totalVitAiu > vitAUL){
+    chips.push({ label:'비타민A', pct: Math.round((n.totalVitAiu/vitAUL)*100), note:'권장 상한선 대비 비타민A 섭취가 초과됐어요.' });
   }
-  const hasRenalOrCardiacMed = (med.diuretic && med.diuretic.active);
-  const isWetOrHomemade = metaLoadInput.feedType === 'wet' || metaLoadInput.feedType === 'homemade';
-  if(hasRenalOrCardiacMed && isWetOrHomemade){
-    chips.push({ label:'나트륨', pct: 128, note:'이뇨제 복용 중 나트륨 함량이 높은 습식/화식을 함께 급여하고 있어요.' });
+  const sodiumUL = weight * (renalCaution ? 50 : 100);
+  if(n.totalSodiumMg > sodiumUL){
+    chips.push({ label:'나트륨', pct: Math.round((n.totalSodiumMg/sodiumUL)*100), note: renalCaution ? '신장 주의 상태라 나트륨 상한을 더 엄격히 적용했어요.' : '나트륨 섭취가 상한선을 초과했어요.' });
   }
-  if(med.nsaid && med.nsaid.active && supp.joint && supp.joint.active){
-    chips.push({ label:'인(P)', pct: 112, note:'NSAIDs 복용 중 관절 보조제의 인(P) 성분이 신장 배출 부담을 더할 수 있어요.' });
+  const phosphorusUL = weight * (renalCaution ? 30 : 75);
+  if(n.totalPhosphorusMg > phosphorusUL){
+    chips.push({ label:'인(P)', pct: Math.round((n.totalPhosphorusMg/phosphorusUL)*100), note: renalCaution ? '신장 주의 상태라 인(P) 상한을 더 엄격히 적용했어요.' : '인(P) 섭취가 상한선을 초과했어요.' });
+  }
+  if(n.totalCalciumMg > 0 && n.totalPhosphorusMg > 0){
+    const ratio = n.totalCalciumMg / n.totalPhosphorusMg;
+    if(ratio < 0.8 || ratio > 2.5){
+      chips.push({ label:'Ca:P 비율', pct: Math.round(ratio*100), note:`칼슘:인 비율이 권장 범위(1:1~2:1)를 벗어났어요 (현재 약 ${ratio.toFixed(2)}:1).` });
+    }
+  }
+  if(hepaticCaution && metaGetEffectiveMedicationEntries().some(e=>e.category==='nsaid' || e.category==='steroid')){
+    chips.push({ label:'간 대사약 중복', pct: 120, note:'간 질환/이상 소견이 있는 상태에서 간 대사 위주 약물을 복용 중이에요.' });
   }
   return chips;
 }
 
-/* 대사 부하가 100%를 넘으면, 제품을 빼지 않고 급여량/영양제 수량 조정만으로 80% 이하로
-   낮추는 교정안을 계산해요. (처방약 용량은 절대 임의로 조정하지 않아요 — 영양제/사료만 조정) */
+/* 대사 부하가 100%를 넘으면, 처방약 용량/횟수는 절대 건드리지 않고 사료량·영양제 알약 수·
+   대체 트릿만으로 80% 이하로 낮추는 교정안을 계산해요. */
 function computeCorrectionPlan(burden){
   const worstPct = Math.max(burden.liverPct, burden.kidneyPct);
   if(worstPct <= 100) return null;
 
   const overBy = worstPct - 80;
   const foodReductionRatio = Math.min(0.25, (overBy/100) * 0.6); // 안전을 위해 최대 25%까지만 감량 제안
-  const currentFoodG = metaLoadInput.dailyFoodG;
+  const currentFoodG = metaFoodInput.dailyG;
   const newFoodG = currentFoodG * (1 - foodReductionRatio);
   const foodDeltaG = currentFoodG - newFoodG;
 
   const supplementReductions = [];
-  Object.entries(metaLoadInput.supplementCategories).forEach(([cat, s])=>{
-    if(s.active && (s.count||1) > 1){
-      supplementReductions.push({ category: cat, label: META_SUPPLEMENT_CATEGORIES.find(c=>c.id===cat)?.label || cat, from: s.count, to: s.count - 1 });
+  Object.entries(metaSupplementState).forEach(([cat, s])=>{
+    if(s.active && (s.dosePerAdmin||1) > 1){
+      supplementReductions.push({ category: cat, label: META_SUPPLEMENT_CATEGORIES.find(c=>c.id===cat)?.label || cat, from: s.dosePerAdmin, to: s.dosePerAdmin - 1 });
     }
   });
 
-  const lostKcal = foodDeltaG * (metaLoadInput.foodKcalPerKg/1000);
-  const treatSuggestionG = Math.max(0, Math.round(lostKcal / (40/100))); // 오이/양배추(약 40kcal/100g) 기준 대체량
+  const lostKcal = foodDeltaG * (metaFoodInput.kcalPerKg/1000);
+  const treatSuggestionG = Math.max(0, Math.round(lostKcal / (40/100))); // 오이/양배추(약 40kcal/100g, 저단백/저칼로리) 기준 대체량
 
   return {
     worstPct, overBy,
@@ -6914,14 +7125,18 @@ function computeCorrectionPlan(burden){
     foodReductionRatio,
     supplementReductions,
     treatSuggestionG,
+    medicationUnchangedNote: '처방약 용량/횟수는 수의사 처방을 그대로 유지했어요 — 임의로 조정하지 않았어요.',
   };
 }
 
-/* 대사 부산물 배출을 돕기 위한 오늘의 보정 목표 음수량(ml)을 계산해요. */
+/* 대사 부산물 배출을 돕기 위한 오늘의 보정 목표 음수량(ml)을 계산해요.
+   체중 기본선 + 오늘 섭취한 단백질/미네랄/약물 부산물 배출 부담에 비례한 보정치를 더해요. */
 function computeWaterTargetMl(burden){
-  const weight = petInsurance.weight || 10;
+  const weight = metaHealthProfile.weight || 5;
   const baseMl = weight * 50;
-  const correctionMl = Math.round(Math.max(0, burden.kidneyPct - 80) * 3.5);
+  const proteinCorrectionMl = Math.round((burden.nutrients.totalProteinG || 0) * 1.2);
+  const burdenCorrectionMl = Math.round(Math.max(0, burden.kidneyPct - 80) * 3.5);
+  const correctionMl = proteinCorrectionMl + burdenCorrectionMl;
   return { baseMl: Math.round(baseMl), correctionMl, totalMl: Math.round(baseMl) + correctionMl };
 }
 
@@ -6938,33 +7153,87 @@ function burdenGaugeHtml(label, pct, icon){
     </div>`;
 }
 
-/* ---- 영양제/처방약 체크리스트 렌더링 (토글 + 개수 입력) ---- */
-function renderMetaChecklist(containerId, categories, stateMap, unitLabel){
-  const wrap = document.getElementById(containerId);
-  wrap.innerHTML = categories.map(c=>{
-    const s = metaEnsureCategoryState(stateMap, c.id);
+/* ---- 처방약 입력 카드 렌더링 (직접 선택 모드) ---- */
+function metaMedEntryCardHtml(entry){
+  return `
+    <div class="rounded-xl p-3 meta-med-card" data-id="${entry.id}" style="background:#FAF9F5;">
+      <div class="grid grid-cols-2 gap-2 mb-2">
+        <select class="meta-med-category-select w-full rounded-lg px-2 py-2 text-xs" data-id="${entry.id}" style="border:1px solid #3A5A4033;">
+          ${META_MEDICATION_CATEGORIES.map(c=>`<option value="${c.id}" ${entry.category===c.id?'selected':''}>${c.label}</option>`).join('')}
+        </select>
+        <select class="meta-med-formulation-select w-full rounded-lg px-2 py-2 text-xs" data-id="${entry.id}" style="border:1px solid #3A5A4033;">
+          ${Object.entries(META_FORMULATION_PEAK_MULTIPLIER).map(([id,f])=>`<option value="${id}" ${entry.formulation===id?'selected':''}>${f.label}</option>`).join('')}
+        </select>
+      </div>
+      <div class="grid grid-cols-2 gap-2 mb-2">
+        <div>
+          <label class="block text-[10px] font-semibold mb-1" style="color:#6b6259;">1일 투약 횟수</label>
+          <input type="number" min="1" max="6" step="1" class="meta-med-freq-input w-full rounded-lg px-2 py-1.5 text-xs" data-id="${entry.id}" value="${entry.freqPerDay}" style="border:1px solid #3A5A4033;">
+        </div>
+        <div>
+          <label class="block text-[10px] font-semibold mb-1" style="color:#6b6259;">1회 급여 용량(정/포/ml)</label>
+          <input type="number" min="0.25" step="0.25" class="meta-med-dose-input w-full rounded-lg px-2 py-1.5 text-xs" data-id="${entry.id}" value="${entry.dosePerAdmin}" style="border:1px solid #3A5A4033;">
+        </div>
+      </div>
+      <button type="button" class="meta-med-remove-btn text-[10px]" data-id="${entry.id}" style="color:#C0473A;">🗑️ 삭제</button>
+    </div>`;
+}
+function renderMetaMedicationEntries(){
+  const wrap = document.getElementById('metaMedEntriesWrap');
+  if(!wrap) return;
+  wrap.innerHTML = metaLoadInput.medicationEntries.map(metaMedEntryCardHtml).join('') || `<p class="text-xs text-muted">추가된 처방약이 없어요.</p>`;
+  wrap.querySelectorAll('.meta-med-category-select').forEach(sel=>sel.addEventListener('change', e=>{
+    metaLoadInput.medicationEntries.find(x=>x.id===sel.dataset.id).category = e.target.value; renderMetaLoadPage();
+  }));
+  wrap.querySelectorAll('.meta-med-formulation-select').forEach(sel=>sel.addEventListener('change', e=>{
+    metaLoadInput.medicationEntries.find(x=>x.id===sel.dataset.id).formulation = e.target.value; renderMetaLoadPage();
+  }));
+  wrap.querySelectorAll('.meta-med-freq-input').forEach(inp=>inp.addEventListener('input', e=>{
+    metaLoadInput.medicationEntries.find(x=>x.id===inp.dataset.id).freqPerDay = Math.max(1, Math.min(6, parseInt(e.target.value)||1)); renderMetaLoadPage();
+  }));
+  wrap.querySelectorAll('.meta-med-dose-input').forEach(inp=>inp.addEventListener('input', e=>{
+    metaLoadInput.medicationEntries.find(x=>x.id===inp.dataset.id).dosePerAdmin = Math.max(0.25, parseFloat(e.target.value)||1); renderMetaLoadPage();
+  }));
+  wrap.querySelectorAll('.meta-med-remove-btn').forEach(btn=>btn.addEventListener('click', ()=>{
+    metaLoadInput.medicationEntries = metaLoadInput.medicationEntries.filter(x=>x.id!==btn.dataset.id);
+    renderMetaMedicationEntries(); renderMetaLoadPage();
+  }));
+}
+function metaSyncMedicationModePanels(){
+  const manualPanel = document.getElementById('metaMedManualPanel');
+  const inferPanel = document.getElementById('metaMedInferPanel');
+  if(manualPanel) manualPanel.classList.toggle('hidden', metaLoadInput.medicationInputMode !== 'manual');
+  if(inferPanel) inferPanel.classList.toggle('hidden', metaLoadInput.medicationInputMode !== 'infer');
+}
+
+/* ---- 영양제 체크리스트 렌더링 (토글 + 용량/횟수 입력) ---- */
+function renderMetaSupplementChecklist(){
+  const wrap = document.getElementById('metaSupplementChecklist');
+  wrap.innerHTML = META_SUPPLEMENT_CATEGORIES.map(c=>{
+    const s = metaEnsureCategoryState(metaSupplementState, c.id);
     return `
       <div class="rounded-xl p-2.5" style="background:#FAF9F5; border:1.5px solid ${s.active ? '#3A5A40' : '#3A5A4022'};">
-        <button type="button" class="meta-chk-toggle w-full text-left text-xs font-bold" data-container="${containerId}" data-cat="${c.id}" style="color:${s.active ? '#3A5A40' : '#2C241F'};">${s.active ? '✅' : '⬜'} ${c.label}</button>
-        ${s.active ? `<input type="number" min="1" max="10" step="1" class="meta-chk-count w-full mt-1.5 rounded-lg px-2 py-1.5 text-xs" data-container="${containerId}" data-cat="${c.id}" value="${s.count}" placeholder="1일 ${unitLabel} 개수" style="border:1px solid #3A5A4033;">` : ''}
+        <button type="button" class="meta-supp-toggle w-full text-left text-xs font-bold" data-cat="${c.id}" style="color:${s.active ? '#3A5A40' : '#2C241F'};">${s.active ? '✅' : '⬜'} ${c.label}</button>
+        ${s.active ? `
+          <div class="grid grid-cols-2 gap-1.5 mt-1.5">
+            <input type="number" min="0.25" step="0.25" class="meta-supp-dose w-full rounded-lg px-2 py-1.5 text-xs" data-cat="${c.id}" value="${s.dosePerAdmin}" placeholder="1회 용량(알/스쿱)" style="border:1px solid #3A5A4033;">
+            <input type="number" min="1" max="6" step="1" class="meta-supp-freq w-full rounded-lg px-2 py-1.5 text-xs" data-cat="${c.id}" value="${s.freqPerDay}" placeholder="1일 횟수" style="border:1px solid #3A5A4033;">
+          </div>` : ''}
       </div>`;
   }).join('');
-  wrap.querySelectorAll('.meta-chk-toggle').forEach(btn=>{
+  wrap.querySelectorAll('.meta-supp-toggle').forEach(btn=>{
     btn.addEventListener('click', ()=>{
-      const stateObj = btn.dataset.container === 'metaSupplementChecklist' ? metaLoadInput.supplementCategories : metaLoadInput.medicationCategories;
-      const s = metaEnsureCategoryState(stateObj, btn.dataset.cat);
-      s.active = !s.active;
-      renderMetaChecklist(containerId, categories, stateMap, unitLabel);
+      metaEnsureCategoryState(metaSupplementState, btn.dataset.cat).active = !metaSupplementState[btn.dataset.cat].active;
+      renderMetaSupplementChecklist();
       renderMetaLoadPage();
     });
   });
-  wrap.querySelectorAll('.meta-chk-count').forEach(inp=>{
-    inp.addEventListener('input', e=>{
-      const stateObj = inp.dataset.container === 'metaSupplementChecklist' ? metaLoadInput.supplementCategories : metaLoadInput.medicationCategories;
-      metaEnsureCategoryState(stateObj, inp.dataset.cat).count = Math.max(1, Math.min(10, parseInt(e.target.value) || 1));
-      renderMetaLoadPage();
-    });
-  });
+  wrap.querySelectorAll('.meta-supp-dose').forEach(inp=>inp.addEventListener('input', e=>{
+    metaSupplementState[inp.dataset.cat].dosePerAdmin = Math.max(0.25, parseFloat(e.target.value)||1); renderMetaLoadPage();
+  }));
+  wrap.querySelectorAll('.meta-supp-freq').forEach(inp=>inp.addEventListener('input', e=>{
+    metaSupplementState[inp.dataset.cat].freqPerDay = Math.max(1, Math.min(6, parseInt(e.target.value)||1)); renderMetaLoadPage();
+  }));
 }
 
 /* DB 저장 시점마다 간/신장 부하 지수와 교정 레시피를 함께 백업해요. 계산 중 어떤 이유로든
@@ -6979,7 +7248,11 @@ function safeComputeMetabolicLoadSnapshot(){
       nutrientOverloadChips: detectNutrientOverloadChips(),
       correctionPlan: correction,
       waterTargetMl: water,
-      inputSummary: { ...metaLoadInput },
+      healthProfile: { ...metaHealthProfile },
+      foodInput: { ...metaFoodInput },
+      supplementState: JSON.parse(JSON.stringify(metaSupplementState)),
+      medicationInputMode: metaLoadInput.medicationInputMode,
+      medicationEntries: metaGetEffectiveMedicationEntries(),
     };
   }catch(err){
     console.warn('[seon] 대사부하 스냅샷 계산 중 오류(저장은 계속 진행돼요):', safeStringifyError(err));
@@ -6992,10 +7265,13 @@ function renderMetaLoadPage(){
   document.getElementById('liverBurdenCard').innerHTML = burdenGaugeHtml('간(Liver)', burden.liverPct, '🫀');
   document.getElementById('kidneyBurdenCard').innerHTML = burdenGaugeHtml('신장(Kidney)', burden.kidneyPct, '🫘');
 
+  const perMealEl = document.getElementById('metaPerMealGDisplay');
+  if(perMealEl) perMealEl.textContent = `회당 급여량(자동계산): ${computeMetaPerMealG().toFixed(1)}g`;
+
   const chips = detectNutrientOverloadChips();
   document.getElementById('nutrientOverloadLabel').textContent = chips.length ? '⚠️ 성분 중복/초과 경고' : '';
   document.getElementById('nutrientOverloadChipsWrap').innerHTML = chips.length
-    ? chips.map(c=>`<span class="text-xs font-bold px-3 py-1.5 rounded-full" style="background:#C0473A14; color:#C0473A; border:1px solid #C0473A33;" title="${c.note}">⚠️ ${c.label} 중복 초과 ${c.pct}%</span>`).join('')
+    ? chips.map(c=>`<span class="text-xs font-bold px-3 py-1.5 rounded-full" style="background:#C0473A14; color:#C0473A; border:1px solid #C0473A33;" title="${c.note}">⚠️ ${c.label} ${c.pct}%</span>`).join('')
     : `<span class="text-xs" style="color:#2FBF9F;">✅ 중복/초과 위험 성분이 감지되지 않았어요.</span>`;
 
   const correction = computeCorrectionPlan(burden);
@@ -7005,11 +7281,12 @@ function renderMetaLoadPage(){
     const lines = [];
     lines.push(`<div class="rounded-lg p-2.5" style="background:#FAF9F5;"><p class="text-xs">🍚 사료 <b>${correction.currentFoodG}g → ${correction.newFoodG}g</b> 감량 (-${correction.foodDeltaG}g)</p></div>`);
     correction.supplementReductions.forEach(r=>{
-      lines.push(`<div class="rounded-lg p-2.5" style="background:#FAF9F5;"><p class="text-xs">💊 ${r.label} <b>${r.from}개 → ${r.to}개</b> 감량</p></div>`);
+      lines.push(`<div class="rounded-lg p-2.5" style="background:#FAF9F5;"><p class="text-xs">💊 ${r.label} 영양제 <b>${r.from} → ${r.to}</b> (1회 용량 감량)</p></div>`);
     });
     if(correction.treatSuggestionG > 0){
-      lines.push(`<div class="rounded-lg p-2.5" style="background:#FAF9F5;"><p class="text-xs">🥒 부족한 칼로리는 오이/양배추 트릿 약 <b>${correction.treatSuggestionG}g</b>으로 대체해보세요.</p></div>`);
+      lines.push(`<div class="rounded-lg p-2.5" style="background:#FAF9F5;"><p class="text-xs">🥒 부족한 칼로리는 저단백/저칼로리 오이·양배추 트릿 약 <b>${correction.treatSuggestionG}g</b>으로 대체해보세요.</p></div>`);
     }
+    lines.push(`<div class="rounded-lg p-2.5" style="background:#3A5A400d;"><p class="text-xs" style="color:#3A5A40;">🔒 ${correction.medicationUnchangedNote}</p></div>`);
     document.getElementById('metaCorrectionBody').innerHTML = lines.join('');
   } else {
     correctionCard.classList.add('hidden');
@@ -7031,14 +7308,14 @@ function applyMetaCorrection(){
     statusEl.style.color = '#C0473A';
     return;
   }
-  metaLoadInput.dailyFoodG = parseFloat(correction.newFoodG);
+  metaFoodInput.dailyG = parseFloat(correction.newFoodG);
   document.getElementById('metaDailyFoodGInput').value = correction.newFoodG;
   correction.supplementReductions.forEach(r=>{
-    metaLoadInput.supplementCategories[r.category].count = r.to;
+    metaSupplementState[r.category].dosePerAdmin = r.to;
   });
-  renderMetaChecklist('metaSupplementChecklist', META_SUPPLEMENT_CATEGORIES, metaLoadInput.supplementCategories, '섭취');
+  renderMetaSupplementChecklist();
   renderMetaLoadPage();
-  statusEl.textContent = '✅ 급여량/영양제 수량이 교정 레시피대로 반영됐어요!';
+  statusEl.textContent = '✅ 급여량/영양제 수량이 교정 레시피대로 반영됐어요! (처방약 용량은 그대로 유지했어요)';
   statusEl.style.color = '#3A5A40';
 }
 
@@ -7047,7 +7324,7 @@ async function saveMetabolicLoadData(){
   if(!metaLoadInput.sessionId) metaLoadInput.sessionId = generateSessionId();
   const snapshot = safeComputeMetabolicLoadSnapshot();
 
-  saveAppStateSnapshot(); // metaLoadInput은 세션 스냅샷에 함께 포함돼요(아래 saveAppStateSnapshot 수정 참고).
+  saveAppStateSnapshot();
 
   if(!supabaseClient){
     return; // 로컬 저장만으로 조용히 종료 (에러 팝업 없음)
@@ -7055,6 +7332,7 @@ async function saveMetabolicLoadData(){
 
   const payload = {
     session_id: metaLoadInput.sessionId,
+    dog_name: petInsurance.name || null,
     guardian_name: guardianContact.name || null,
     guardian_email: guardianContact.email || null,
     guardian_phone: guardianContact.phone || null,
@@ -7065,7 +7343,7 @@ async function saveMetabolicLoadData(){
     consent_optional: !!guardianContact.consentOptional,
     organ_burden_liver: snapshot ? snapshot.liverPct : null,
     organ_burden_kidney: snapshot ? snapshot.kidneyPct : null,
-    input_summary: JSON.stringify(snapshot ? { ...snapshot.inputSummary, nutrientOverloadChips: snapshot.nutrientOverloadChips } : metaLoadInput),
+    input_summary: JSON.stringify(snapshot ? { healthProfile: snapshot.healthProfile, foodInput: snapshot.foodInput, supplementState: snapshot.supplementState, medicationInputMode: snapshot.medicationInputMode, medicationEntries: snapshot.medicationEntries, nutrientOverloadChips: snapshot.nutrientOverloadChips } : {}),
     correction_plan: JSON.stringify(snapshot ? snapshot.correctionPlan : null),
     water_target_ml: snapshot ? snapshot.waterTargetMl.totalMl : null,
   };
@@ -7083,9 +7361,6 @@ async function saveMetabolicLoadData(){
     await fallbackSaveMetabolicLoadToExistingTables(snapshot);
   }
 }
-/* metabolic_load_logs 테이블/컬럼이 아직 준비되지 않았을 때, 이미 검증된 user_analytics 또는
-   pet_health_scores의 extra_data.metabolic_load 필드로 안전하게 우회 저장해요(유저에게는 절대
-   에러를 보여주지 않아요). 기존 extra_data를 먼저 읽어와 병합하므로 다른 데이터는 보존돼요. */
 async function mergeMetabolicLoadIntoExtraData(table, sessionId, snapshot){
   if(!supabaseClient || !sessionId || !snapshot) return false;
   try{
@@ -7119,48 +7394,52 @@ function renderMetaLoadReportHtml(){
   const water = computeWaterTargetMl(burden);
   const petName = petInsurance.name || '이름없음';
   const today = new Date().toLocaleDateString('ko-KR');
-
-  const activeSupps = META_SUPPLEMENT_CATEGORIES.filter(c=>metaLoadInput.supplementCategories[c.id]?.active);
-  const activeMeds = META_MEDICATION_CATEGORIES.filter(c=>metaLoadInput.medicationCategories[c.id]?.active);
+  const activeConditions = META_CONDITIONS.filter(c=>metaHealthProfile.conditions[c.id]);
+  const activeSupps = META_SUPPLEMENT_CATEGORIES.filter(c=>metaSupplementState[c.id]?.active);
+  const meds = metaGetEffectiveMedicationEntries();
 
   return `
   <div class="pdf-report-root">
     <div class="pdf-page">
       <p class="text-xs font-bold tracking-widest" style="color:#3A5A40;">SEON · 대사 부하 검문 메디컬 리포트</p>
       <h1 class="font-display font-bold my-3" style="font-size:1.7rem;">${petName}</h1>
-      <p class="text-xs text-muted mb-6">발급일: ${today}</p>
+      <p class="text-xs text-muted mb-6">발급일: ${today} · ${metaHealthProfile.breed || '견종 미상'} · ${metaHealthProfile.weight}kg · ${META_AGE_GROUPS.find(a=>a.id===metaHealthProfile.ageGroup)?.label}</p>
 
-      <p class="pdf-kicker mb-1">SECTION 1 · 장기별 대사 부하 게이지</p>
+      <p class="pdf-kicker mb-1">SECTION 1 · 개체 생체 Baseline</p>
+      <p class="text-xs mb-4">기저질환: ${activeConditions.length ? activeConditions.map(c=>c.label).join(', ') : '없음'} · 신장수치: ${metaHealthProfile.bloodwork.kidneyNormal===false?'이상 소견':metaHealthProfile.bloodwork.kidneyNormal===true?'정상':'미확인'} · 간수치: ${metaHealthProfile.bloodwork.liverNormal===false?'이상 소견':metaHealthProfile.bloodwork.liverNormal===true?'정상':'미확인'}</p>
+
+      <p class="pdf-kicker mb-1">SECTION 2 · 장기별 대사 부하 게이지</p>
       <div class="grid grid-cols-2 gap-3 mb-4">
         ${burdenGaugeHtml('간(Liver)', burden.liverPct, '🫀')}
         ${burdenGaugeHtml('신장(Kidney)', burden.kidneyPct, '🫘')}
       </div>
 
-      <p class="pdf-kicker mb-1">SECTION 2 · 성분 중복/초과 경고</p>
+      <p class="pdf-kicker mb-1">SECTION 3 · 성분 중복/초과 경고</p>
       <div class="mb-4">
-        ${chips.length ? chips.map(c=>`<p class="text-xs mb-1" style="color:#C0473A;">⚠️ ${c.label} 중복 초과 ${c.pct}% — ${c.note}</p>`).join('') : `<p class="text-xs" style="color:#2FBF9F;">✅ 중복/초과 위험 성분이 감지되지 않았어요.</p>`}
+        ${chips.length ? chips.map(c=>`<p class="text-xs mb-1" style="color:#C0473A;">⚠️ ${c.label} ${c.pct}% — ${c.note}</p>`).join('') : `<p class="text-xs" style="color:#2FBF9F;">✅ 중복/초과 위험 성분이 감지되지 않았어요.</p>`}
       </div>
 
-      <p class="pdf-kicker mb-1">SECTION 3 · 1-Click 자동 교정 레시피</p>
+      <p class="pdf-kicker mb-1">SECTION 4 · 1-Click 자동 교정 레시피</p>
       <div class="mb-4">
         ${correction ? `
           <p class="text-xs mb-1">🍚 사료 ${correction.currentFoodG}g → ${correction.newFoodG}g 감량 (-${correction.foodDeltaG}g)</p>
-          ${correction.supplementReductions.map(r=>`<p class="text-xs mb-1">💊 ${r.label} ${r.from}개 → ${r.to}개 감량</p>`).join('')}
-          ${correction.treatSuggestionG > 0 ? `<p class="text-xs mb-1">🥒 부족 칼로리는 오이/양배추 트릿 약 ${correction.treatSuggestionG}g으로 대체</p>` : ''}
+          ${correction.supplementReductions.map(r=>`<p class="text-xs mb-1">💊 ${r.label} ${r.from} → ${r.to} (1회 용량 감량)</p>`).join('')}
+          ${correction.treatSuggestionG > 0 ? `<p class="text-xs mb-1">🥒 부족 칼로리는 저단백 채소 트릿 약 ${correction.treatSuggestionG}g으로 대체</p>` : ''}
+          <p class="text-xs mb-1" style="color:#3A5A40;">🔒 ${correction.medicationUnchangedNote}</p>
         ` : `<p class="text-xs" style="color:#2FBF9F;">✅ 현재 대사 부하가 안전 범위 이내라 별도 교정이 필요하지 않아요.</p>`}
       </div>
 
-      <p class="pdf-kicker mb-1">SECTION 4 · 맞춤 목표 음수량</p>
+      <p class="pdf-kicker mb-1">SECTION 5 · 맞춤 목표 음수량</p>
       <p class="text-xs mb-4">오늘의 목표 음수량: <b>${water.totalMl}ml</b> (기본 ${water.baseMl}ml${water.correctionMl>0?` + 대사 보정 +${water.correctionMl}ml`:''})</p>
 
-      <p class="pdf-kicker mb-1">SECTION 5 · 입력하신 섭취 정보 요약</p>
+      <p class="pdf-kicker mb-1">SECTION 6 · 입력하신 섭취 정보 요약</p>
       <table class="w-full text-[11px]" style="border-collapse:collapse;">
         <tbody>
-          <tr style="border-bottom:1px solid #2C241F14;"><td class="py-1.5 text-muted" style="width:40%;">주식 급여 방식</td><td class="py-1.5 font-semibold">${META_FEED_TYPES.find(f=>f.id===metaLoadInput.feedType)?.label || metaLoadInput.feedType}</td></tr>
-          <tr style="border-bottom:1px solid #2C241F14;"><td class="py-1.5 text-muted">하루 총 급여량</td><td class="py-1.5 font-semibold">${metaLoadInput.dailyFoodG}g (${META_FOOD_LEVEL_PRESETS[metaLoadInput.foodLevel]?.label} · ${metaLoadInput.foodKcalPerKg}kcal/kg)</td></tr>
-          <tr style="border-bottom:1px solid #2C241F14;"><td class="py-1.5 text-muted">하루 간식 급여량</td><td class="py-1.5 font-semibold">${metaLoadInput.dailyTreatG}g</td></tr>
-          <tr style="border-bottom:1px solid #2C241F14;"><td class="py-1.5 text-muted">복용 중인 영양제</td><td class="py-1.5 font-semibold">${activeSupps.length ? activeSupps.map(c=>`${c.label}(${metaLoadInput.supplementCategories[c.id].count}개)`).join(', ') : '없음'}</td></tr>
-          <tr><td class="py-1.5 text-muted">복용 중인 처방약</td><td class="py-1.5 font-semibold">${activeMeds.length ? activeMeds.map(c=>`${c.label}(${metaLoadInput.medicationCategories[c.id].count}개)`).join(', ') : '없음'}</td></tr>
+          <tr style="border-bottom:1px solid #2C241F14;"><td class="py-1.5 text-muted" style="width:40%;">주식 급여</td><td class="py-1.5 font-semibold">${META_FEED_TYPES.find(f=>f.id===metaFoodInput.type)?.label} · ${metaFoodInput.dailyG}g/일 (1일 ${metaFoodInput.freqPerDay}회, 회당 ${computeMetaPerMealG().toFixed(1)}g)</td></tr>
+          <tr style="border-bottom:1px solid #2C241F14;"><td class="py-1.5 text-muted">주식 성분(100g당)</td><td class="py-1.5 font-semibold">${metaFoodInput.kcalPerKg}kcal/kg · 단백질 ${metaFoodInput.proteinPct}% · 지방 ${metaFoodInput.fatPct}% · Na ${metaFoodInput.sodiumMg100g}mg · P ${metaFoodInput.phosphorusMg100g}mg</td></tr>
+          <tr style="border-bottom:1px solid #2C241F14;"><td class="py-1.5 text-muted">간식</td><td class="py-1.5 font-semibold">${metaFoodInput.dailyTreatG}g</td></tr>
+          <tr style="border-bottom:1px solid #2C241F14;"><td class="py-1.5 text-muted">영양제</td><td class="py-1.5 font-semibold">${activeSupps.length ? activeSupps.map(c=>`${c.label}(${metaSupplementState[c.id].dosePerAdmin}×${metaSupplementState[c.id].freqPerDay}회)`).join(', ') : '없음'}</td></tr>
+          <tr><td class="py-1.5 text-muted">처방약</td><td class="py-1.5 font-semibold">${meds.length ? meds.map(m=>`${META_MEDICATION_CATEGORIES.find(c=>c.id===m.category)?.label}(${META_FORMULATION_PEAK_MULTIPLIER[m.formulation]?.label}, 1일${m.freqPerDay}회×${m.dosePerAdmin})`).join(', ') : '없음'}</td></tr>
         </tbody>
       </table>
       <p class="text-[10px] text-muted mt-4">본 리포트는 참고용 추정치이며, 실제 진단·처방을 대체하지 않습니다. 간·신장 질환이 의심되면 반드시 수의사 진료를 받아주세요.</p>
@@ -7196,44 +7475,98 @@ function openMetaLoadReport(){
 }
 
 function initMetaLoadPage(){
-  // LocalStorage에서 복원된 값이 있을 수 있으니, 하드코딩된 기본값 대신 실제 state를 화면에 먼저 반영해요.
-  document.getElementById('metaDailyFoodGInput').value = metaLoadInput.dailyFoodG;
-  document.getElementById('metaFoodKcalInput').value = metaLoadInput.foodKcalPerKg;
-  document.getElementById('metaDailyTreatGInput').value = metaLoadInput.dailyTreatG;
+  // ① Health Profile 바인딩
+  document.getElementById('metaBreedInput').value = metaHealthProfile.breed;
+  document.getElementById('metaBreedInput').addEventListener('input', e=>{ metaHealthProfile.breed = e.target.value; });
+  document.getElementById('metaWeightInput').value = metaHealthProfile.weight;
+  document.getElementById('metaWeightInput').addEventListener('input', e=>{
+    metaHealthProfile.weight = Math.max(0.5, parseFloat(e.target.value) || 5);
+    renderMetaLoadPage();
+  });
+  bindSingleSelectGroup('metaAgeGroupGroup', v=>{ metaHealthProfile.ageGroup = v; renderMetaLoadPage(); });
+  document.querySelector(`#metaAgeGroupGroup button[data-val="${metaHealthProfile.ageGroup}"]`).classList.add('active');
 
-  bindSingleSelectGroup('metaFeedTypeGroup', v=>{ metaLoadInput.feedType = v; renderMetaLoadPage(); });
-  document.querySelector(`#metaFeedTypeGroup button[data-val="${metaLoadInput.feedType}"]`).classList.add('active');
+  document.querySelectorAll('.meta-condition-checkbox').forEach(cb=>{
+    cb.checked = !!metaHealthProfile.conditions[cb.dataset.cond];
+    cb.addEventListener('change', e=>{ metaHealthProfile.conditions[cb.dataset.cond] = e.target.checked; renderMetaLoadPage(); });
+  });
+  document.getElementById('metaKidneyBloodworkSelect').addEventListener('change', e=>{
+    metaHealthProfile.bloodwork.kidneyNormal = e.target.value === '' ? null : e.target.value === 'true';
+    renderMetaLoadPage();
+  });
+  document.getElementById('metaLiverBloodworkSelect').addEventListener('change', e=>{
+    metaHealthProfile.bloodwork.liverNormal = e.target.value === '' ? null : e.target.value === 'true';
+    renderMetaLoadPage();
+  });
 
+  // ② 사료/간식 바인딩
+  bindSingleSelectGroup('metaFeedTypeGroup', v=>{
+    metaFoodInput.type = v;
+    const preset = META_FOOD_MACRO_DEFAULTS[v];
+    if(preset){
+      Object.assign(metaFoodInput, preset);
+      document.getElementById('metaFoodKcalInput').value = preset.kcalPerKg;
+      document.getElementById('metaFoodProteinInput').value = preset.proteinPct;
+      document.getElementById('metaFoodFatInput').value = preset.fatPct;
+      document.getElementById('metaFoodSodiumInput').value = preset.sodiumMg100g;
+      document.getElementById('metaFoodPhosphorusInput').value = preset.phosphorusMg100g;
+    }
+    renderMetaLoadPage();
+  });
+  document.querySelector(`#metaFeedTypeGroup button[data-val="${metaFoodInput.type}"]`).classList.add('active');
+
+  document.getElementById('metaFoodKcalInput').value = metaFoodInput.kcalPerKg;
+  document.getElementById('metaFoodProteinInput').value = metaFoodInput.proteinPct;
+  document.getElementById('metaFoodFatInput').value = metaFoodInput.fatPct;
+  document.getElementById('metaFoodSodiumInput').value = metaFoodInput.sodiumMg100g;
+  document.getElementById('metaFoodPhosphorusInput').value = metaFoodInput.phosphorusMg100g;
+  document.getElementById('metaDailyFoodGInput').value = metaFoodInput.dailyG;
+  document.getElementById('metaFoodFreqInput').value = metaFoodInput.freqPerDay;
+  document.getElementById('metaDailyTreatGInput').value = metaFoodInput.dailyTreatG;
+
+  [
+    ['metaFoodKcalInput','kcalPerKg',100], ['metaFoodProteinInput','proteinPct',0], ['metaFoodFatInput','fatPct',0],
+    ['metaFoodSodiumInput','sodiumMg100g',0], ['metaFoodPhosphorusInput','phosphorusMg100g',0],
+  ].forEach(([id,key,min])=>{
+    document.getElementById(id).addEventListener('input', e=>{
+      metaFoodInput[key] = Math.max(min, parseFloat(e.target.value) || min);
+      renderMetaLoadPage();
+    });
+  });
   document.getElementById('metaDailyFoodGInput').addEventListener('input', e=>{
-    metaLoadInput.dailyFoodG = Math.max(0, parseFloat(e.target.value) || 0);
+    metaFoodInput.dailyG = Math.max(0, parseFloat(e.target.value) || 0);
     renderMetaLoadPage();
   });
-
-  bindSingleSelectGroup('metaFoodLevelGroup', v=>{
-    metaLoadInput.foodLevel = v;
-    const preset = META_FOOD_LEVEL_PRESETS[v];
-    if(preset){ metaLoadInput.foodKcalPerKg = preset.kcalPerKg; document.getElementById('metaFoodKcalInput').value = preset.kcalPerKg; }
+  document.getElementById('metaFoodFreqInput').addEventListener('input', e=>{
+    metaFoodInput.freqPerDay = Math.max(1, Math.min(6, parseInt(e.target.value) || 1));
     renderMetaLoadPage();
   });
-  document.querySelector(`#metaFoodLevelGroup button[data-val="${metaLoadInput.foodLevel}"]`).classList.add('active');
-
-  document.getElementById('metaFoodKcalInput').addEventListener('input', e=>{
-    metaLoadInput.foodKcalPerKg = Math.max(100, parseFloat(e.target.value) || 3650);
-    renderMetaLoadPage();
-  });
-
   document.getElementById('metaDailyTreatGInput').addEventListener('input', e=>{
-    metaLoadInput.dailyTreatG = Math.max(0, parseFloat(e.target.value) || 0);
+    metaFoodInput.dailyTreatG = Math.max(0, parseFloat(e.target.value) || 0);
     renderMetaLoadPage();
   });
 
-  renderMetaChecklist('metaSupplementChecklist', META_SUPPLEMENT_CATEGORIES, metaLoadInput.supplementCategories, '섭취');
-  renderMetaChecklist('metaMedicationChecklist', META_MEDICATION_CATEGORIES, metaLoadInput.medicationCategories, '복용');
+  renderMetaSupplementChecklist();
+
+  // ④ 처방약 모드/추론/직접입력 바인딩
+  bindSingleSelectGroup('metaMedModeGroup', v=>{ metaLoadInput.medicationInputMode = v; metaSyncMedicationModePanels(); renderMetaLoadPage(); });
+  document.querySelector(`#metaMedModeGroup button[data-val="${metaLoadInput.medicationInputMode}"]`).classList.add('active');
+  metaSyncMedicationModePanels();
+
+  bindSingleSelectGroup('metaConditionInferGroup', v=>{ metaLoadInput.inferredCondition = v; renderMetaLoadPage(); });
+
+  document.getElementById('metaAddMedBtn').addEventListener('click', ()=>{
+    metaLoadInput.medicationEntries.push(metaNewMedicationEntry());
+    renderMetaMedicationEntries();
+    renderMetaLoadPage();
+  });
+  renderMetaMedicationEntries();
 
   document.getElementById('applyMetaCorrectionBtn').addEventListener('click', applyMetaCorrection);
   bindGuardedReportButton('saveMetaLoadBtn', saveMetabolicLoadData);
   document.getElementById('viewMetaLoadReportBtn').addEventListener('click', ()=>withGuardianContact(openMetaLoadReport));
 }
+
 
 
 function parseTimeToMinutes(hhmm){
@@ -9201,6 +9534,9 @@ function saveAppStateSnapshot(){
         medicationEntries: dniMatrix.medicationEntries,
       },
       metaLoadInput,
+      metaHealthProfile,
+      metaFoodInput,
+      metaSupplementState,
       savedAt: new Date().toISOString(),
     };
     localStorage.setItem(LOCAL_STATE_SNAPSHOT_KEY, JSON.stringify(snapshot));
@@ -9225,6 +9561,9 @@ function restoreAppStateSnapshot(){
       if(Array.isArray(snap.dniMatrixLite.medicationEntries)) dniMatrix.medicationEntries = snap.dniMatrixLite.medicationEntries;
     }
     if(snap.metaLoadInput && typeof snap.metaLoadInput === 'object') Object.assign(metaLoadInput, snap.metaLoadInput);
+    if(snap.metaHealthProfile && typeof snap.metaHealthProfile === 'object') Object.assign(metaHealthProfile, snap.metaHealthProfile);
+    if(snap.metaFoodInput && typeof snap.metaFoodInput === 'object') Object.assign(metaFoodInput, snap.metaFoodInput);
+    if(snap.metaSupplementState && typeof snap.metaSupplementState === 'object') Object.assign(metaSupplementState, snap.metaSupplementState);
   }catch(err){
     // 저장된 데이터가 손상돼 있으면 조용히 무시하고 기본값으로 진행해요 (에러로 앱이 죽지 않도록).
   }
