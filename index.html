@@ -1267,6 +1267,14 @@ const SUPABASE_TABLE = "user_analytics"; // 진단 데이터를 저장/조회할
      dni_warnings              jsonb,  -- [{ molecule, nutrient, interaction_type, dosage_flag, clinical_reference, recommendation_note }]
      prescription_image_url    text,   -- 처방전 스캔 사진 URL (Storage 'prescriptions' 버킷, 직접입력 시 null)
      raw_ocr_extracted_data    jsonb,  -- Vision AI(OCR) 추출 원본 JSON (직접입력 시 {})
+     guardian_name              text,   -- 보호자 이름
+     guardian_email              text,   -- 보호자 이메일 (리포트 발송용)
+     guardian_phone               text,   -- 보호자 휴대폰 번호 (선택, 알림톡 수신용)
+     guardian_region              text,   -- 거주 지역 (선택)
+     guardian_housing_type        text,   -- 주거 형태 (선택)
+     guardian_age_range           text,   -- 연령대 (선택)
+     guardian_consent_required    boolean, -- [필수] 개인정보 수집·이용 동의
+     guardian_consent_optional    boolean, -- [선택] 맞춤 알림·익명화 통계 활용 동의
      extra_data                jsonb,  -- 폼 입력 전체 및 계산 결과 백업
      created_at                timestamptz default now()
    );
@@ -1279,6 +1287,14 @@ const SUPABASE_TABLE = "user_analytics"; // 진단 데이터를 저장/조회할
    alter table public.pet_health_scores add column if not exists daily_chrono_schedule jsonb;
    alter table public.pet_health_scores add column if not exists prescription_image_url text;
    alter table public.pet_health_scores add column if not exists raw_ocr_extracted_data jsonb;
+   alter table public.pet_health_scores add column if not exists guardian_name text;
+   alter table public.pet_health_scores add column if not exists guardian_email text;
+   alter table public.pet_health_scores add column if not exists guardian_phone text;
+   alter table public.pet_health_scores add column if not exists guardian_region text;
+   alter table public.pet_health_scores add column if not exists guardian_housing_type text;
+   alter table public.pet_health_scores add column if not exists guardian_age_range text;
+   alter table public.pet_health_scores add column if not exists guardian_consent_required boolean;
+   alter table public.pet_health_scores add column if not exists guardian_consent_optional boolean;
 
    -- Storage 'prescriptions' 버킷은 별도로 Public 읽기 정책이 있어야 썸네일이 보여요:
    -- create policy "public read prescriptions" on storage.objects for select to public using (bucket_id = 'prescriptions');
@@ -5200,6 +5216,13 @@ async function loadDniRecordsFromDB(){
           prescription_image_url: row.prescription_image_url || extra.prescriptionImageUrl || null,
           raw_ocr_extracted_data: parseMaybeJson(row.raw_ocr_extracted_data, extra.rawOcrExtractedData || {}),
           medication_input_mode: extra.usedPrescriptionScan || row.prescription_image_url ? 'scan' : 'manual',
+          guardian_name: row.guardian_name || (extra.guardianContact && extra.guardianContact.name) || '',
+          guardian_email: row.guardian_email || (extra.guardianContact && extra.guardianContact.email) || '',
+          guardian_phone: row.guardian_phone || (extra.guardianContact && extra.guardianContact.phone) || '',
+          guardian_region: row.guardian_region || (extra.guardianContact && extra.guardianContact.region) || '',
+          guardian_housing_type: row.guardian_housing_type || (extra.guardianContact && extra.guardianContact.housingType) || '',
+          guardian_age_range: row.guardian_age_range || (extra.guardianContact && extra.guardianContact.ageRange) || '',
+          guardian_consent_optional: row.guardian_consent_optional ?? (extra.guardianContact && extra.guardianContact.consentOptional) ?? false,
           created_at: row.created_at || extra.savedAt || new Date().toISOString(),
         };
       });
@@ -5526,7 +5549,7 @@ const STUDIO_TAB_HTML = {
       </div>
 
       <div>
-        <p class="text-xs font-semibold text-muted mb-2">🧬 DNI-Chrono 제출 데이터 (최근 10건)</p>
+        <p class="text-xs font-semibold text-muted mb-2">🛡️ 1일 안전 투약 타임라인 제출 데이터 (최근 10건)</p>
         <div class="space-y-3">
           ${rows.length ? rows.map(rec=>`
             <div class="surface-2 rounded-xl p-3">
@@ -5534,6 +5557,14 @@ const STUDIO_TAB_HTML = {
                 <p class="text-xs font-semibold truncate">${rec.pet_name} <span class="text-muted font-normal">· ${rec.breed || '견종 미상'}</span></p>
                 <span class="text-[10px] text-muted whitespace-nowrap">${rec.weight ?? '-'}kg · BCS ${rec.bcs || '-'} · ${GENDER_NEUTERED_OPTIONS[rec.gender_neutered] || '성별 미상'}</span>
               </div>
+
+              ${rec.guardian_name || rec.guardian_email ? `
+                <div class="rounded-lg p-2 mb-2" style="background:#3A5A400d;">
+                  <p class="text-[10px] font-bold mb-0.5" style="color:#3A5A40;">📩 보호자 정보</p>
+                  <p class="text-[10px]" style="color:#2C241F;">${rec.guardian_name || '이름 미상'} · ${rec.guardian_email || '이메일 없음'}${rec.guardian_phone ? ` · ${rec.guardian_phone}` : ''}</p>
+                  ${rec.guardian_region || rec.guardian_housing_type || rec.guardian_age_range ? `<p class="text-[10px] text-muted">${[rec.guardian_region, rec.guardian_housing_type, rec.guardian_age_range].filter(Boolean).join(' · ')}</p>` : ''}
+                  <p class="text-[9px] text-muted mt-0.5">${rec.guardian_consent_optional ? '✅ 맞춤 알림·통계 활용 동의' : '⬜ 맞춤 알림·통계 활용 미동의'}</p>
+                </div>` : ''}
 
               <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block mb-2" style="background:${rec.medication_input_mode==='scan' ? '#3A5A401A' : '#2C241F0d'}; color:${rec.medication_input_mode==='scan' ? '#3A5A40' : '#6b6259'};">
                 ${rec.medication_input_mode==='scan' ? '📸 처방전 사진 스캔' : '✍️ 직접 입력'}
@@ -6065,6 +6096,113 @@ const chronoInput = {
   feedingFreq: 3,             // 급여 횟수
   mainMealTime: "08:00",      // 첫 끼(아침) 시각 — 이후 끼니는 이 시각 기준으로 균등 분배돼요
 };
+
+/* 리포트 저장/발송을 위한 보호자 연락처 — 반려동물 프로필(petInsurance)·DNI 데이터(dniMatrix)·
+   급여량 데이터(chronoInput)와 1:1로 매핑되어 LocalStorage 및 Supabase payload에 함께 저장돼요. */
+const guardianContact = {
+  name: "", email: "", phone: "", region: "",
+  housingType: "", ageRange: "",
+  consentRequired: false,  // [필수] 개인정보 수집 및 이용 동의
+  consentOptional: false,  // [선택] 맞춤형 헬스케어 알림 수신 및 익명화 통계 데이터 활용 동의
+  collectedAt: null,
+};
+const GUARDIAN_HOUSING_OPTIONS = ["아파트", "주택/빌라", "오피스텔", "기타"];
+const GUARDIAN_AGE_RANGE_OPTIONS = ["20대 이하", "30대", "40대", "50대", "60대 이상"];
+function isValidEmailFormat(email){
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email||'').trim());
+}
+/* '1일 안전 투약 스케줄 저장하기' / '정밀 메디컬 리포트 보기' 클릭 시, 보호자 정보가 아직
+   수집되지 않았다면(필수 항목 미완료) 이 모달을 먼저 띄우고, 확인되면 원래 하려던 동작을 이어가요. */
+function openGuardianContactModal(onConfirm){
+  mountModal(`
+    <p class="text-xs font-bold mb-1" style="color:#3A5A40;">📩 리포트 저장 &amp; 발송</p>
+    <h3 class="font-display text-xl font-bold mb-2">보호자 정보를 알려주세요</h3>
+    <p class="text-xs text-muted mb-4">입력하신 이메일로 완성된 1일 안전 투약 타임라인과 정밀 메디컬 리포트를 보내드려요.</p>
+
+    <label class="block text-xs font-semibold mb-1.5" style="color:#2C241F;">보호자 이름 <span style="color:#C0473A;">*</span></label>
+    <input type="text" id="guardianNameInput" placeholder="예: 김서온" class="w-full rounded-xl px-3 py-2.5 mb-3 text-sm" style="border:1px solid #3A5A4033;" value="${guardianContact.name}">
+
+    <label class="block text-xs font-semibold mb-1.5" style="color:#2C241F;">이메일 주소 <span style="color:#C0473A;">*</span> <span class="font-normal text-muted">(리포트 PDF/링크 발송용)</span></label>
+    <input type="email" id="guardianEmailInput" placeholder="example@email.com" class="w-full rounded-xl px-3 py-2.5 mb-3 text-sm" style="border:1px solid #3A5A4033;" value="${guardianContact.email}">
+
+    <label class="block text-xs font-semibold mb-1.5" style="color:#2C241F;">휴대폰 번호 <span class="font-normal text-muted">(선택 — 알림톡 수신용)</span></label>
+    <input type="text" id="guardianPhoneInput" placeholder="010-0000-0000" class="w-full rounded-xl px-3 py-2.5 mb-3 text-sm" style="border:1px solid #3A5A4033;" value="${guardianContact.phone}">
+
+    <label class="block text-xs font-semibold mb-1.5" style="color:#2C241F;">거주 지역 <span class="font-normal text-muted">(선택)</span></label>
+    <input type="text" id="guardianRegionInput" placeholder="예: 서울시 강남구" class="w-full rounded-xl px-3 py-2.5 mb-3 text-sm" style="border:1px solid #3A5A4033;" value="${guardianContact.region}">
+
+    <div class="grid grid-cols-2 gap-3 mb-4">
+      <div>
+        <label class="block text-xs font-semibold mb-1.5" style="color:#2C241F;">주거 형태 <span class="font-normal text-muted">(선택)</span></label>
+        <select id="guardianHousingSelect" class="w-full rounded-xl px-3 py-2.5 text-sm" style="border:1px solid #3A5A4033;">
+          <option value="">선택 안 함</option>
+          ${GUARDIAN_HOUSING_OPTIONS.map(o=>`<option value="${o}" ${guardianContact.housingType===o?'selected':''}>${o}</option>`).join('')}
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold mb-1.5" style="color:#2C241F;">연령대 <span class="font-normal text-muted">(선택)</span></label>
+        <select id="guardianAgeSelect" class="w-full rounded-xl px-3 py-2.5 text-sm" style="border:1px solid #3A5A4033;">
+          <option value="">선택 안 함</option>
+          ${GUARDIAN_AGE_RANGE_OPTIONS.map(o=>`<option value="${o}" ${guardianContact.ageRange===o?'selected':''}>${o}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+
+    <label class="flex items-start gap-2 mb-2 cursor-pointer">
+      <input type="checkbox" id="guardianConsentRequiredInput" class="mt-0.5" ${guardianContact.consentRequired?'checked':''}>
+      <span class="text-xs" style="color:#2C241F;"><b>[필수]</b> 개인정보(이름·이메일 등) 수집 및 이용에 동의합니다. <span class="text-muted">(리포트 발송 목적, 1년 보관 후 파기)</span></span>
+    </label>
+    <label class="flex items-start gap-2 mb-4 cursor-pointer">
+      <input type="checkbox" id="guardianConsentOptionalInput" class="mt-0.5" ${guardianContact.consentOptional?'checked':''}>
+      <span class="text-xs" style="color:#2C241F;"><b>[선택]</b> 맞춤형 헬스케어 알림 수신 및 익명화 통계 데이터 활용에 동의합니다.</span>
+    </label>
+
+    <p id="guardianFormError" class="text-xs mb-3 hidden" style="color:#C0473A;"></p>
+    <button type="button" id="guardianConfirmBtn" class="btn-primary w-full rounded-xl py-3 text-sm font-bold">확인하고 계속하기</button>
+  `, true);
+
+  document.getElementById('guardianConfirmBtn').addEventListener('click', ()=>{
+    const name = document.getElementById('guardianNameInput').value.trim();
+    const email = document.getElementById('guardianEmailInput').value.trim();
+    const phone = document.getElementById('guardianPhoneInput').value.trim();
+    const region = document.getElementById('guardianRegionInput').value.trim();
+    const housingType = document.getElementById('guardianHousingSelect').value;
+    const ageRange = document.getElementById('guardianAgeSelect').value;
+    const consentRequired = document.getElementById('guardianConsentRequiredInput').checked;
+    const consentOptional = document.getElementById('guardianConsentOptionalInput').checked;
+    const errEl = document.getElementById('guardianFormError');
+
+    let errorMsg = '';
+    if(!name) errorMsg = '보호자 이름을 입력해주세요.';
+    else if(!email || !isValidEmailFormat(email)) errorMsg = '올바른 이메일 주소를 입력해주세요.';
+    else if(!consentRequired) errorMsg = '개인정보 수집 및 이용(필수)에 동의해주세요.';
+
+    if(errorMsg){
+      errEl.textContent = `⚠️ ${errorMsg}`;
+      errEl.classList.remove('hidden');
+      return;
+    }
+
+    Object.assign(guardianContact, {
+      name, email, phone, region, housingType, ageRange,
+      consentRequired, consentOptional,
+      collectedAt: new Date().toISOString(),
+    });
+    saveAppStateSnapshot(); // 반려동물 프로필·DNI 데이터와 함께 즉시 로컬 백업
+    closeModal();
+    if(typeof onConfirm === 'function') onConfirm();
+  });
+}
+/* 보호자 정보(이름+이메일+필수동의)가 이미 수집돼 있으면 모달 없이 바로 진행하고,
+   아직이면 모달을 띄운 뒤 확인 시 이어서 진행해요. */
+function withGuardianContact(action){
+  if(guardianContact.name && guardianContact.email && guardianContact.consentRequired){
+    action();
+  } else {
+    openGuardianContactModal(action);
+  }
+}
+
 /* 대표 사료 브랜드/라인업별 평균 칼로리 밀도(kcal/kg) — 제품명 입력 시 자동완성 후보 및
    kcal 자동 추론의 기준 데이터로 써요. (에러 방지 3단계: 제품명 입력 → kcal 자동추론 →
    유저가 포장지 보고 언제든 직접 수정 가능한 항상-활성화 입력창) */
@@ -6998,6 +7136,16 @@ async function submitDniChronoData(){
     prescription_image_url: dniMatrix.usedPrescriptionScan ? (dniMatrix.prescriptionImageUrl || null) : null,
     raw_ocr_extracted_data: JSON.stringify(dniMatrix.usedPrescriptionScan ? (dniMatrix.rawOcrExtractedData || []) : []),
 
+    // 보호자 연락처(Demographic Data) — 반려동물 프로필·DNI 데이터·급여량 데이터와 1:1로 매핑되는 컬럼이에요.
+    guardian_name: guardianContact.name || null,
+    guardian_email: guardianContact.email || null,
+    guardian_phone: guardianContact.phone || null,
+    guardian_region: guardianContact.region || null,
+    guardian_housing_type: guardianContact.housingType || null,
+    guardian_age_range: guardianContact.ageRange || null,
+    guardian_consent_required: !!guardianContact.consentRequired,
+    guardian_consent_optional: !!guardianContact.consentOptional,
+
     // 전체 폼 상태 및 계산 결과를 JSONB로 백업 보존 (컬럼이 다르거나 빠져도 데이터는 항상 남아요)
     extra_data: JSON.stringify({
       petName, breed, weight, bcs, genderNeutered, medicalHistory,
@@ -7007,6 +7155,7 @@ async function submitDniChronoData(){
       usedPrescriptionScan: dniMatrix.usedPrescriptionScan,
       prescriptionImageUrl: dniMatrix.prescriptionImageUrl,
       rawOcrExtractedData: dniMatrix.rawOcrExtractedData,
+      guardianContact,
       savedAt: new Date().toISOString(),
     }),
   };
@@ -7156,8 +7305,8 @@ function initInsurancePage(){
     updateInsuranceOutputs();
   });
 
-  document.getElementById('insSubmitBtn').addEventListener('click', submitDniChronoData);
-  document.getElementById('insViewReportBtn').addEventListener('click', ()=>openChronoDniReport());
+  document.getElementById('insSubmitBtn').addEventListener('click', ()=>withGuardianContact(submitDniChronoData));
+  document.getElementById('insViewReportBtn').addEventListener('click', ()=>withGuardianContact(openChronoDniReport));
 
   updateInsuranceOutputs();
 }
@@ -8032,6 +8181,7 @@ function saveAppStateSnapshot(){
     const snapshot = {
       petInsurance,
       chronoInput,
+      guardianContact,
       mixCalcLite: {
         weight: mixCalc.weight, bcs: mixCalc.bcs, goal: mixCalc.goal, goalChangeKg: mixCalc.goalChangeKg,
         foodPresetId: mixCalc.foodPresetId, customKcal: mixCalc.customKcal,
@@ -8057,6 +8207,7 @@ function restoreAppStateSnapshot(){
     const snap = JSON.parse(raw);
     if(snap.petInsurance && typeof snap.petInsurance === 'object') Object.assign(petInsurance, snap.petInsurance);
     if(snap.chronoInput && typeof snap.chronoInput === 'object') Object.assign(chronoInput, snap.chronoInput);
+    if(snap.guardianContact && typeof snap.guardianContact === 'object') Object.assign(guardianContact, snap.guardianContact);
     if(snap.mixCalcLite && typeof snap.mixCalcLite === 'object') Object.assign(mixCalc, snap.mixCalcLite);
     if(snap.dniMatrixLite && typeof snap.dniMatrixLite === 'object'){
       if(Array.isArray(snap.dniMatrixLite.supplements)) dniMatrix.supplements = snap.dniMatrixLite.supplements;
