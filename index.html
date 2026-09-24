@@ -1226,6 +1226,7 @@ const SUPABASE_TABLE = "user_analytics"; // 진단 데이터를 저장/조회할
    -- 1) 테이블이 없다면 새로 생성
    create table if not exists public.user_analytics (
      id                          bigint generated always as identity primary key,
+     session_id                  text unique, -- 진단 세션 고유 식별자 (UPSERT 충돌키 — 중복 저장 방지 핵심)
      dog_name                    text,
      breed                       text,
      weight                      numeric,
@@ -1256,6 +1257,10 @@ const SUPABASE_TABLE = "user_analytics"; // 진단 데이터를 저장/조회할
    alter table public.user_analytics add column if not exists guardian_age_range text;
    alter table public.user_analytics add column if not exists guardian_consent_required boolean;
    alter table public.user_analytics add column if not exists guardian_consent_optional boolean;
+   alter table public.user_analytics add column if not exists session_id text;
+   -- ⚠️ 중복 저장 버그 수정 핵심: session_id에 UNIQUE 제약이 있어야 upsert()가 "이미 있으면 덮어쓰기"로
+   -- 동작해요. 이 인덱스가 없으면 매번 새 행이 추가될 수 있으니 반드시 실행해주세요.
+   create unique index if not exists user_analytics_session_id_key on public.user_analytics(session_id);
 
    -- 3) RLS를 사용 중이라면 anon 역할에 INSERT/SELECT/UPDATE 정책이 있는지 꼭 확인하세요.
    -- alter table public.user_analytics enable row level security;
@@ -1271,6 +1276,7 @@ const SUPABASE_TABLE = "user_analytics"; // 진단 데이터를 저장/조회할
 
    create table if not exists public.pet_health_scores (
      id                        bigint generated always as identity primary key,
+     session_id                text unique, -- 제출 세션 고유 식별자 (UPSERT 충돌키 — 중복 저장 방지 핵심)
      pet_name                  text,
      breed                     text,
      weight                    numeric,
@@ -1303,6 +1309,10 @@ const SUPABASE_TABLE = "user_analytics"; // 진단 데이터를 저장/조회할
    alter table public.pet_health_scores add column if not exists daily_chrono_schedule jsonb;
    alter table public.pet_health_scores add column if not exists prescription_image_url text;
    alter table public.pet_health_scores add column if not exists raw_ocr_extracted_data jsonb;
+   alter table public.pet_health_scores add column if not exists session_id text;
+   -- ⚠️ 중복 저장 버그 수정 핵심: session_id에 UNIQUE 제약이 있어야 upsert()가 "이미 있으면 덮어쓰기"로
+   -- 동작해요. 이 인덱스가 없으면 매번 새 행이 추가될 수 있으니 반드시 실행해주세요.
+   create unique index if not exists pet_health_scores_session_id_key on public.pet_health_scores(session_id);
    alter table public.pet_health_scores add column if not exists guardian_name text;
    alter table public.pet_health_scores add column if not exists guardian_email text;
    alter table public.pet_health_scores add column if not exists guardian_phone text;
@@ -1361,6 +1371,7 @@ try{
 ============================================================ */
 const dog = {
   plan:null,
+  sessionId: null, // 이 진단 세션의 고유 식별자 — DB UPSERT 충돌키로 써서 같은 진단이 두 행으로 중복 저장되지 않게 해요.
   name:"", breed:"", ageYear:"", ageMonth:"",
   weight:null, target:null, neutered:null, bcs:null, conditions:[],
   walk:null, weeklyWalkFreq:null, activity:null, foodKcal:null, foodBrandLabel:"", foodProductName:"", foodTexture:null,
@@ -2224,6 +2235,7 @@ function onNext(){
 }
 function resetDiagnosisForm(){
   dog.plan = null;
+  dog.sessionId = null; // 새 진단은 새 세션 → 이전 진단 행을 덮어쓰지 않고 별도 행으로 저장돼요.
   dog.name = ""; dog.breed = ""; dog.ageYear = ""; dog.ageMonth = "";
   dog.weight = null; dog.target = null; dog.neutered = null; dog.bcs = null; dog.conditions = [];
   dog.walk = null; dog.weeklyWalkFreq = null; dog.activity = null; dog.foodKcal = null;
@@ -2548,6 +2560,7 @@ function syncGuardianContactToAnalytics(){
 }
 
 function runCalculation(){
+  if(!dog.sessionId) dog.sessionId = generateSessionId(); // 이 진단의 모든 저장 시점(자동저장 + 이후 보호자정보 동반저장)이 같은 행을 가리키도록 고정
   const r = computeResults();
   lastComputedResult = r;
 
@@ -3737,9 +3750,10 @@ function bindDashboardEvents(r){
   document.getElementById('challengeScrollBtn')?.addEventListener('click', ()=>{
     document.getElementById('challengeSection')?.scrollIntoView({behavior:'smooth', block:'center'});
   });
-  document.getElementById('savePdfBtn')?.addEventListener('click', ()=>withGuardianContact(()=>{ syncGuardianContactToAnalytics(); window.print(); }));
-  document.getElementById('openPremiumPdf')?.addEventListener('click', ()=>withGuardianContact(()=>{ syncGuardianContactToAnalytics(); openPremiumModal('pdf'); }));
-  document.getElementById('freeReportPremiumCtaBtn')?.addEventListener('click', ()=>withGuardianContact(()=>{ syncGuardianContactToAnalytics(); openPremiumModal('pdf'); }));
+
+  bindGuardedReportButton('savePdfBtn', ()=>{ syncGuardianContactToAnalytics(); window.print(); });
+  bindGuardedReportButton('openPremiumPdf', ()=>{ syncGuardianContactToAnalytics(); openPremiumModal('pdf'); });
+  bindGuardedReportButton('freeReportPremiumCtaBtn', ()=>{ syncGuardianContactToAnalytics(); openPremiumModal('pdf'); });
   document.getElementById('openPremiumConsult')?.addEventListener('click', ()=>openPremiumModal('consult'));
 
   const items = AFFILIATE_MAP[dog.plan] || AFFILIATE_MAP.diet;
@@ -4898,7 +4912,55 @@ async function insertWithSchemaFallback(table, payload, minimalFallbackPayload){
   return { error: { message:'반복적으로 컬럼 누락이 발생해 저장에 실패했습니다.', code:'SCHEMA_FALLBACK_EXCEEDED' }, droppedColumns, finalPayload:attempt, usedMinimalFallback:false };
 }
 
-/* update()에도 동일한 자동 적응 로직을 적용 (예: paid 상태 토글) */
+/* 진단/제출 세션마다 고유한 식별자를 만들어요. 같은 세션에서 여러 번 저장이 일어나도
+   이 값을 UPSERT 충돌키로 써서 새 행이 아니라 같은 행을 덮어쓰도록 해요. */
+function generateSessionId(){
+  if(window.crypto && typeof crypto.randomUUID === 'function') return crypto.randomUUID();
+  return 'sess_' + Date.now() + '_' + Math.random().toString(36).slice(2, 10);
+}
+
+/* insertWithSchemaFallback과 동일한 컬럼-자동제외 재시도 로직이지만, insert 대신
+   upsert(onConflict: conflictColumn)를 써서 같은 세션 ID로 여러 번 저장돼도
+   새 행이 중복 생성되지 않고 기존 행을 덮어쓰도록 해요 (중복 INSERT 버그 수정 핵심). */
+async function upsertWithSchemaFallback(table, payload, conflictColumn, minimalFallbackPayload){
+  let attempt = { ...payload };
+  const droppedColumns = [];
+  const tryMinimalFallback = async (reasonError)=>{
+    if(!minimalFallbackPayload) return null;
+    console.warn(`[seon] 전체 컬럼 저장이 실패해(${reasonError && (reasonError.code || reasonError.message)}), extra_data 중심의 최소 페이로드로 마지막 재시도를 해요.`);
+    const { error: fallbackError } = await supabaseClient.from(table).upsert([minimalFallbackPayload], { onConflict: conflictColumn });
+    return { error: fallbackError || null, droppedColumns, finalPayload: minimalFallbackPayload, usedMinimalFallback: true };
+  };
+
+  for(let i=0; i<12; i++){
+    const { error } = await supabaseClient.from(table).upsert([attempt], { onConflict: conflictColumn });
+    if(!error) return { error:null, droppedColumns, finalPayload:attempt, usedMinimalFallback:false };
+
+    const match = /Could not find the '([^']+)' column/i.exec(error.message || '');
+    const missingCol = match && match[1];
+    if(missingCol && Object.prototype.hasOwnProperty.call(attempt, missingCol) && Object.keys(attempt).length > 1){
+      console.warn(`[seon] DB에 '${missingCol}' 컬럼이 없어서 이번 저장에서는 제외하고 자동으로 재시도해요.`);
+      delete attempt[missingCol];
+      droppedColumns.push(missingCol);
+      continue;
+    }
+
+    // UPSERT는 conflictColumn에 UNIQUE 제약/인덱스가 없으면 실패할 수 있어요(예: PGRST 관련 에러) —
+    // 이 경우 안내 로그를 남기고, 그래도 최소 페이로드로 한 번 더 시도해봐요.
+    if(/no unique|exclusion constraint|there is no unique or exclusion constraint/i.test(error.message || '')){
+      console.warn(`[seon] '${conflictColumn}' 컬럼에 UNIQUE 제약이 없어 UPSERT 충돌 감지가 안 돼요. SQL 가이드의 unique index 생성 구문을 실행해주세요.`);
+    }
+
+    const fallbackResult = await tryMinimalFallback(error);
+    if(fallbackResult) return fallbackResult;
+    return { error, droppedColumns, finalPayload:attempt, usedMinimalFallback:false };
+  }
+  const finalFallback = await tryMinimalFallback({ message:'반복적으로 컬럼 누락이 발생했습니다.', code:'SCHEMA_FALLBACK_EXCEEDED' });
+  if(finalFallback) return finalFallback;
+  return { error: { message:'반복적으로 컬럼 누락이 발생해 저장에 실패했습니다.', code:'SCHEMA_FALLBACK_EXCEEDED' }, droppedColumns, finalPayload:attempt, usedMinimalFallback:false };
+}
+
+
 async function updateWithSchemaFallback(table, fields, matchColumn, matchValue){
   let attempt = { ...fields };
   for(let i=0; i<12; i++){
@@ -4998,7 +5060,9 @@ async function saveUserAnalyticsData(record){
   //       그마저도 DB에 없다면 insertWithSchemaFallback이 자동으로 감지해 제외하고 재시도하므로,
   //       컬럼을 수동으로 하나씩 추가하지 않아도 저장 자체는 항상 성공(혹은 명확한 실패)하게 돼요.
   if(supabaseClient){
+    if(!dog.sessionId) dog.sessionId = generateSessionId(); // 방어적 안전망 (runCalculation을 거치지 않고 호출되는 경로 대비)
     const dbPayload = {
+      session_id: dog.sessionId, // UPSERT 충돌키 — 같은 진단 세션의 재저장은 새 행이 아니라 이 행을 덮어써요.
       dog_name: flat.dog_name, breed: flat.breed, weight: flat.weight,
       target_weight: flat.target_weight, bcs: flat.bcs, plan_type: flat.plan_type,
       // 보호자 연락처(Demographic Data) — 이 반려동물 진단 레코드와 1:1로 매핑되는 컬럼이에요.
@@ -5014,7 +5078,7 @@ async function saveUserAnalyticsData(record){
     };
     console.log('payload:', JSON.stringify(dbPayload, null, 2));
     try{
-      const { error, droppedColumns } = await insertWithSchemaFallback(SUPABASE_TABLE, dbPayload);
+      const { error, droppedColumns } = await upsertWithSchemaFallback(SUPABASE_TABLE, dbPayload, 'session_id');
       if(error){
         console.error('CRITICAL_INSERT_ERROR:', JSON.stringify(error, null, 2));
         alert('데이터 저장 중 오류가 발생했습니다.\n\n' + JSON.stringify(error, null, 2));
@@ -6125,6 +6189,7 @@ const dniMatrix = {
   usedPrescriptionScan: false,   // 이번 세션에서 처방전 스캔을 한 번이라도 사용했는지 (모드 전환과 무관하게 유지)
   prescriptionImageUrl: null,    // Supabase Storage('prescriptions')에 업로드된 사진 URL
   rawOcrExtractedData: [],       // Vision AI(OCR) 추출 원본 JSON 배열 (직접 입력 시에만 비어있음)
+  sessionId: null,               // 이 DNI 제출 세션의 고유 식별자 — UPSERT 충돌키 (중복 INSERT 방지)
 };
 
 /* Chrono Matrix 전용 독립 입력 — '🥣 1g 믹스 계산기'의 State와는 완전히 분리된, DNI-Chrono만의 데이터예요. */
@@ -6153,7 +6218,43 @@ function isValidEmailFormat(email){
 }
 /* '1일 안전 투약 스케줄 저장하기' / '정밀 메디컬 리포트 보기' 클릭 시, 보호자 정보가 아직
    수집되지 않았다면(필수 항목 미완료) 이 모달을 먼저 띄우고, 확인되면 원래 하려던 동작을 이어가요. */
-function openGuardianContactModal(onConfirm){
+/* ---- 저장/제출 버튼 중복 클릭 방지 (Debounce / Loading State) ----
+   같은 흐름(메인 리포트 저장 + 1일 안전 투약 타임라인 저장)에서 쓰는 모든 트리거 버튼이
+   하나의 플래그를 공유해서, 처리 중일 때는 어느 버튼을 눌러도 재요청이 나가지 않도록 해요.
+   최상위 함수 선언(호이스팅)으로 둬서, 어느 init 함수가 먼저 실행되든 항상 안전하게 쓸 수 있어요. */
+let isSubmittingReport = false;
+function setReportButtonsBusy(busy){
+  ['savePdfBtn','openPremiumPdf','freeReportPremiumCtaBtn','insSubmitBtn'].forEach(id=>{
+    const btn = document.getElementById(id);
+    if(!btn) return;
+    if(busy){
+      if(btn.dataset.origText === undefined) btn.dataset.origText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = '처리 중...';
+    } else {
+      btn.disabled = false;
+      if(btn.dataset.origText !== undefined) btn.textContent = btn.dataset.origText;
+    }
+  });
+}
+function bindGuardedReportButton(btnId, actionFn){
+  const btn = document.getElementById(btnId);
+  if(!btn || btn.dataset.guardedBound) return; // 대시보드가 여러 번 다시 그려져도 리스너가 중복으로 쌓이지 않도록 해요.
+  btn.dataset.guardedBound = '1';
+  btn.addEventListener('click', async ()=>{
+    if(isSubmittingReport) return; // 처리 중이면 재클릭 무시 — 중복 API 요청 원천 차단
+    isSubmittingReport = true;
+    setReportButtonsBusy(true);
+    try{
+      await withGuardianContact(actionFn);
+    } finally {
+      isSubmittingReport = false;
+      setReportButtonsBusy(false);
+    }
+  });
+}
+
+function openGuardianContactModal(onConfirm, onCancel){
   mountModal(`
     <p class="text-xs font-bold mb-1" style="color:#3A5A40;">📩 리포트 저장 &amp; 발송</p>
     <h3 class="font-display text-xl font-bold mb-2">보호자 정보를 알려주세요</h3>
@@ -6201,6 +6302,13 @@ function openGuardianContactModal(onConfirm){
     <button type="button" id="guardianConfirmBtn" class="btn-primary w-full rounded-xl py-3 text-sm font-bold">확인하고 계속하기</button>
   `, true);
 
+  // 확인 없이 모달을 닫아도(배경 클릭/닫기 버튼) 콜백 체인이 끊기지 않도록, 취소 시에도 정확히
+  // 한 번 onCancel을 호출해요 — 이게 없으면 버튼의 '처리 중' 잠금이 영구히 풀리지 않을 수 있어요.
+  let settled = false;
+  const settleCancel = ()=>{ if(!settled){ settled = true; if(typeof onCancel === 'function') onCancel(); } };
+  document.getElementById('modalCloseBtn').addEventListener('click', settleCancel);
+  document.getElementById('modalOverlay').addEventListener('click', e=>{ if(e.target.id==='modalOverlay') settleCancel(); });
+
   document.getElementById('guardianConfirmBtn').addEventListener('click', ()=>{
     const name = document.getElementById('guardianNameInput').value.trim();
     const email = document.getElementById('guardianEmailInput').value.trim();
@@ -6223,6 +6331,11 @@ function openGuardianContactModal(onConfirm){
       return;
     }
 
+    settled = true; // 확인 경로로 확정 — 아래 취소 콜백(backdrop/닫기)이 중복 발동되지 않도록 해요.
+    const confirmBtn = document.getElementById('guardianConfirmBtn');
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = '처리 중...';
+
     Object.assign(guardianContact, {
       name, email, phone, region, housingType, ageRange,
       consentRequired, consentOptional,
@@ -6234,13 +6347,18 @@ function openGuardianContactModal(onConfirm){
   });
 }
 /* 보호자 정보(이름+이메일+필수동의)가 이미 수집돼 있으면 모달 없이 바로 진행하고,
-   아직이면 모달을 띄운 뒤 확인 시 이어서 진행해요. */
+   아직이면 모달을 띄운 뒤 확인 시 이어서 진행해요. 반환된 Promise는 action이 끝나면(성공/실패
+   무관) 항상 resolve되고, 유저가 모달을 확인 없이 닫아도(취소) resolve돼서 버튼 잠금이
+   영구히 풀리지 않는 일이 없도록 해요. */
 function withGuardianContact(action){
-  if(guardianContact.name && guardianContact.email && guardianContact.consentRequired){
-    action();
-  } else {
-    openGuardianContactModal(action);
-  }
+  return new Promise(resolve=>{
+    const runAndResolve = ()=>{ Promise.resolve().then(action).then(resolve).catch(err=>{ console.error('[seon] withGuardianContact action 오류:', safeStringifyError(err)); resolve(); }); };
+    if(guardianContact.name && guardianContact.email && guardianContact.consentRequired){
+      runAndResolve();
+    } else {
+      openGuardianContactModal(runAndResolve, resolve);
+    }
+  });
 }
 
 /* 대표 사료 브랜드/라인업별 평균 칼로리 밀도(kcal/kg) — 제품명 입력 시 자동완성 후보 및
@@ -7162,7 +7280,9 @@ async function submitDniChronoData(){
 
   // ---- 재생성된 pet_health_scores 테이블 컬럼 구조에 정확히 맞춰 매핑하고,
   //      값이 undefined/null이어도 절대 비어있지 않도록 전부 fallback 기본값을 둬요. ----
+  if(!dniMatrix.sessionId) dniMatrix.sessionId = generateSessionId(); // UPSERT 충돌키 — 재저장 시 새 행이 아니라 같은 행을 덮어써요.
   const payload = {
+    session_id: dniMatrix.sessionId,
     pet_name: petName || '이름없음',
     breed: breed || '말티즈',
     weight: Number(weight) || 3.5,
@@ -7209,10 +7329,11 @@ async function submitDniChronoData(){
     // 최후의 안전망(2-Tier Fallback): 위 payload의 어떤 컬럼에서든 에러(PGRST204/205 스키마 캐시 문제,
     // 23502 NOT NULL 위반 등)가 발생하면, pet_name + extra_data만 담은 최소 페이로드로 자동 2차 저장을 시도해요.
     const minimalFallbackPayload = {
+      session_id: payload.session_id,
       pet_name: payload.pet_name,
       extra_data: payload.extra_data,
     };
-    const { error, usedMinimalFallback } = await insertWithSchemaFallback('pet_health_scores', payload, minimalFallbackPayload);
+    const { error, usedMinimalFallback } = await upsertWithSchemaFallback('pet_health_scores', payload, 'session_id', minimalFallbackPayload);
     if(error){
       console.error('CRITICAL_INSERT_ERROR:', JSON.stringify(error, null, 2));
       alert('1일 안전 투약 스케줄 저장 중 오류가 발생했습니다.\n\n' + JSON.stringify(error, null, 2));
@@ -7345,7 +7466,7 @@ function initInsurancePage(){
     updateInsuranceOutputs();
   });
 
-  document.getElementById('insSubmitBtn').addEventListener('click', ()=>withGuardianContact(submitDniChronoData));
+  bindGuardedReportButton('insSubmitBtn', submitDniChronoData);
   document.getElementById('insViewReportBtn').addEventListener('click', ()=>withGuardianContact(openChronoDniReport));
 
   updateInsuranceOutputs();
