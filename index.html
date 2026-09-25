@@ -759,10 +759,19 @@
         </div>
 
         <p class="text-xs font-bold text-muted mb-2">프리셋 선택 (클릭해보세요)</p>
-        <div class="grid sm:grid-cols-3 gap-2 mb-5" id="demoPresetGroup"></div>
+        <div class="grid sm:grid-cols-3 gap-3 mb-5" id="demoPresetGroup"></div>
 
         <button type="button" id="runSeonAnalysisBtn" class="btn-primary w-full sm:w-auto rounded-xl px-8 py-3.5 text-sm font-bold mb-6">▶ Run Seon Analysis</button>
         <p id="demoProcessingNote" class="hidden text-xs font-bold mb-4" style="color:#3A5A40;">⏳ 서온 엔진이 데이터를 분석하고 있어요...</p>
+
+        <div class="rounded-2xl p-4 mb-5" style="background:#F2C14E14; border:1.5px solid #F2C14E44;">
+          <p class="text-xs leading-relaxed" style="color:#2C241F;">
+            💡 <b>Note:</b> This live demo highlights key general features of Seon. The official Seon B2C/B2B Report includes complete pharmaceutical DNI DB analysis, custom meal portion calculations, multi-organ clearance metrics, and downloadable doctor-certified PDF health records.
+          </p>
+          <p class="text-[11px] mt-1.5 leading-relaxed" style="color:#6b6259;">
+            (본 데모는 서온의 핵심 주요 기능만을 시연한 요약본입니다. 서온의 실제 정식 리포트는 전 수의약학 DNI DB 매칭, 맞춤형 사료/영양제 정량 칼로리 연산, 장기별 상세 대사 부하 지수 및 수의사 제출용 영문/한글 PDF 정밀 리포트를 제공합니다.)
+          </p>
+        </div>
 
         <div class="space-y-5" id="demoOutputWrap">
           <!-- ① Integrated Health Report -->
@@ -10347,7 +10356,8 @@ const DEMO_PIPELINE_NODES = [
 ];
 
 const DEMO_PRESETS = [
-  { id:"mixed_renal", label:"믹스견 · 신부전 + 항생제 + 칼슘",
+  { id:"mixed_renal", label:"믹스견 · 신부전 + 항생제 + 칼슘 (1일 2회 급여)",
+    title:"🐕 믹스견 (신부전)", subtitle:"항생제 + 칼슘 보충제", badge:"🥣 1일 2회 급여",
     input:{ name:"초코", breed:"믹스견", weight:6.2, ageYear:9, condition:"만성 신장질환(CKD 2기)", medication:"항생제(Enrofloxacin) 1일 2회", supplement:"칼슘/킬레이트 칼슘 1일 1회" },
     output:{
       healthScore:58, riskLevel:"주의",
@@ -10356,13 +10366,16 @@ const DEMO_PRESETS = [
       liverPct:92, kidneyPct:135,
       dniPairs:[{ drug:"항생제(Enrofloxacin)", nutrient:"칼슘/킬레이트 칼슘", effect:"흡수율 약 60% 상쇄", severity:"주의" }],
       timeline:[
-        { time:"08:00", label:"항생제 복용", type:"med" },
-        { time:"10:00", label:"칼슘 보충제 급여 (2시간 격리)", type:"supp" },
-        { time:"18:00", label:"항생제 복용", type:"med" },
-        { time:"20:00", label:"칼슘 보충제 급여 (2시간 격리)", type:"supp" },
+        { time:"08:00", icon:"🥣", label:"아침 사료 급여", type:"food", reason:"신장 처방식" },
+        { time:"08:30", icon:"💊", label:"항생제 복용", type:"med", reason:"식후 30분" },
+        { time:"10:30", icon:"🧪", label:"칼슘 보충제 급여", type:"supp", reason:"항생제 복용 2시간 후 격리" },
+        { time:"18:00", icon:"🥣", label:"저녁 사료 급여", type:"food", reason:"신장 처방식" },
+        { time:"18:30", icon:"💊", label:"항생제 복용", type:"med", reason:"식후 30분" },
+        { time:"20:30", icon:"🧪", label:"칼슘 보충제 급여", type:"supp", reason:"항생제 복용 2시간 후 격리" },
       ],
     } },
-  { id:"senior_cardiac", label:"노령견 · 심장질환 + 이뇨제 + 나트륨 과다",
+  { id:"senior_cardiac", label:"노령견 · 심장질환 + 이뇨제 + 나트륨 과다 (1일 3회 급여)",
+    title:"🐕‍🦺 노령견 (심장질환)", subtitle:"이뇨제 + 나트륨 과다 주의", badge:"🥣 1일 3회 급여",
     input:{ name:"보리", breed:"포메라니안", weight:3.4, ageYear:12, condition:"심장질환(ACVIM B2)", medication:"이뇨제(Furosemide) 1일 2회", supplement:"나트륨 함량 높은 습식 위주 급여" },
     output:{
       healthScore:64, riskLevel:"주의",
@@ -10371,13 +10384,15 @@ const DEMO_PRESETS = [
       liverPct:71, kidneyPct:88,
       dniPairs:[{ drug:"이뇨제(Furosemide)", nutrient:"나트륨(고염 식이)", effect:"체액저류 위험 증가", severity:"주의" }],
       timeline:[
-        { time:"08:00", label:"이뇨제 복용", type:"med" },
-        { time:"08:30", label:"저염 사료 급여", type:"food" },
-        { time:"19:00", label:"이뇨제 복용", type:"med" },
-        { time:"19:30", label:"저염 사료 급여", type:"food" },
+        { time:"07:30", icon:"💊", label:"심장약 & 이뇨제 복용", type:"med", reason:"아침 복용" },
+        { time:"08:00", icon:"🥣", label:"아침 사료 급여", type:"food", reason:"저나트륨 심장 처방식 1/3" },
+        { time:"13:00", icon:"🥣", label:"점심 사료 급여 & 음수량 체크", type:"food", reason:"저나트륨 심장 처방식 1/3 · 이뇨제 복용에 따른 탈수 방지" },
+        { time:"19:00", icon:"🥣", label:"저녁 사료 급여", type:"food", reason:"저나트륨 심장 처방식 1/3" },
+        { time:"19:30", icon:"💊", label:"심장약 2차 복용", type:"med", reason:"저녁 복용" },
       ],
     } },
-  { id:"healthy_maintenance", label:"건강한 성견 · 유지 관리 케어",
+  { id:"healthy_maintenance", label:"건강한 성견 · 유지 관리 케어 (1일 3회 급여)",
+    title:"🐩 건강한 성견", subtitle:"오메가-3 + 유산균 + 관절 영양제", badge:"🥣 1일 3회 급여",
     input:{ name:"몽이", breed:"골든리트리버", weight:28.5, ageYear:4, condition:"특이 기저질환 없음", medication:"복용 중인 처방약 없음", supplement:"오메가3(관절/피모 보조)" },
     output:{
       healthScore:91, riskLevel:"양호",
@@ -10386,8 +10401,12 @@ const DEMO_PRESETS = [
       liverPct:38, kidneyPct:42,
       dniPairs:[],
       timeline:[
-        { time:"08:00", label:"아침 사료 + 오메가3", type:"food" },
-        { time:"19:00", label:"저녁 사료", type:"food" },
+        { time:"08:00", icon:"🥣", label:"아침 사료 급여", type:"food", reason:"주식 1/3" },
+        { time:"08:30", icon:"🧪", label:"오메가-3 급여", type:"supp", reason:"식후 흡수율 증대" },
+        { time:"12:30", icon:"🥣", label:"점심 사료 급여", type:"food", reason:"주식 1/3" },
+        { time:"13:00", icon:"🦠", label:"유산균 급여", type:"supp", reason:"식간 급여" },
+        { time:"18:30", icon:"🥣", label:"저녁 사료 급여", type:"food", reason:"주식 1/3" },
+        { time:"19:00", icon:"🧪", label:"관절 종합 영양제 급여", type:"supp", reason:"식후 급여" },
       ],
     } },
 ];
@@ -10424,10 +10443,16 @@ function renderDemoPipeline(){
 /* ---- ② Live B2C Demo ---- */
 function renderDemoPresetGroup(){
   const wrap = document.getElementById('demoPresetGroup');
-  wrap.innerHTML = DEMO_PRESETS.map(p=>`
-    <button type="button" class="demo-preset-btn rounded-xl p-3 text-left text-xs font-bold" data-preset="${p.id}"
-      style="background:#FAF9F5; border:1.5px solid ${p.id===demoSelectedPresetId?'#3A5A40':'#3A5A4022'}; color:${p.id===demoSelectedPresetId?'#3A5A40':'#2C241F'};">${p.label}</button>
-  `).join('');
+  wrap.innerHTML = DEMO_PRESETS.map(p=>{
+    const selected = p.id === demoSelectedPresetId;
+    return `
+    <button type="button" class="demo-preset-btn rounded-xl text-left flex flex-col items-start gap-1.5 p-4 transition" data-preset="${p.id}"
+      style="background:${selected?'#EAF5EF':'#FAF9F5'}; border:1.5px solid ${selected?'#3A5A40':'#3A5A4022'};">
+      <p class="font-bold text-base" style="color:#2C241F;">${p.title}</p>
+      <p class="text-xs text-gray-600">${p.subtitle}</p>
+      <span class="inline-block px-2 py-0.5 text-xs bg-emerald-100 text-emerald-800 rounded-full">${p.badge}</span>
+    </button>`;
+  }).join('');
   wrap.querySelectorAll('.demo-preset-btn').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       demoSelectedPresetId = btn.dataset.preset;
@@ -10485,20 +10510,31 @@ function renderDemoMetabolicLoadCard(preset){
     });
   });
 }
+const DEMO_TIMELINE_TYPE_STYLE = {
+  food:  { bg:"#2FBF9F14", border:"#2FBF9F44", color:"#1F8F76" },
+  med:   { bg:"#C0473A14", border:"#C0473A44", color:"#C0473A" },
+  supp:  { bg:"#5B4FCF14", border:"#5B4FCF44", color:"#5B4FCF" },
+  water: { bg:"#2E86DE14", border:"#2E86DE44", color:"#2264A8" },
+};
 function renderDemoDniMatrixCard(preset){
   const o = preset.output;
   const pairsHtml = o.dniPairs.length ? o.dniPairs.map(p=>`
     <div class="rounded-xl p-3 mb-2" style="background:#C0473A0d; border:1px solid #C0473A33;">
       <p class="text-xs font-bold" style="color:#C0473A;">⚠️ ${p.drug} + ${p.nutrient} 동시 복용 시 ${p.effect} (${p.severity})</p>
     </div>`).join('') : `<p class="text-xs" style="color:#2FBF9F;">✅ 감지된 약물-영양소 충돌이 없어요.</p>`;
-  const timelineHtml = o.timeline.map(t=>`
-    <div class="flex items-center gap-2 rounded-lg p-2" style="background:#fff;">
-      <span class="text-xs font-bold" style="color:#3A5A40; min-width:48px;">${t.time}</span>
-      <span class="text-xs">${t.type==='food'?'🍚':'💊'} ${t.label}</span>
-    </div>`).join('');
+  const timelineHtml = o.timeline.map(t=>{
+    const style = DEMO_TIMELINE_TYPE_STYLE[t.type] || DEMO_TIMELINE_TYPE_STYLE.supp;
+    return `
+    <div class="flex items-center gap-2.5 rounded-lg p-2.5" style="background:${style.bg}; border:1px solid ${style.border};">
+      <span class="text-xs font-bold" style="color:#3A5A40; min-width:44px;">${t.time}</span>
+      <span class="inline-flex items-center justify-center rounded-full text-sm" style="width:26px; height:26px; background:#fff;">${t.icon}</span>
+      <span class="text-xs font-bold flex-1" style="color:${style.color};">${t.label}</span>
+      ${t.reason ? `<span class="text-[10px] px-2 py-1 rounded-full" style="background:#fff; color:${style.color};" title="${t.reason}">(${t.reason})</span>` : ''}
+    </div>`;
+  }).join('');
   document.getElementById('demoDniMatrixBody').innerHTML = `
     ${pairsHtml}
-    <p class="text-[11px] font-bold mt-3 mb-2" style="color:#3A5A40;">⏰ 24시간 안전 투약 타임라인</p>
+    <p class="text-[11px] font-bold mt-3 mb-2" style="color:#3A5A40;">⏰ 24시간 안전 투약 타임라인 <span class="font-normal" style="color:#6b6259;">(🥣 사료 · 💊 약물 · 🧪 영양제)</span></p>
     <div class="space-y-1.5">${timelineHtml}</div>
   `;
 }
