@@ -338,6 +338,53 @@
         </button>
       </div>
 
+      <!-- 3대 핵심 기능 소개 섹션 -->
+      <div class="mb-16 sm:mb-24">
+        <div class="text-center mb-10">
+          <p class="text-[11px] sm:text-xs font-bold tracking-widest mb-2" style="color:#3A5A40;">SEON PRECISION NUTRITION &amp; DNI CARE</p>
+          <h2 class="font-display font-bold mb-3" style="font-size:clamp(1.3rem,4vw,2rem); line-height:1.35;">임상 영양 데이터와 약학 수식으로<br class="hidden sm:block"> 완성하는 정밀 케어</h2>
+          <p class="text-muted text-sm max-w-xl mx-auto leading-relaxed">서온은 수의영양학 및 약학 수식을 바탕으로, 아이가 매일 섭취하는 식단과 처방약의 장기 대사 부담 및 영양 상호작용을 데이터로 관리해 드리는 영양 케어 보조 솔루션입니다.</p>
+        </div>
+
+        <div class="grid sm:grid-cols-3 gap-5 mb-6">
+          <!-- Feature 1: 메디컬 건강 리포트 -->
+          <div class="surface rounded-2xl p-6 flex flex-col border-2" style="border-color:#3A5A4022;">
+            <span class="text-3xl mb-3 block">📑</span>
+            <span class="inline-block text-[11px] font-bold px-2.5 py-1 rounded-full mb-3 self-start" style="background:#3A5A401A; color:#3A5A40;">영양 분석 &amp; 전문 PDF</span>
+            <p class="font-display font-bold text-base mb-2 leading-snug">100점 영양 스코어 &amp; 병원 제출용 데이터 리포트</p>
+            <p class="text-xs text-muted mb-5 leading-relaxed flex-1">BCS 체형 및 생체 지표 기반 기초대사량(RER/DER) 진단부터 수의사 재진 시 참고용으로 제시할 수 있는 정밀 PDF 데이터 리포트를 발급합니다.</p>
+            <button type="button" class="landing-cta-btn w-full rounded-xl py-3 text-sm font-bold" style="background:#3A5A40; color:#fff;">무료 영양 진단 시작하기</button>
+          </div>
+
+          <!-- Feature 2: 대사 부하 검문 -->
+          <div class="surface rounded-2xl p-6 flex flex-col border-2" style="border-color:#3A5A4022;">
+            <span class="text-3xl mb-3 block">🧪</span>
+            <span class="inline-block text-[11px] font-bold px-2.5 py-1 rounded-full mb-3 self-start" style="background:#3A5A401A; color:#3A5A40;">간·신장 대사 부하율(%)</span>
+            <p class="font-display font-bold text-base mb-2 leading-snug">식단 &amp; 약물의 장기 대사 부담 수치화 및 자동 교정</p>
+            <p class="text-xs text-muted mb-5 leading-relaxed flex-1">5종 식단 및 부재료 비율(%)을 반영해 간/신장 배설 대사 부하율(%)을 정밀 연산하고, 장기 부담을 낮추는 [1-Click 자동 교정 레시피]를 제안합니다.</p>
+            <button type="button" id="landingGoMetaLoadBtn" class="w-full rounded-xl py-3 text-sm font-bold" style="background:#3A5A40; color:#fff;">대사 부하 검문하기</button>
+          </div>
+
+          <!-- Feature 3: 1일 안전 투약 타임라인 -->
+          <div class="surface rounded-2xl p-6 flex flex-col border-2" style="border-color:#3A5A4022;">
+            <span class="text-3xl mb-3 block">⏰</span>
+            <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full mb-3 self-start" style="background:#3A5A401A; color:#3A5A40;">
+              약-영양소 체내 충돌(DNI) 방지
+              <button type="button" id="dniTooltipToggleBtn" class="inline-flex items-center justify-center" style="width:14px; height:14px; border-radius:50%; background:#3A5A40; color:#fff; font-size:9px; line-height:1;" aria-label="DNI 용어 설명 보기">💡</button>
+            </span>
+            <div id="dniTooltipBox" class="hidden tooltip-box p-3 text-[11px] mb-3 leading-relaxed" style="color:#2C241F;">
+              💡 <b>DNI(Drug-Nutrient Interaction)</b>란?<br>
+              처방약과 특정 영양 성분(칼슘, 철분, 비타민 등)이 몸속에서 서로 만나 약효가 떨어지거나 장기에 부담을 주는 '약물-영양소 체내 충돌(상극 반응)'을 의미합니다. 서온은 이 충돌을 피할 수 있는 안전한 투약 시간대를 계산해 드립니다.
+            </div>
+            <p class="font-display font-bold text-base mb-2 leading-snug">상극 충돌을 방지하는 시간대별 1일 안전 투약 스케줄</p>
+            <p class="text-xs text-muted mb-5 leading-relaxed flex-1">처방약과 영양 성분(칼슘, 철분 등) 간 킬레이트 결합 및 흡수 방해 요소를 분석하여 최적의 시간대별 1일 안전 투약 스케줄을 산출합니다.</p>
+            <button type="button" id="landingGoInsuranceBtn" class="w-full rounded-xl py-3 text-sm font-bold" style="background:#3A5A40; color:#fff;">안전 투약 스케줄 생성하기</button>
+          </div>
+        </div>
+
+        <p class="text-center text-[11px] text-muted leading-relaxed max-w-2xl mx-auto">※ 서온은 수의사의 직접적인 진료나 처방을 대신하지 않으며, 수의영양학 및 약학 수식 데이터를 기반으로 한 영양 및 투약 관리 보조 도구입니다. 질병의 정확한 진단과 치료는 반드시 담당 수의사와 상의하세요.</p>
+      </div>
+
       <!-- PREVIEW DEMO: 무료 vs 유료 비교 -->
       <div class="mb-16 sm:mb-24">
         <p class="text-center font-display font-bold text-xl sm:text-2xl mb-2">무료로 시작해서, 프리미엄으로 완성하세요</p>
@@ -1975,6 +2022,21 @@ function init(){
 
   // ---- 랜딩 페이지: 진단 시작 CTA & 리포트 데모 미리보기 ----
   document.querySelectorAll('.landing-cta-btn').forEach(b=>b.addEventListener('click', goToDiagnosisForm));
+
+  // 3대 핵심 기능 소개 섹션의 CTA — 각 기능 탭으로 바로 이동해요.
+  const landingGoMetaLoadBtn = document.getElementById('landingGoMetaLoadBtn');
+  if(landingGoMetaLoadBtn) landingGoMetaLoadBtn.addEventListener('click', ()=>navigateToTab('metaload'));
+  const landingGoInsuranceBtn = document.getElementById('landingGoInsuranceBtn');
+  if(landingGoInsuranceBtn) landingGoInsuranceBtn.addEventListener('click', ()=>navigateToTab('insurance'));
+
+  // DNI(Drug-Nutrient Interaction) 용어 설명 툴팁 — 클릭으로 열고 닫아요(모바일에서도 안정적으로 동작).
+  const dniTooltipToggleBtn = document.getElementById('dniTooltipToggleBtn');
+  if(dniTooltipToggleBtn){
+    dniTooltipToggleBtn.addEventListener('click', e=>{
+      e.stopPropagation();
+      document.getElementById('dniTooltipBox').classList.toggle('hidden');
+    });
+  }
   document.querySelectorAll('.demo-preview-card').forEach(b=>b.addEventListener('click', ()=>openDemoPreviewModal(b.dataset.demo)));
   document.getElementById('premiumSampleBtn')?.addEventListener('click', ()=>openDemoPreviewModal('premium'));
   const landingPromoEl = document.getElementById('landingPromoPrice');
