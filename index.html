@@ -6495,6 +6495,7 @@ const MEDICATIONS = [
   {id:"joint_med",      label:"관절약"},
   {id:"cardiac",        label:"심장/혈압약"},
   {id:"anticonvulsant", label:"항간질/항경련제"},
+  {id:"anticoagulant",  label:"항응고제"},
   {id:"gi",             label:"위장관/소화기약"},
   {id:"nsaid",          label:"NSAIDs 소염진통제"},
   {id:"immuno_skin",    label:"면역억제/피부약"},
@@ -6509,6 +6510,7 @@ const DRUG_MOLECULES_BY_CATEGORY = {
   joint_med:      ["Polysulfated GAG (Adequan)", "Bedinvetmab (Librela)", "Pentosan Polysulfate"],
   cardiac:        ["Pimobendan", "Benazepril", "Amlodipine"],
   anticonvulsant: ["Phenobarbital", "Potassium Bromide", "Levetiracetam"],
+  anticoagulant:  ["Warfarin", "Clopidogrel", "Rivaroxaban"],
   gi:             ["Omeprazole", "Famotidine", "Metoclopramide", "Sucralfate"],
   nsaid:          ["Carprofen", "Meloxicam", "Firocoxib", "Robenacoxib"],
   immuno_skin:    ["Cyclosporine", "Oclacitinib (Apoquel)", "Lokivetmab (Cytopoint)"],
@@ -6552,7 +6554,12 @@ const SUPPLEMENT_INGREDIENTS_BY_CATEGORY = {
   joint:        ["글루코사민", "콘드로이친", "초록입홍합(GLM)", "MSM"],
   gut:          ["프로바이오틱스(유산균)", "프리바이오틱스", "효모추출물"],
   skin:         ["오메가3(EPA/DHA)", "비오틴", "아연"],
-  multivitamin: ["킬레이트 칼슘", "비타민D3", "종합비타민"],
+  // ⚠️ 이전에는 "킬레이트 칼슘/비타민D3/종합비타민" 3개뿐이었어요 — No-Impact(상극 영향 없는) 성분은
+  // 빼고, 실제로 처방약과 체내 충돌/상극 반응을 일으키는 대표 핵심 성분 6종으로 전면 재구성했어요.
+  multivitamin: [
+    "🦴 칼슘/킬레이트 칼슘", "☀️ 비타민D3/활성 비타민D", "🩸 비타민K",
+    "🧲 철분/구리/아연 미네랄", "🧪 마그네슘", "💡 고용량 비타민B6",
+  ],
 };
 
 let medEntrySeq = 0;
@@ -8526,7 +8533,7 @@ function resolveSupplementIngredient(categoryId){
    Plumb's Veterinary Drug Handbook 등 임상 참고자료 기반 예시 데이터예요.
    type: CONFLICT(위장관 흡수 상충 — 경구/시럽에만 적용) | DEPLETION(전신 영양 고갈 — 투여 경로 무관하게 적용) */
 const DNI_MOLECULE_RULES = [
-  { molecule:"Enrofloxacin", nutrient:"킬레이트 칼슘", type:"CONFLICT", isolationHours:2,
+  { molecule:"Enrofloxacin", nutrient:"🦴 칼슘/킬레이트 칼슘", type:"CONFLICT", isolationHours:2,
     note:"퀴놀론계 항생제는 칼슘과 킬레이트를 형성해 항생제 흡수율이 크게 저하될 수 있어요.",
     reference:"Plumb's Veterinary Drug Handbook, 9th ed." },
   { molecule:"Enrofloxacin", nutrient:"프로바이오틱스(유산균)", type:"CONFLICT", isolationHours:3,
@@ -8535,16 +8542,16 @@ const DNI_MOLECULE_RULES = [
   { molecule:"Amoxicillin", nutrient:"프로바이오틱스(유산균)", type:"CONFLICT", isolationHours:2,
     note:"항생제 복용 중 유산균은 사멸 위험이 있어 반드시 시간차를 두고 급여해야 해요.",
     reference:"Plumb's Veterinary Drug Handbook, 9th ed." },
-  { molecule:"Furosemide", nutrient:"킬레이트 칼슘", type:"DEPLETION", isolationHours:2,
+  { molecule:"Furosemide", nutrient:"🦴 칼슘/킬레이트 칼슘", type:"DEPLETION", isolationHours:2,
     note:"루프이뇨제는 칼슘·칼륨·마그네슘 배출을 촉진해 미네랄 고갈 위험이 있어요.",
     reference:"Plumb's Veterinary Drug Handbook; ACVIM Consensus Statement" },
   { molecule:"Furosemide", nutrient:"글루코사민", type:"DEPLETION", isolationHours:2,
     note:"이뇨제로 인한 전해질 손실은 관절 영양제의 미네랄 흡수 효율에도 영향을 줄 수 있어요.",
     reference:"Plumb's Veterinary Drug Handbook, 9th ed." },
-  { molecule:"Prednisolone", nutrient:"킬레이트 칼슘", type:"DEPLETION", isolationHours:2,
+  { molecule:"Prednisolone", nutrient:"🦴 칼슘/킬레이트 칼슘", type:"DEPLETION", isolationHours:2,
     note:"코르티코스테로이드 장기 복용은 칼슘 흡수·대사를 저해할 수 있어요.",
     reference:"Plumb's Veterinary Drug Handbook, 9th ed." },
-  { molecule:"Prednisolone", nutrient:"비타민D3", type:"DEPLETION", isolationHours:2,
+  { molecule:"Prednisolone", nutrient:"☀️ 비타민D3/활성 비타민D", type:"DEPLETION", isolationHours:2,
     note:"스테로이드는 비타민D 대사 효소를 억제해 결핍 위험을 높일 수 있어요.",
     reference:"Plumb's Veterinary Drug Handbook, 9th ed." },
   { molecule:"Carprofen", nutrient:"오메가3(EPA/DHA)", type:"CONFLICT", isolationHours:1,
@@ -8553,11 +8560,30 @@ const DNI_MOLECULE_RULES = [
   { molecule:"Meloxicam", nutrient:"오메가3(EPA/DHA)", type:"CONFLICT", isolationHours:1,
     note:"NSAIDs와 고용량 오메가3를 동시 급여하면 위장관 출혈 위험이 중복될 수 있어요.",
     reference:"Plumb's Veterinary Drug Handbook, 9th ed." },
-  { molecule:"Omeprazole", nutrient:"킬레이트 칼슘", type:"CONFLICT", isolationHours:2,
+  { molecule:"Omeprazole", nutrient:"🦴 칼슘/킬레이트 칼슘", type:"CONFLICT", isolationHours:2,
     note:"위산 분비를 억제하는 PPI 계열은 칼슘 흡수에 필요한 위산 환경을 저해할 수 있어요.",
     reference:"Plumb's Veterinary Drug Handbook, 9th ed." },
-  { molecule:"Phenobarbital", nutrient:"비타민D3", type:"DEPLETION", isolationHours:2,
+  { molecule:"Phenobarbital", nutrient:"☀️ 비타민D3/활성 비타민D", type:"DEPLETION", isolationHours:2,
     note:"항경련제 장기 복용은 간 대사 효소를 유도해 비타민D 대사를 촉진, 결핍 위험을 높일 수 있어요.",
+    reference:"Plumb's Veterinary Drug Handbook, 9th ed." },
+  // ---- 신규: 종합영양제/미네랄 핵심 6성분 × 임상 상극 처방약 규칙 ----
+  { molecule:"Warfarin", nutrient:"🩸 비타민K", type:"CONFLICT", isolationHours:2,
+    note:"⚠️ 약효 상쇄 주의: 비타민K는 와파린 등 항응고제의 혈액응고 억제 작용을 직접 상쇄시켜 약효를 무력화할 수 있어요. 단순 시간차 급여만으로는 완전히 해결되지 않는 상호작용이니, 반드시 수의사와 상담 후 급여 여부를 결정해주세요.",
+    reference:"Plumb's Veterinary Drug Handbook, 9th ed.; ACVIM Consensus Statement" },
+  { molecule:"Enrofloxacin", nutrient:"🧲 철분/구리/아연 미네랄", type:"CONFLICT", isolationHours:2,
+    note:"철분 등 2가/3가 금속 미네랄은 퀴놀론계 항생제와 킬레이트를 형성해 항생제 흡수율을 크게 낮출 수 있어요.",
+    reference:"Plumb's Veterinary Drug Handbook, 9th ed." },
+  { molecule:"Levothyroxine", nutrient:"🧲 철분/구리/아연 미네랄", type:"CONFLICT", isolationHours:4,
+    note:"철분/미네랄은 갑상선호르몬제의 위장관 흡수를 크게 저하시켜요. 다른 성분보다 더 넉넉한 간격이 필요해요.",
+    reference:"Plumb's Veterinary Drug Handbook, 9th ed." },
+  { molecule:"Enrofloxacin", nutrient:"🧪 마그네슘", type:"CONFLICT", isolationHours:2,
+    note:"마그네슘도 칼슘·철분과 마찬가지로 퀴놀론계 항생제와 킬레이트를 형성해 흡수를 저하시킬 수 있어요.",
+    reference:"Plumb's Veterinary Drug Handbook, 9th ed." },
+  { molecule:"Benazepril", nutrient:"🧪 마그네슘", type:"CONFLICT", isolationHours:2,
+    note:"일부 혈압약(ACE 억제제)과 고용량 마그네슘을 함께 급여하면 흡수·전해질 균형에 영향을 줄 수 있어요.",
+    reference:"Plumb's Veterinary Drug Handbook, 9th ed." },
+  { molecule:"Phenobarbital", nutrient:"💡 고용량 비타민B6", type:"CONFLICT", isolationHours:2,
+    note:"고용량 피리독신(비타민B6)은 항경련제의 대사를 촉진해 혈중 농도와 발작 조절 효과를 낮출 수 있어요.",
     reference:"Plumb's Veterinary Drug Handbook, 9th ed." },
 ];
 
@@ -8681,6 +8707,12 @@ function renderMicroMixRatioBarHtml(mix){
 
 /* 약리학 용어 대신 보호자가 바로 행동할 수 있는 직관적인 한 문장으로 변환해요. */
 function plainLanguageWarningHeadline(w){
+  // 비타민K × 항응고제처럼 '흡수 지연'이 아니라 '약효 자체를 직접 상쇄'하는 특수 상호작용은
+  // 일반 CONFLICT 문구("같이 먹이면 흡수가 안 돼요")로 뭉뚱그리면 오해를 줄 수 있어요 —
+  // 단순 시간차로는 해결되지 않는다는 걸 명확히 알리는 전용 헤드라인을 따로 보여줘요.
+  if(w.nutrient && w.nutrient.includes('비타민K')){
+    return `⚠️ 약효 상쇄 주의: ${w.nutrient}와 항응고제 병용 투여 위험`;
+  }
   if(w.interaction_type === 'CONFLICT'){
     return `🚫 같이 먹이면 흡수가 안 돼요! ${w.isolation_hours}시간 격리가 필요해요.`;
   }
