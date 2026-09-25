@@ -1044,12 +1044,17 @@
           <div class="flex flex-wrap gap-1.5 mb-5" id="insMedicalHistoryTags"></div>
 
           <label class="block text-xs font-semibold mb-2" style="color:#2C241F;">🎯 아이의 건강 목표</label>
-          <div class="grid grid-cols-2 gap-2 mb-5" id="insHealthGoalGroup">
+          <div class="grid grid-cols-2 gap-2 mb-2" id="insHealthGoalGroup">
             <button data-val="cardio" class="mc-chip rounded-xl py-2.5 text-xs">❤️ 심혈관 케어</button>
             <button data-val="renal" class="mc-chip rounded-xl py-2.5 text-xs">🫘 신장 케어</button>
             <button data-val="joint" class="mc-chip rounded-xl py-2.5 text-xs">🦴 관절 케어</button>
+            <button data-val="liver" class="mc-chip rounded-xl py-2.5 text-xs">🧪 간/대사 케어</button>
             <button data-val="prevention" class="mc-chip rounded-xl py-2.5 text-xs">🛡️ 질병 예방</button>
-            <button data-val="immunity" class="mc-chip rounded-xl py-2.5 text-xs col-span-2">✨ 면역/활력 케어</button>
+            <button data-val="immunity" class="mc-chip rounded-xl py-2.5 text-xs">✨ 면역/활력 케어</button>
+          </div>
+          <div id="insHealthSubGoalWrap" class="hidden mb-5">
+            <label class="block text-[11px] font-semibold mb-1.5" style="color:#3A5A40;">세부 목표 (선택 시 안전 격리시간·리포트 가이드에 반영돼요)</label>
+            <div class="grid grid-cols-2 gap-2" id="insHealthSubGoalGroup"></div>
           </div>
 
           <div class="pt-4" style="border-top:1px dashed #3A5A4033;">
@@ -1163,14 +1168,47 @@
             <input type="number" min="0.1" step="0.1" id="chronoTargetWeightInput" placeholder="예: 8.5" class="w-full rounded-xl px-3 py-2.5 text-sm" style="border:1px solid #3A5A4033;">
           </div>
 
-          <label class="block text-[11px] font-semibold mb-1.5" style="color:#2C241F;">주식 사료 제품명</label>
-          <input type="text" id="chronoFoodProductNameInput" list="chronoFoodProductDatalist" placeholder="예: 로얄캐닌 인도어 어덜트" class="w-full rounded-xl px-3 py-2.5 mb-2 text-sm" style="border:1px solid #3A5A4033;">
-          <datalist id="chronoFoodProductDatalist"></datalist>
+          <p class="text-xs font-bold mb-2" style="color:#2C241F;">🍽️ 주식 & 부재료 <span class="font-normal text-[11px] text-muted">([대사 부하 검문] 탭과 완전히 동일한 식단 정보를 공유해요)</span></p>
 
-          <div class="relative mb-4">
-            <label class="block text-[11px] font-semibold mb-1.5" style="color:#2C241F;">사료 칼로리(kcal/kg) <span class="font-normal text-muted">(제품명 입력 시 자동 추론 — 포장지 수치로 언제든 직접 수정 가능해요)</span></label>
-            <input type="number" min="100" step="10" id="chronoFoodKcalInput" value="3650" class="w-full rounded-xl px-3 py-2.5 text-sm" style="border:1px solid #3A5A4033;">
-            <p id="chronoKcalInferredNote" class="text-[10px] mt-1 min-h-[14px]" style="color:#3A5A40;"></p>
+          <label class="block text-[11px] font-semibold mb-1.5" style="color:#2C241F;">제형 선택</label>
+          <div class="grid grid-cols-5 gap-1.5 mb-3" id="chronoFeedTypeGroup">
+            <button data-val="dry" class="mc-chip rounded-xl py-2 text-[10px]">🦴 건식</button>
+            <button data-val="wet" class="mc-chip rounded-xl py-2 text-[10px]">🥫 습식</button>
+            <button data-val="homemade" class="mc-chip rounded-xl py-2 text-[10px]">🍲 화식</button>
+            <button data-val="raw" class="mc-chip rounded-xl py-2 text-[10px]">🥩 생식</button>
+            <button data-val="freezeDried" class="mc-chip rounded-xl py-2 text-[10px]">❄️ 동결건조</button>
+          </div>
+
+          <div id="chronoFoodModeGroup" class="grid grid-cols-3 gap-1.5 mb-3">
+            <button data-val="brand" class="mc-chip rounded-xl py-2 text-[10px]">🔍 브랜드/제품 검색</button>
+            <button data-val="preset" class="mc-chip rounded-xl py-2 text-[10px]">⚡ 유형별 표준(Preset)</button>
+            <button data-val="manual" class="mc-chip rounded-xl py-2 text-[10px]">✍️ 직접 입력</button>
+          </div>
+          <div id="chronoFoodBrandWrap" class="hidden mb-3">
+            <label class="block text-[10px] mb-1" style="color:#6b6259;">인기 브랜드/제품 선택</label>
+            <select id="chronoFoodBrandSelect" class="w-full rounded-lg px-2 py-2 text-xs" style="border:1px solid #3A5A4033;"></select>
+          </div>
+          <div id="chronoFoodPresetWrap" class="hidden mb-3">
+            <label class="block text-[10px] mb-1" style="color:#6b6259;">유형별 표준 사양 선택</label>
+            <select id="chronoFoodPresetSelect" class="w-full rounded-lg px-2 py-2 text-xs" style="border:1px solid #3A5A4033;"></select>
+          </div>
+
+          <div id="chronoPackagedMacroWrap">
+            <p class="text-[10px] text-muted mb-2">브랜드/프리셋 선택 시 아래 값이 자동으로 채워져요 — 포장지나 레시피 실측치로 언제든 직접 수정하세요.</p>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3">
+              <div><label class="block text-[10px] mb-1" style="color:#6b6259;">칼로리(kcal/kg)</label><input type="number" min="100" step="10" id="chronoFoodKcalInput" class="w-full rounded-lg px-2 py-2 text-xs" style="border:1px solid #3A5A4033;"></div>
+              <div><label class="block text-[10px] mb-1" style="color:#6b6259;">조단백(%)</label><input type="number" min="0" step="0.5" id="chronoFoodProteinInput" class="w-full rounded-lg px-2 py-2 text-xs" style="border:1px solid #3A5A4033;"></div>
+              <div><label class="block text-[10px] mb-1" style="color:#6b6259;">조지방(%)</label><input type="number" min="0" step="0.5" id="chronoFoodFatInput" class="w-full rounded-lg px-2 py-2 text-xs" style="border:1px solid #3A5A4033;"></div>
+              <div><label class="block text-[10px] mb-1" style="color:#6b6259;">수분(%)</label><input type="number" min="0" step="1" id="chronoFoodMoistureInput" class="w-full rounded-lg px-2 py-2 text-xs" style="border:1px solid #3A5A4033;"></div>
+              <div><label class="block text-[10px] mb-1" style="color:#6b6259;">나트륨(mg/100g)</label><input type="number" min="0" step="10" id="chronoFoodSodiumInput" class="w-full rounded-lg px-2 py-2 text-xs" style="border:1px solid #3A5A4033;"></div>
+              <div><label class="block text-[10px] mb-1" style="color:#6b6259;">인(mg/100g)</label><input type="number" min="0" step="10" id="chronoFoodPhosphorusInput" class="w-full rounded-lg px-2 py-2 text-xs" style="border:1px solid #3A5A4033;"></div>
+            </div>
+            <p id="chronoKcalInferredNote" class="text-[10px] mb-2 min-h-[14px]" style="color:#3A5A40;"></p>
+          </div>
+
+          <div id="chronoMixinsWrap" class="hidden mb-3">
+            <label class="block text-[11px] font-semibold mb-2" style="color:#2C241F;">부재료(Mix-in) <span class="font-normal text-muted">(주 육류 외에 섞은 재료가 있으면 선택해주세요)</span></label>
+            <div class="grid grid-cols-2 gap-2" id="chronoMixinsGroup"></div>
           </div>
 
           <div class="grid sm:grid-cols-2 gap-3 mb-4">
@@ -6396,13 +6434,54 @@ const petInsurance = {
   name: "", breed: BREEDS[0], weight: 10.0, ageMonths: 12, bcs: 5,
   genderNeutered: "male",
   medicalHistory: [], // 기왕력/수술 히스토리 태그 배열
-  healthGoal: "immunity", // 아이의 건강 목표 (cardio | renal | joint | prevention | immunity)
+  healthGoal: "immunity", // 아이의 건강 목표 (cardio | renal | joint | prevention | immunity | liver)
+  healthSubGoal: null,    // 1차 목표 아래 2차 세부 목표 (해당 목표에 세부 옵션이 있을 때만 사용)
 };
 
 const HEALTH_GOAL_LABELS = {
   cardio: "❤️ 심혈관 케어", renal: "🫘 신장 케어", joint: "🦴 관절 케어",
-  prevention: "🛡️ 질병 예방", immunity: "✨ 면역/활력 케어",
+  prevention: "🛡️ 질병 예방", immunity: "✨ 면역/활력 케어", liver: "🧪 간/대사 케어",
 };
+/* 1차 건강 목표별 2차 세부 목표 — 선택 시 DNI 격리시간(안전 타이밍) 버퍼 및 리포트 가이드라인에
+   직접 반영돼요. renal/cardio/joint/liver에만 세분화를 제공하고, prevention/immunity는 이미
+   포괄적인 목표라 세부 단계 없이 그대로 둬요. */
+const HEALTH_SUB_GOALS = {
+  renal: [
+    { id:"ckd_protein",           label:"CKD 단백뇨 관리",         cautionBufferHours:0.5 },
+    { id:"gfr_support",           label:"사구체 여과율(GFR) 보조",  cautionBufferHours:1.0 },
+    { id:"phosphorus_control",    label:"인(P) 수치 조절",          cautionBufferHours:0.5 },
+    { id:"hyperkalemia_prevention", label:"고칼륨혈증 방지",         cautionBufferHours:1.0 },
+  ],
+  cardio: [
+    { id:"diuretic_electrolyte",  label:"이뇨제 병용 전해질 균형",   cautionBufferHours:1.0 },
+    { id:"sodium_restriction",    label:"나트륨 제한",              cautionBufferHours:0.5 },
+    { id:"bp_stability",          label:"혈압 안정",                cautionBufferHours:0.5 },
+    { id:"myocardial_support",    label:"심근 수축 보조",           cautionBufferHours:0.5 },
+  ],
+  joint: [
+    { id:"nsaid_gi_protection",   label:"NSAIDs 진통제 위장관 보호", cautionBufferHours:1.0 },
+    { id:"inflammation_relief",   label:"염증 완화",                cautionBufferHours:0.5 },
+    { id:"weight_loss_metabolism",label:"체중 감량 대사",           cautionBufferHours:0   },
+    { id:"cartilage_nutrition",   label:"연골 영양",                cautionBufferHours:0   },
+  ],
+  liver: [
+    { id:"liver_enzyme_stability", label:"간 효소(ALT/AST) 안정",   cautionBufferHours:1.0 },
+    { id:"bile_flow",              label:"담즙 분비 원활",          cautionBufferHours:0.5 },
+    { id:"antioxidant_recovery",   label:"항산화 대사 회복",         cautionBufferHours:0.5 },
+  ],
+};
+function getHealthSubGoalInfo(){
+  const list = HEALTH_SUB_GOALS[petInsurance.healthGoal];
+  if(!list) return null;
+  return list.find(s=>s.id===petInsurance.healthSubGoal) || null;
+}
+/* 선택된 세부 목표에 따라 DNI 안전 격리시간(golden time)에 추가되는 '주의 버퍼(hour)' —
+   사구체여과율 보조·고칼륨혈증 방지·이뇨제 병용 전해질 균형처럼 급성 생리 반응에 민감한
+   목표일수록 더 넉넉한 안전 여유를 두도록 했어요. */
+function getHealthGoalCautionBufferHours(){
+  const sub = getHealthSubGoalInfo();
+  return sub ? (sub.cautionBufferHours || 0) : 0;
+}
 
 const GENDER_NEUTERED_OPTIONS = {
   male: "수컷", male_neutered: "중성화 수컷", female: "암컷", female_neutered: "중성화 암컷",
@@ -6507,9 +6586,9 @@ const dniMatrix = {
 const chronoInput = {
   weightGoal: "maintain",     // 'loss' | 'maintain' | 'gain' — 건강/체중 관리 목표
   targetWeight: null,         // 목표 체중(kg) — 선택 입력, 없으면 현재 체중 기준으로 계산
-  foodProductName: "",        // 주식 사료 제품명 (자유 입력 — kcal 자동추론의 입력 소스)
-  foodKcalPerKg: 3650,        // 사료 칼로리(kcal/kg) — 자동 추론되지만 언제든 직접 수정 가능
-  feedingFreq: 3,             // 급여 횟수
+  // ⚠️ foodProductName / foodKcalPerKg / feedingFreq는 더 이상 이 객체에 따로 두지 않아요 —
+  // [대사 부하 검문]과 완전히 동일한 식단 정보를 쓰도록 metaFoodInput(kcalPerKg/freqPerDay 등)을
+  // 유일한 출처로 통합했어요. 아래 mainMealTime만 Chrono-DNI 타임라인 생성 전용 고유 필드예요.
   mainMealTime: "08:00",      // 첫 끼(아침) 시각 — 이후 끼니는 이 시각 기준으로 균등 분배돼요
 };
 
@@ -6743,7 +6822,7 @@ function computeChronoDER(){
 /* DER과 사료 칼로리(kcal/kg, 유저 직접 수정 가능)를 조합해 1일 권장 급여량(g)을 자동 산출해요. */
 function computeChronoDailyFoodG(){
   const der = computeChronoDER();
-  const kcalPerKg = chronoInput.foodKcalPerKg > 0 ? chronoInput.foodKcalPerKg : 3650;
+  const kcalPerKg = metaFoodInput.kcalPerKg > 0 ? metaFoodInput.kcalPerKg : 3650;
   return (der / kcalPerKg) * 1000;
 }
 /* ============================================================
@@ -6850,6 +6929,22 @@ const metaHealthProfile = {
 META_CONDITIONS.forEach(c=>{ metaHealthProfile.conditions[c.id] = { active:false, severity: (META_CONDITION_SEVERITY[c.id]||[{id:'mild'}])[0].id }; });
 function metaGetActivityLevel(){
   return META_ACTIVITY_LEVELS.find(a=>a.id===metaHealthProfile.activityLevel) || META_ACTIVITY_LEVELS[1];
+}
+
+/* [대사 부하 검문]과 [Chrono-DNI]는 이제 metaFoodInput 하나를 그대로 공유해요(별도 동기화 불필요).
+   이 헬퍼는 현재 선택된 식단을 사람이 읽기 좋은 라벨로 바꿔서 DB/리포트에 쓰는 용도예요. */
+function metaGetCurrentFoodLabel(){
+  try{
+    if(metaFoodInput.inputMode === 'brand' && metaFoodInput.selectedBrandId){
+      const b = metaGetBrandsForType(metaFoodInput.type).find(x=>x.id===metaFoodInput.selectedBrandId);
+      if(b) return b.label;
+    }
+    if(metaFoodInput.inputMode === 'preset' && metaFoodInput.selectedPresetId){
+      const p = META_FOOD_SMART_PRESETS.find(x=>x.id===metaFoodInput.selectedPresetId);
+      if(p) return p.label;
+    }
+  }catch(err){ /* 조회 실패해도 아래 기본값으로 안전하게 진행해요 */ }
+  return '직접입력 사료';
 }
 /* ⚠️ 예전 버전의 LocalStorage 스냅샷은 conditions[key]가 단순 boolean(true/false)이었어요.
    그 상태가 그대로 복원되면 '.active = ...'를 boolean에 대입하려다 TypeError가 났었는데,
@@ -7009,16 +7104,17 @@ const metaFoodInput = {
   calciumMg100g: 15,  // 순살(뼈 없는) 근육육 기준 통상치 — '뼈 포함' 부재료 선택 시 크게 올라가요.
   potassiumMg100g: 350, // 육류 100g당 통상적인 칼륨 함량
   dailyG: 100, freqPerDay: 2,
-  mixins: { egg:false, veggie:false, grain:false, bone:false }, // 화식/생식 부재료 (뼈 포함은 생식 전용)
+  mixins: { egg:{active:false,pct:10}, veggie:{active:false,pct:15}, grain:{active:false,pct:10}, bone:{active:false,pct:20} }, // 화식/생식 부재료 — 주 육류 대비 상대 비율(%) (뼈 포함은 생식 전용)
   treatType: "jerky", treatUnitMode: "count", treatQuantity: 0,
 };
-/* 화식/생식 부재료(Mix-in) — 주 육류 외에 섞은 재료가 있으면 선택해요. 하루 급여량(dailyG)에
-   비례해서 7대 영양소(DM 기준) 총량에 가산/보정돼요. */
+/* 화식/생식 부재료(Mix-in) — 단순 on/off가 아니라 '주 육류 대비 상대 비율(%)'을 직접 조절해요.
+   ...BonusAt100은 "이 부재료가 전체의 100%를 차지했을 때"의 보정치이고, 실제 적용 보정치는
+   여기에 (입력한 비율%/100)을 곱한 선형 비례값이에요. */
 const META_HOMEMADE_MIXINS = [
-  { id:"egg",    label:"🥚 달걀/계란 노른자",      proteinPctBonus:1.5, fatPctBonus:1.0,  phosphorusMg100gBonus:15, calciumMg100gBonus:5   },
-  { id:"veggie", label:"🥦 야채/채소 믹스",        proteinPctBonus:-1,  fatPctBonus:-0.5, potassiumMg100gBonus:40                          },
-  { id:"grain",  label:"🌾 곡류/탄수화물",         proteinPctBonus:-2,  fatPctBonus:-1,   phosphorusMg100gBonus:10                         },
-  { id:"bone",   label:"🦴 뼈 포함(생식 전용)",     calciumMg100gBonus:80, phosphorusMg100gBonus:40                                        },
+  { id:"egg",    label:"🥚 달걀/계란 노른자",      defaultPct:10, maxPct:30, proteinPctBonusAt100:15,    fatPctBonusAt100:10,    phosphorusMg100gBonusAt100:150, calciumMg100gBonusAt100:50 },
+  { id:"veggie", label:"🥦 야채/채소 믹스",        defaultPct:15, maxPct:40, proteinPctBonusAt100:-6.67, fatPctBonusAt100:-3.33, potassiumMg100gBonusAt100:266.67 },
+  { id:"grain",  label:"🌾 곡류/탄수화물",         defaultPct:10, maxPct:30, proteinPctBonusAt100:-20,   fatPctBonusAt100:-10,   phosphorusMg100gBonusAt100:100 },
+  { id:"bone",   label:"🦴 뼈 포함(생식 전용)",     defaultPct:20, maxPct:40, calciumMg100gBonusAt100:400, phosphorusMg100gBonusAt100:200 },
 ];
 /* 제형별 통상적인 수분(%) 기본값 — 직접입력 모드에서 처음 보여줄 참고값이에요(언제든 수정 가능). */
 const META_FOOD_TYPE_DEFAULT_MOISTURE = { dry:10, wet:78, homemade:75, raw:70, freezeDried:8 };
@@ -7218,17 +7314,20 @@ function metaGetEffectiveFoodMacros(){
   let sodiumMg100g = metaFoodInput.sodiumMg100g, phosphorusMg100g = metaFoodInput.phosphorusMg100g;
   let calciumMg100g = metaFoodInput.calciumMg100g ?? 15, potassiumMg100g = metaFoodInput.potassiumMg100g ?? 350;
 
-  // 화식/생식 부재료(Mix-in) — 활성화된 항목만큼 조단백/조지방(%) 및 미네랄(mg/100g)이 보정돼요.
+  // 화식/생식 부재료(Mix-in) — 입력한 '주 육류 대비 상대 비율(%)'에 선형 비례해서
+  // 조단백/조지방(%) 및 미네랄(mg/100g)이 보정돼요. (안전 가드: state가 없거나 손상돼도 죽지 않게)
   const isHomemadeOrRaw = metaFoodInput.type === 'homemade' || metaFoodInput.type === 'raw';
   if(isHomemadeOrRaw && metaFoodInput.mixins){
     META_HOMEMADE_MIXINS.forEach(m=>{
-      if(!metaFoodInput.mixins[m.id]) return;
+      const state = metaFoodInput.mixins[m.id];
+      if(!state || typeof state !== 'object' || !state.active) return;
       if(m.id === 'bone' && metaFoodInput.type !== 'raw') return; // 뼈 포함은 생식 전용
-      proteinPct += m.proteinPctBonus || 0;
-      fatPct += m.fatPctBonus || 0;
-      phosphorusMg100g += m.phosphorusMg100gBonus || 0;
-      calciumMg100g += m.calciumMg100gBonus || 0;
-      potassiumMg100g += m.potassiumMg100gBonus || 0;
+      const ratio = Math.max(0, Math.min(1, (Number(state.pct) || 0) / 100));
+      proteinPct += (m.proteinPctBonusAt100 || 0) * ratio;
+      fatPct += (m.fatPctBonusAt100 || 0) * ratio;
+      phosphorusMg100g += (m.phosphorusMg100gBonusAt100 || 0) * ratio;
+      calciumMg100g += (m.calciumMg100gBonusAt100 || 0) * ratio;
+      potassiumMg100g += (m.potassiumMg100gBonusAt100 || 0) * ratio;
     });
   }
   return {
@@ -7607,40 +7706,121 @@ function metaApplyFoodMacros(macros){
   document.getElementById('metaFoodPhosphorusInput').value = macros.phosphorusMg100g;
   document.getElementById('metaFoodMoistureInput').value = metaFoodInput.moisturePct;
 }
-function renderMetaFoodInputMode(){
-  const brandWrap = document.getElementById('metaFoodBrandWrap');
-  const presetWrap = document.getElementById('metaFoodPresetWrap');
+/* [대사 부하 검문]과 [Chrono-DNI] 두 탭이 완전히 같은 food-input UI를 각자의 접두사(prefix)로
+   렌더링해요. 상태(metaFoodInput)는 단 하나뿐이고, 이 함수는 그 상태를 어느 탭의 DOM이든
+   그대로 반영해요 — prefix가 'meta'면 metaXxx 엘리먼트를, 'chrono'면 chronoXxx 엘리먼트를 써요. */
+const FOOD_UI_PREFIXES = ['meta', 'chrono'];
+function renderFoodInputMode(prefix){
+  const brandWrap = document.getElementById(prefix+'FoodBrandWrap');
+  const presetWrap = document.getElementById(prefix+'FoodPresetWrap');
+  if(!brandWrap || !presetWrap) return; // 해당 탭이 아직 이 UI를 갖고 있지 않으면 조용히 건너뛰어요.
   brandWrap.classList.toggle('hidden', metaFoodInput.inputMode !== 'brand');
   presetWrap.classList.toggle('hidden', metaFoodInput.inputMode !== 'preset');
 
-  const brandSelect = document.getElementById('metaFoodBrandSelect');
+  const brandSelect = document.getElementById(prefix+'FoodBrandSelect');
   const brands = metaGetBrandsForType(metaFoodInput.type);
-  brandSelect.innerHTML = brands.length
-    ? brands.map(b=>`<option value="${b.id}" ${metaFoodInput.selectedBrandId===b.id?'selected':''}>${b.label}</option>`).join('')
-    : `<option value="">이 유형에 등록된 브랜드가 아직 없어요</option>`;
+  if(brandSelect){
+    brandSelect.innerHTML = brands.length
+      ? brands.map(b=>`<option value="${b.id}" ${metaFoodInput.selectedBrandId===b.id?'selected':''}>${b.label}</option>`).join('')
+      : `<option value="">이 유형에 등록된 브랜드가 아직 없어요</option>`;
+  }
 
-  const presetSelect = document.getElementById('metaFoodPresetSelect');
+  const presetSelect = document.getElementById(prefix+'FoodPresetSelect');
   const presets = metaGetPresetsForType(metaFoodInput.type);
-  presetSelect.innerHTML = presets.map(p=>`<option value="${p.id}" ${metaFoodInput.selectedPresetId===p.id?'selected':''}>${p.label}</option>`).join('');
+  if(presetSelect){
+    presetSelect.innerHTML = presets.map(p=>`<option value="${p.id}" ${metaFoodInput.selectedPresetId===p.id?'selected':''}>${p.label}</option>`).join('');
+  }
+}
+/* 두 탭의 food-input DOM 전체(제형 탭·모드 셀렉터·매크로 입력값·부재료 UI)를 현재
+   metaFoodInput 상태 그대로 동기화해요 — 상태를 바꾸는 모든 핸들러가 마지막에 이걸 호출해요. */
+function syncFoodInputDom(){
+  FOOD_UI_PREFIXES.forEach(prefix=>{
+    const feedTypeGroup = document.getElementById(prefix+'FeedTypeGroup');
+    if(feedTypeGroup) feedTypeGroup.querySelectorAll('button').forEach(b=>b.classList.toggle('active', b.dataset.val===metaFoodInput.type));
+    const modeGroup = document.getElementById(prefix+'FoodModeGroup');
+    if(modeGroup) modeGroup.querySelectorAll('button').forEach(b=>b.classList.toggle('active', b.dataset.val===metaFoodInput.inputMode));
+
+    const setVal = (suffix, val)=>{ const el = document.getElementById(prefix+suffix); if(el) el.value = val; };
+    setVal('FoodKcalInput', metaFoodInput.kcalPerKg);
+    setVal('FoodProteinInput', metaFoodInput.proteinPct);
+    setVal('FoodFatInput', metaFoodInput.fatPct);
+    setVal('FoodMoistureInput', metaFoodInput.moisturePct);
+    setVal('FoodSodiumInput', metaFoodInput.sodiumMg100g);
+    setVal('FoodPhosphorusInput', metaFoodInput.phosphorusMg100g);
+
+    renderFoodInputMode(prefix);
+    renderMixinsGroup(prefix);
+  });
+  // '1일 급여 횟수'는 두 탭 모두 'FoodFreqInput' 접미사 패턴을 그대로 따르지 않아서
+  // (meta는 다른 위치의 metaFoodFreqInput, chrono는 아예 다른 이름 chronoFeedingFreqInput)
+  // 위 루프가 자동으로 못 잡아요 — 여기서 두 탭 모두 명시적으로 한 번 더 맞춰줘요.
+  const metaFreqEl = document.getElementById('metaFoodFreqInput');
+  if(metaFreqEl) metaFreqEl.value = metaFoodInput.freqPerDay;
+  const chronoFreqEl = document.getElementById('chronoFeedingFreqInput');
+  if(chronoFreqEl) chronoFreqEl.value = metaFoodInput.freqPerDay;
 }
 /* 화식/생식 부재료(Mix-in) 체크박스 — 건식/습식/동결건조에서는 아예 숨기고,
    '뼈 포함'은 생식(raw)에서만 노출해요(화식은 조리 과정에서 뼈를 제거하는 게 일반적이라서예요). */
-function renderMetaMixinsGroup(){
+function metaEnsureMixinState(id){
+  if(!metaFoodInput.mixins[id] || typeof metaFoodInput.mixins[id] !== 'object'){
+    const def = META_HOMEMADE_MIXINS.find(m=>m.id===id);
+    metaFoodInput.mixins[id] = { active:false, pct: def ? def.defaultPct : 10 };
+  }
+  return metaFoodInput.mixins[id];
+}
+function renderMixinsGroup(prefix){
+  const mixinsWrap = document.getElementById(prefix+'MixinsWrap');
+  const wrap = document.getElementById(prefix+'MixinsGroup');
+  if(!mixinsWrap || !wrap) return; // 해당 탭이 아직 이 UI를 갖고 있지 않으면 조용히 건너뛰어요.
   const isHomemadeOrRaw = metaFoodInput.type === 'homemade' || metaFoodInput.type === 'raw';
-  document.getElementById('metaMixinsWrap').classList.toggle('hidden', !isHomemadeOrRaw);
+  mixinsWrap.classList.toggle('hidden', !isHomemadeOrRaw);
   if(!isHomemadeOrRaw) return;
-  const wrap = document.getElementById('metaMixinsGroup');
   const visibleMixins = META_HOMEMADE_MIXINS.filter(m => m.id !== 'bone' || metaFoodInput.type === 'raw');
   wrap.innerHTML = visibleMixins.map(m=>{
-    const active = !!metaFoodInput.mixins[m.id];
-    return `<button type="button" class="meta-mixin-toggle mc-chip rounded-xl py-2.5 text-xs ${active?'active':''}" data-mixin="${m.id}">${m.label}</button>`;
+    const state = metaEnsureMixinState(m.id);
+    return `
+      <div class="rounded-xl p-2.5" style="background:#FAF9F5; border:1.5px solid ${state.active ? '#3A5A40' : '#3A5A4022'};">
+        <button type="button" class="mixin-toggle w-full text-left text-xs font-bold" data-mixin="${m.id}" style="color:${state.active ? '#3A5A40' : '#2C241F'};">${state.active ? '✅' : '⬜'} ${m.label}</button>
+        ${state.active ? `
+          <div class="flex items-center gap-2 mt-2">
+            <input type="range" min="0" max="${m.maxPct}" step="1" class="mixin-slider flex-1" data-mixin="${m.id}" value="${state.pct}">
+            <div class="flex items-center gap-0.5">
+              <input type="number" min="0" max="${m.maxPct}" step="1" class="mixin-pct-input w-12 rounded-lg px-1.5 py-1 text-xs text-center" data-mixin="${m.id}" value="${state.pct}" style="border:1px solid #3A5A4033;">
+              <span class="text-[10px]" style="color:#6b6259;">%</span>
+            </div>
+          </div>
+          <p class="text-[9px] mt-1" style="color:#6b6259;">주 육류 대비 상대 비율 (최대 ${m.maxPct}%)</p>` : ''}
+      </div>`;
   }).join('');
-  wrap.querySelectorAll('.meta-mixin-toggle').forEach(btn=>{
+  wrap.querySelectorAll('.mixin-toggle').forEach(btn=>{
     btn.addEventListener('click', ()=>{
-      const id = btn.dataset.mixin;
-      metaFoodInput.mixins[id] = !metaFoodInput.mixins[id];
-      renderMetaMixinsGroup();
+      const state = metaEnsureMixinState(btn.dataset.mixin);
+      state.active = !state.active;
+      syncFoodInputDom();
       renderMetaLoadPage();
+      if(typeof updateInsuranceOutputs === 'function') updateInsuranceOutputs();
+    });
+  });
+  wrap.querySelectorAll('.mixin-slider').forEach(sl=>{
+    sl.addEventListener('input', e=>{
+      const state = metaEnsureMixinState(sl.dataset.mixin);
+      state.pct = Math.max(0, parseFloat(e.target.value) || 0);
+      const numInput = wrap.querySelector(`.mixin-pct-input[data-mixin="${sl.dataset.mixin}"]`);
+      if(numInput) numInput.value = state.pct;
+      renderMixinsGroup(prefix === 'meta' ? 'chrono' : 'meta'); // 다른 탭의 슬라이더도 같은 값으로 맞춰요.
+      renderMetaLoadPage();
+      if(typeof updateInsuranceOutputs === 'function') updateInsuranceOutputs();
+    });
+  });
+  wrap.querySelectorAll('.mixin-pct-input').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      const state = metaEnsureMixinState(inp.dataset.mixin);
+      state.pct = Math.max(0, parseFloat(e.target.value) || 0);
+      const slider = wrap.querySelector(`.mixin-slider[data-mixin="${inp.dataset.mixin}"]`);
+      if(slider) slider.value = state.pct;
+      renderMixinsGroup(prefix === 'meta' ? 'chrono' : 'meta');
+      renderMetaLoadPage();
+      if(typeof updateInsuranceOutputs === 'function') updateInsuranceOutputs();
     });
   });
 }
@@ -8123,6 +8303,93 @@ function openMetaLoadReport(){
   });
 }
 
+/* [대사 부하 검문]·[Chrono-DNI] 두 탭의 사료 입력(제형/모드/브랜드·프리셋/매크로/부재료)을
+   완전히 동일한 로직으로 바인딩해요. 상태는 metaFoodInput 하나뿐이라, 어느 탭에서 바꾸든
+   syncFoodInputDom()이 두 탭의 DOM을 함께 갱신해서 항상 100% 일치해요. */
+function initFoodInputSection(prefix){
+  const feedTypeGroup = document.getElementById(prefix+'FeedTypeGroup');
+  if(!feedTypeGroup) return; // 이 탭엔 아직 food-input UI가 없으면 조용히 건너뛰어요.
+
+  bindSingleSelectGroup(prefix+'FeedTypeGroup', v=>{
+    metaFoodInput.type = v;
+    if(metaFoodInput.inputMode === 'brand'){
+      const brands = metaGetBrandsForType(v);
+      if(brands.length){ metaFoodInput.selectedBrandId = brands[0].id; metaApplyFoodMacros(brands[0]); }
+    } else if(metaFoodInput.inputMode === 'preset'){
+      const presets = metaGetPresetsForType(v);
+      if(presets.length){ metaFoodInput.selectedPresetId = presets[0].id; metaApplyFoodMacros(presets[0]); }
+    } else if(metaFoodInput.inputMode === 'manual'){
+      const preset = META_FOOD_MACRO_DEFAULTS[v] || META_FOOD_SMART_PRESETS.find(p=>p.type===v);
+      if(preset) metaApplyFoodMacros(preset);
+      metaFoodInput.moisturePct = META_FOOD_TYPE_DEFAULT_MOISTURE[v] ?? metaFoodInput.moisturePct;
+    }
+    syncFoodInputDom();
+    renderMetaLoadPage();
+    if(typeof updateInsuranceOutputs === 'function') updateInsuranceOutputs();
+  });
+  feedTypeGroup.querySelector(`button[data-val="${metaFoodInput.type}"]`).classList.add('active');
+
+  bindSingleSelectGroup(prefix+'FoodModeGroup', v=>{
+    metaFoodInput.inputMode = v;
+    if(v === 'brand'){
+      const brands = metaGetBrandsForType(metaFoodInput.type);
+      if(brands.length){ metaFoodInput.selectedBrandId = brands[0].id; metaApplyFoodMacros(brands[0]); }
+    } else if(v === 'preset'){
+      const presets = metaGetPresetsForType(metaFoodInput.type);
+      if(presets.length){ metaFoodInput.selectedPresetId = presets[0].id; metaApplyFoodMacros(presets[0]); }
+    }
+    syncFoodInputDom();
+    renderMetaLoadPage();
+    if(typeof updateInsuranceOutputs === 'function') updateInsuranceOutputs();
+  });
+  document.querySelector(`#${prefix}FoodModeGroup button[data-val="${metaFoodInput.inputMode}"]`).classList.add('active');
+
+  document.getElementById(prefix+'FoodBrandSelect').addEventListener('change', e=>{
+    metaFoodInput.selectedBrandId = e.target.value;
+    // 드롭다운에 실제로 보여준 목록(metaGetBrandsForType)에서 그대로 찾아요 — 화식/생식의
+    // '[추정] 단백질원' 동적 항목까지 포함해 항상 일치하게 조회해요.
+    const brand = metaGetBrandsForType(metaFoodInput.type).find(b=>b.id===e.target.value);
+    if(brand) metaApplyFoodMacros(brand);
+    syncFoodInputDom();
+    renderMetaLoadPage();
+    if(typeof updateInsuranceOutputs === 'function') updateInsuranceOutputs();
+  });
+  document.getElementById(prefix+'FoodPresetSelect').addEventListener('change', e=>{
+    metaFoodInput.selectedPresetId = e.target.value;
+    const preset = META_FOOD_SMART_PRESETS.find(p=>p.id===e.target.value);
+    if(preset) metaApplyFoodMacros(preset);
+    syncFoodInputDom();
+    renderMetaLoadPage();
+    if(typeof updateInsuranceOutputs === 'function') updateInsuranceOutputs();
+  });
+
+  [
+    ['FoodKcalInput','kcalPerKg',100], ['FoodProteinInput','proteinPct',0], ['FoodFatInput','fatPct',0],
+    ['FoodSodiumInput','sodiumMg100g',0], ['FoodPhosphorusInput','phosphorusMg100g',0],
+  ].forEach(([suffix,key,min])=>{
+    const el = document.getElementById(prefix+suffix);
+    if(!el) return;
+    el.addEventListener('input', e=>{
+      metaFoodInput[key] = Math.max(min, parseFloat(e.target.value) || min);
+      syncFoodInputDom();
+      renderMetaLoadPage();
+      if(typeof updateInsuranceOutputs === 'function') updateInsuranceOutputs();
+    });
+  });
+  const moistureEl = document.getElementById(prefix+'FoodMoistureInput');
+  if(moistureEl){
+    moistureEl.addEventListener('input', e=>{
+      metaFoodInput.moisturePct = Math.max(0, Math.min(90, parseFloat(e.target.value) || 0));
+      syncFoodInputDom();
+      renderMetaLoadPage();
+      if(typeof updateInsuranceOutputs === 'function') updateInsuranceOutputs();
+    });
+  }
+
+  renderFoodInputMode(prefix);
+  renderMixinsGroup(prefix);
+}
+
 function initMetaLoadPage(){
   document.getElementById('metaNameInput').value = metaHealthProfile.name;
   document.getElementById('metaNameInput').addEventListener('input', e=>{ metaHealthProfile.name = e.target.value; });
@@ -8154,80 +8421,17 @@ function initMetaLoadPage(){
   document.getElementById('metaKidneyBloodworkSelect').addEventListener('change', e=>{ metaHealthProfile.bloodwork.kidneyNormal = e.target.value === '' ? null : e.target.value === 'true'; renderMetaLoadPage(); });
   document.getElementById('metaLiverBloodworkSelect').addEventListener('change', e=>{ metaHealthProfile.bloodwork.liverNormal = e.target.value === '' ? null : e.target.value === 'true'; renderMetaLoadPage(); });
 
-  // ② 사료/간식
-  bindSingleSelectGroup('metaFeedTypeGroup', v=>{
-    metaFoodInput.type = v;
-    renderMetaFoodInputMode();
-    renderMetaMixinsGroup(); // 화식/생식 여부 및 뼈-포함(생식 전용) 노출 조건이 바뀌므로 다시 그려요.
-    if(metaFoodInput.inputMode === 'brand'){
-      const brands = metaGetBrandsForType(v);
-      if(brands.length){ metaFoodInput.selectedBrandId = brands[0].id; metaApplyFoodMacros(brands[0]); }
-    } else if(metaFoodInput.inputMode === 'preset'){
-      const presets = metaGetPresetsForType(v);
-      if(presets.length){ metaFoodInput.selectedPresetId = presets[0].id; metaApplyFoodMacros(presets[0]); }
-    } else if(metaFoodInput.inputMode === 'manual'){
-      const preset = META_FOOD_MACRO_DEFAULTS[v] || META_FOOD_SMART_PRESETS.find(p=>p.type===v);
-      if(preset) metaApplyFoodMacros(preset);
-      metaFoodInput.moisturePct = META_FOOD_TYPE_DEFAULT_MOISTURE[v] ?? metaFoodInput.moisturePct;
-      document.getElementById('metaFoodMoistureInput').value = metaFoodInput.moisturePct;
-    }
-    renderMetaLoadPage();
-  });
-  document.querySelector(`#metaFeedTypeGroup button[data-val="${metaFoodInput.type}"]`).classList.add('active');
-  renderMetaMixinsGroup();
-
-  bindSingleSelectGroup('metaFoodModeGroup', v=>{
-    metaFoodInput.inputMode = v;
-    renderMetaFoodInputMode();
-    if(v === 'brand'){
-      const brands = metaGetBrandsForType(metaFoodInput.type);
-      if(brands.length){ metaFoodInput.selectedBrandId = brands[0].id; metaApplyFoodMacros(brands[0]); }
-    } else if(v === 'preset'){
-      const presets = metaGetPresetsForType(metaFoodInput.type);
-      if(presets.length){ metaFoodInput.selectedPresetId = presets[0].id; metaApplyFoodMacros(presets[0]); }
-    }
-    renderMetaLoadPage();
-  });
-  document.querySelector(`#metaFoodModeGroup button[data-val="${metaFoodInput.inputMode}"]`).classList.add('active');
-  renderMetaFoodInputMode();
-  document.getElementById('metaFoodBrandSelect').addEventListener('change', e=>{
-    metaFoodInput.selectedBrandId = e.target.value;
-    // ⚠️ 이전에는 META_FOOD_BRAND_DB(고정 브랜드 목록)에서만 찾아서, 화식/생식의 '[추정] 단백질원'
-    // 항목(동적으로 생성되는 목록)을 선택하면 못 찾아 값이 그대로 고정돼 보이는 버그가 있었어요.
-    // 드롭다운에 실제로 보여준 목록(metaGetBrandsForType)에서 그대로 찾아 항상 일치하게 했어요.
-    const brand = metaGetBrandsForType(metaFoodInput.type).find(b=>b.id===e.target.value);
-    if(brand) metaApplyFoodMacros(brand);
-    renderMetaLoadPage();
-  });
-  document.getElementById('metaFoodPresetSelect').addEventListener('change', e=>{
-    metaFoodInput.selectedPresetId = e.target.value;
-    const preset = META_FOOD_SMART_PRESETS.find(p=>p.id===e.target.value);
-    if(preset) metaApplyFoodMacros(preset);
-    renderMetaLoadPage();
-  });
-
-  document.getElementById('metaFoodMoistureInput').addEventListener('input', e=>{
-    metaFoodInput.moisturePct = Math.max(0, Math.min(90, parseFloat(e.target.value) || 0));
-    renderMetaLoadPage();
-  });
-
-  document.getElementById('metaFoodKcalInput').value = metaFoodInput.kcalPerKg;
-  document.getElementById('metaFoodProteinInput').value = metaFoodInput.proteinPct;
-  document.getElementById('metaFoodFatInput').value = metaFoodInput.fatPct;
-  document.getElementById('metaFoodSodiumInput').value = metaFoodInput.sodiumMg100g;
-  document.getElementById('metaFoodPhosphorusInput').value = metaFoodInput.phosphorusMg100g;
-  document.getElementById('metaFoodMoistureInput').value = metaFoodInput.moisturePct;
+  // ② 사료/간식 — [Chrono-DNI]와 100% 동일한 로직을 공유하는 범용 함수로 바인딩해요.
+  initFoodInputSection('meta');
   document.getElementById('metaDailyFoodGInput').value = metaFoodInput.dailyG;
   document.getElementById('metaFoodFreqInput').value = metaFoodInput.freqPerDay;
-
-  [
-    ['metaFoodKcalInput','kcalPerKg',100], ['metaFoodProteinInput','proteinPct',0], ['metaFoodFatInput','fatPct',0],
-    ['metaFoodSodiumInput','sodiumMg100g',0], ['metaFoodPhosphorusInput','phosphorusMg100g',0],
-  ].forEach(([id,key,min])=>{
-    document.getElementById(id).addEventListener('input', e=>{ metaFoodInput[key] = Math.max(min, parseFloat(e.target.value) || min); renderMetaLoadPage(); });
-  });
   document.getElementById('metaDailyFoodGInput').addEventListener('input', e=>{ metaFoodInput.dailyG = Math.max(0, parseFloat(e.target.value) || 0); renderMetaLoadPage(); });
-  document.getElementById('metaFoodFreqInput').addEventListener('input', e=>{ metaFoodInput.freqPerDay = Math.max(1, Math.min(6, parseInt(e.target.value) || 1)); renderMetaLoadPage(); });
+  document.getElementById('metaFoodFreqInput').addEventListener('input', e=>{
+    metaFoodInput.freqPerDay = Math.max(1, Math.min(6, parseInt(e.target.value) || 1));
+    syncFoodInputDom();
+    renderMetaLoadPage();
+    if(typeof updateInsuranceOutputs === 'function') updateInsuranceOutputs();
+  });
 
   function metaUpdateTreatQuantityLabel(){
     const label = metaFoodInput.treatUnitMode === 'gram' ? '1일 급여량(g)' : `1일 급여량(${metaGetActiveTreatType().unitLabel})`;
@@ -8287,7 +8491,7 @@ function parseTimeToMinutes(hhmm){
 }
 /* 급여 횟수만큼, 첫 끼 시각부터 12시간 창(window) 안에 균등하게 끼니 시각을 배분해요. */
 function computeChronoMealTimesMinutes(){
-  const freq = Math.max(1, Math.min(6, chronoInput.feedingFreq || 1));
+  const freq = Math.max(1, Math.min(6, metaFoodInput.freqPerDay || 1));
   const start = parseTimeToMinutes(chronoInput.mainMealTime);
   if(freq === 1) return [start];
   const spanMinutes = 12 * 60; // 아침~저녁 12시간 창
@@ -8380,14 +8584,16 @@ function detectDniWarnings(){
       if(rule.type === 'CONFLICT' && !rt.passesGI) return;
 
       const dosageFlag = !med.dosage;
+      const cautionBuffer = getHealthGoalCautionBufferHours(); // 세부 건강목표에 따라 golden time에 추가되는 안전 여유(h)
+      const effectiveIsolationHours = rule.isolationHours + cautionBuffer;
       const recommendationNote = dosageFlag
         ? `⚠️ ${rule.molecule}은 특정 용량 이상 복용 시 ${rule.nutrient} 고갈 또는 흡수 억제 반응이 나타날 수 있습니다.`
-        : `${rule.note} 최소 ${rule.isolationHours}시간 이상 간격을 두고 급여해주세요. (현재 용량: ${med.dosage}, 투여경로: ${rt.label})`;
+        : `${rule.note} 최소 ${effectiveIsolationHours}시간 이상 간격을 두고 급여해주세요. (현재 용량: ${med.dosage}, 투여경로: ${rt.label})${cautionBuffer>0?` — 선택하신 세부 건강 목표를 고려해 ${cautionBuffer}시간의 추가 안전 여유를 더했어요.`:''}`;
       warnings.push({
         molecule: rule.molecule,
         nutrient: rule.nutrient,
         interaction_type: rule.type,
-        isolation_hours: rule.isolationHours,
+        isolation_hours: effectiveIsolationHours,
         dosage_flag: dosageFlag,
         route_of_administration: rt.label,
         clinical_reference: rule.reference,
@@ -8499,7 +8705,7 @@ function renderDniWarningBanner(warnings){
 }
 
 function buildDniChronoSchedule(warnings){
-  const freq = Math.max(1, Math.min(6, chronoInput.feedingFreq || 1));
+  const freq = Math.max(1, Math.min(6, metaFoodInput.freqPerDay || 1));
   const mealMinutes = computeChronoMealTimesMinutes();
   const perMealG = (computeChronoDailyFoodG() / freq).toFixed(1);
   const fmt = m => { const h = Math.floor(m/60)%24; const mm = m%60; return `${String(h).padStart(2,'0')}:${String(mm).padStart(2,'0')}`; };
@@ -9272,8 +9478,26 @@ function initInsurancePage(){
   bindSingleSelectGroup('insGenderGroup', v=>{ petInsurance.genderNeutered = v; });
   document.querySelector('#insGenderGroup button[data-val="male"]').classList.add('active');
 
-  bindSingleSelectGroup('insHealthGoalGroup', v=>{ petInsurance.healthGoal = v; updateInsuranceOutputs(); });
+  function renderInsHealthSubGoals(){
+    const wrap = document.getElementById('insHealthSubGoalWrap');
+    const list = HEALTH_SUB_GOALS[petInsurance.healthGoal];
+    if(!list){ wrap.classList.add('hidden'); petInsurance.healthSubGoal = null; return; }
+    wrap.classList.remove('hidden');
+    if(!list.some(s=>s.id===petInsurance.healthSubGoal)) petInsurance.healthSubGoal = null;
+    const group = document.getElementById('insHealthSubGoalGroup');
+    group.innerHTML = list.map(s=>`<button data-val="${s.id}" class="mc-chip rounded-xl py-2.5 text-xs">${s.label}</button>`).join('');
+    group.querySelectorAll('button').forEach(btn=>{
+      btn.classList.toggle('active', btn.dataset.val === petInsurance.healthSubGoal);
+      btn.addEventListener('click', ()=>{
+        petInsurance.healthSubGoal = petInsurance.healthSubGoal === btn.dataset.val ? null : btn.dataset.val; // 다시 누르면 선택 해제
+        renderInsHealthSubGoals();
+        updateInsuranceOutputs();
+      });
+    });
+  }
+  bindSingleSelectGroup('insHealthGoalGroup', v=>{ petInsurance.healthGoal = v; renderInsHealthSubGoals(); updateInsuranceOutputs(); });
   document.querySelector(`#insHealthGoalGroup button[data-val="${petInsurance.healthGoal}"]`).classList.add('active');
+  renderInsHealthSubGoals();
 
   document.getElementById('insMedicalHistoryInput').addEventListener('keydown', e=>{
     if(e.key === 'Enter'){
@@ -9321,35 +9545,12 @@ function initInsurancePage(){
     updateInsuranceOutputs();
   });
 
-  const chronoFoodDatalist = document.getElementById('chronoFoodProductDatalist');
-  CHRONO_FOOD_PRODUCTS.forEach(p=>{
-    const opt = document.createElement('option');
-    opt.value = p.label;
-    chronoFoodDatalist.appendChild(opt);
-  });
-  const chronoKcalInput = document.getElementById('chronoFoodKcalInput');
-  const chronoKcalNote = document.getElementById('chronoKcalInferredNote');
-  document.getElementById('chronoFoodProductNameInput').addEventListener('input', e=>{
-    chronoInput.foodProductName = e.target.value;
-    // ① 제품명 입력 → ② kcal 자동 추론(매칭 실패 시 기존 값을 그대로 두어 에러를 방지) → ③ 유저가 항상 직접 수정 가능
-    const matched = inferChronoFoodKcal(e.target.value);
-    if(matched){
-      chronoInput.foodKcalPerKg = matched.kcalPerKg;
-      chronoKcalInput.value = matched.kcalPerKg;
-      chronoKcalNote.textContent = `✅ "${matched.label}" 기준으로 ${matched.kcalPerKg.toLocaleString()}kcal/kg을 자동으로 채웠어요. 포장지 수치와 다르면 직접 수정해주세요.`;
-    } else {
-      chronoKcalNote.textContent = '';
-    }
-    updateInsuranceOutputs();
-  });
-  chronoKcalInput.addEventListener('input', e=>{
-    chronoInput.foodKcalPerKg = parseFloat(e.target.value) || 3650;
-    chronoKcalNote.textContent = '';
-    updateInsuranceOutputs();
-  });
+  initFoodInputSection('chrono'); // [대사 부하 검문]과 완전히 동일한 식단 입력 UI를 chrono 접두사로 바인딩해요.
 
+  document.getElementById('chronoFeedingFreqInput').value = metaFoodInput.freqPerDay;
   document.getElementById('chronoFeedingFreqInput').addEventListener('input', e=>{
-    chronoInput.feedingFreq = Math.max(1, Math.min(6, parseInt(e.target.value) || 1));
+    metaFoodInput.freqPerDay = Math.max(1, Math.min(6, parseInt(e.target.value) || 1));
+    syncFoodInputDom(); // 대사 부하 탭의 '1일 급여 횟수' 입력에도 즉시 반영돼요.
     updateInsuranceOutputs();
   });
   document.getElementById('chronoMainMealTimeInput').addEventListener('input', e=>{
@@ -9459,7 +9660,7 @@ function buildMinuteLevelChronoMatrix(warnings){
 /* 1일 총 급여량(g)에서 실제 급여 중인 간식·토핑 칼로리를 뺀 나머지를
    선택한 사료의 kcal/100g 밀도로 환산해 0.1g 단위까지 정밀 계산해요. */
 function build1gMicroMixingData(){
-  const freq = Math.max(1, Math.min(6, chronoInput.feedingFreq || 1));
+  const freq = Math.max(1, Math.min(6, metaFoodInput.freqPerDay || 1));
   const dailyFoodG = computeChronoDailyFoodG();
   const perMealG = dailyFoodG / freq;
   const mealMinutes = computeChronoMealTimesMinutes();
@@ -9537,6 +9738,11 @@ const TARGETED_SUPPLEMENTS_BY_GOAL = {
     { name:'베타글루칸', ingredient:'베타글루칸', effect:'대식세포·NK세포 등 면역세포 활성을 도와 전반적인 컨디션과 활력을 높여줘요.', evidence:'효모/버섯 유래 베타글루칸의 면역 조절 효과가 널리 보고돼요.' },
     { name:'프로바이오틱스', ingredient:'프로바이오틱스(유산균)', effect:'장 건강을 통해 면역력과 소화 기능을 함께 개선해줘요.', evidence:'장내 유익균 비율과 전신 면역 반응의 상관관계가 잘 알려져 있어요.' },
   ],
+  liver: [
+    { name:'실리마린(밀크씨슬)', ingredient:'실리마린(밀크씨슬)', effect:'간세포막을 보호하고 항산화 작용으로 간 효소(ALT/AST) 안정을 도와요.', evidence:'만성 간질환·약물성 간손상 보조요법으로 가장 널리 쓰이는 간 보호 성분이에요.' },
+    { name:'SAMe(에스아메)', ingredient:'SAMe', effect:'담즙 분비와 글루타치온 합성을 도와 간세포 대사 회복을 지원해요.', evidence:'간 기능 저하 반려동물의 보조요법으로 임상적으로 활용돼요.' },
+    { name:'항산화 비타민E', ingredient:'비타민E', effect:'간 세포의 산화 스트레스를 줄여 대사 회복을 도와요.', evidence:'지용성 항산화제로서 간 보호 보조요법에 흔히 병용돼요.' },
+  ],
 };
 
 /* 추천 성분이 현재 복용 중인 약물과 DNI 상극이 있는지 확인하고, 있다면 안전한 격리 타이밍을 함께 제공해요. */
@@ -9546,9 +9752,11 @@ function checkRecommendationDniSafety(ingredient){
     const rule = DNI_MOLECULE_RULES.find(r=>r.molecule===molecule && r.nutrient===ingredient);
     if(rule){
       const dosageFlag = !e.dosage;
-      const isolatedMinutes = computeIsolationTargetMinutes(8*60, rule.isolationHours);
+      const cautionBuffer = getHealthGoalCautionBufferHours();
+      const effectiveIsolationHours = rule.isolationHours + cautionBuffer;
+      const isolatedMinutes = computeIsolationTargetMinutes(8*60, effectiveIsolationHours);
       return {
-        safe: false, molecule, type: rule.type, isolationHours: rule.isolationHours,
+        safe: false, molecule, type: rule.type, isolationHours: effectiveIsolationHours,
         timingNote: rule.type === 'CONFLICT'
           ? `${molecule}과 함께 복용 시 흡수가 저하돼요. 아침 ${formatKoreanTime(8*60)} ${molecule} 복용 후 ${formatKoreanTime(isolatedMinutes)}에 급여해주세요.`
           : `${molecule} 복용 중에는 체내에서 빠져나가기 쉬운 성분이라, 챙겨서 꾸준히 보충해주시는 게 좋아요.${dosageFlag ? ' (정확한 용량을 입력하면 더 구체적인 안내를 받을 수 있어요.)' : ''}`,
@@ -9563,6 +9771,8 @@ function checkRecommendationDniSafety(ingredient){
 function buildTargetedRecommendationHtml(){
   const goal = petInsurance.healthGoal;
   const goalLabel = HEALTH_GOAL_LABELS[goal] || '건강 관리';
+  const subGoal = getHealthSubGoalInfo();
+  const fullGoalLabel = subGoal ? `${goalLabel} · ${subGoal.label}` : goalLabel;
   const pool = TARGETED_SUPPLEMENTS_BY_GOAL[goal] || [];
   const activeIngredients = new Set(
     dniMatrix.supplements.filter(s=>s!=='none').map(cat=>resolveSupplementIngredient(cat))
@@ -9572,14 +9782,14 @@ function buildTargetedRecommendationHtml(){
   if(!candidates.length){
     return `
       <div class="rounded-xl p-4" style="background:#3A5A400d;">
-        <p class="text-xs font-bold mb-1" style="color:#3A5A40;">🎯 ${goalLabel} 목표 달성을 위한 추가 추천</p>
+        <p class="text-xs font-bold mb-1" style="color:#3A5A40;">🎯 ${fullGoalLabel} 목표 달성을 위한 추가 추천</p>
         <p class="text-xs text-muted">이미 ${goalLabel} 관련 핵심 영양제를 잘 챙기고 계세요! 지금 조합을 꾸준히 유지해주세요.</p>
       </div>`;
   }
 
   return `
     <div class="mb-2">
-      <p class="text-xs font-bold mb-1" style="color:#3A5A40;">🎯 ${goalLabel} 목표 달성을 위한 추가 추천 영양제</p>
+      <p class="text-xs font-bold mb-1" style="color:#3A5A40;">🎯 ${fullGoalLabel} 목표 달성을 위한 추가 추천 영양제</p>
       <p class="text-xs text-muted mb-3">현재 복용 중인 영양제 외에, 선택하신 건강 목표를 위해 추가로 고려해볼 만한 성분이에요.</p>
     </div>
     <div class="space-y-3">
