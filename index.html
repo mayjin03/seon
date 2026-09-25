@@ -1152,10 +1152,10 @@
         <p class="text-sm" style="color:#6b6259;">아이의 약과 영양제가 서로 충돌하지 않는 안전한 복용 시각과 식사 스케줄을 자동으로 계산해 드려요.</p>
       </div>
 
-      <div class="grid lg:grid-cols-2 gap-5 max-w-5xl mx-auto">
+      <div class="max-w-5xl mx-auto space-y-5">
 
         <!-- 입력 패널 -->
-        <div class="rounded-[var(--radius-card)] p-6" style="background:#FFFFFF; border:1px solid #3A5A401f;">
+        <div id="chronoLeftInputCard" class="rounded-[var(--radius-card)] p-6" style="background:#FFFFFF; border:1px solid #3A5A401f;">
           <p class="font-bold text-sm mb-4" id="insBioDataHeading" style="color:#2C241F;">① 기본 정보</p>
 
           <label class="block text-xs font-semibold mb-1.5" style="color:#2C241F;">아이 이름</label>
@@ -1280,7 +1280,7 @@
         </div>
 
         <!-- 출력 패널 -->
-        <div class="rounded-[var(--radius-card)] p-6" style="background:#FFFFFF; border:1px solid #3A5A401f;">
+        <div class="w-full rounded-[var(--radius-card)] p-6" style="background:#FFFFFF; border:1px solid #3A5A401f;">
           <p class="font-bold text-sm mb-3" style="color:#2C241F;">🚨 DNI Warning Banner</p>
           <div id="dniWarningBanner" class="space-y-2 mb-2"></div>
           <p id="dniNoWarningText" class="text-xs" style="color:#3A5A40;">현재 등록된 약물·영양제 조합에서 상극이 감지되지 않았어요.</p>
@@ -8713,7 +8713,15 @@ function buildRollupWizardFromRanges(config){
         if(summaryEl) summaryEl.textContent = summarizeStep(stepGroups[i]);
       }
     }
-    originalParents.forEach(p=>{ if(p.children.length === 0) p.style.display = 'none'; });
+    // 빈 부모를 제거하면 그 부모의 부모도 비게 될 수 있어요(예: pt-4 div가 비면 그걸 담고 있던
+    // 좌측 카드도 비게 돼요) — 더 이상 지울 게 없을 때까지 반복해서 중첩된 빈 박스까지 확실히 없애요.
+    let changed = true;
+    while(changed){
+      changed = false;
+      originalParents.forEach(p=>{
+        if(p.isConnected && p.children.length === 0){ p.remove(); changed = true; }
+      });
+    }
   }
   refresh();
   return { refresh, getActiveStep:()=>activeStep };
@@ -10057,7 +10065,7 @@ function initInsurancePage(){
 
   buildRollupWizardFromRanges({
     idPrefix: 'chrono',
-    mountAnchorSelector: '#insurancePage .grid.lg\\:grid-cols-2',
+    mountAnchorSelector: '#chronoLeftInputCard',
     ranges: [
       // Step 1: 생체 정보(카드1 상단) + 식사 시간 스케줄(카드3 상단) — 서로 다른 카드에 있지만 하나의 Step으로 묶어요.
       { step:1, from:'#insBioDataHeading', to:'#insHealthSubGoalWrap' },
