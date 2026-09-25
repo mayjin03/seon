@@ -107,6 +107,11 @@
 
   /* ---- 메인 탭 라우팅 ---- */
   .main-tab-btn{ color:var(--c-primary-dark); transition:all .18s ease; opacity:.6; }
+
+  /* ---- Customized Roll-up Wizard: Step 펼침 아코디언 모션 ---- */
+  .demo-wizard-step-active{ animation:demoWizardFadeIn .35s ease; }
+  .demo-wizard-step-done{ animation:demoWizardFadeIn .3s ease; }
+  @keyframes demoWizardFadeIn{ from{ opacity:0; transform:translateY(-6px); } to{ opacity:1; transform:translateY(0); } }
   .main-tab-btn.active{ background:var(--c-primary); color:#fff; opacity:1; }
   .sticker-palette-btn.is-text{ font-size:11px; font-weight:700; padding:8px 10px; white-space:nowrap; }
 
@@ -497,6 +502,7 @@
     <!-- ===================== FORM SECTION ===================== -->
     <section id="formSection" class="hidden">
 
+      <div class="flex items-center justify-center gap-2 mb-3" id="mainFormPhaseIndicator"></div>
       <div class="flex items-center justify-center gap-2 mb-7" id="stepDots"></div>
 
       <div class="surface rounded-[var(--radius-card)] p-6 sm:p-8 max-w-2xl mx-auto">
@@ -761,6 +767,12 @@
         <p class="text-xs font-bold text-muted mb-2">프리셋 선택 (클릭해보세요)</p>
         <div class="grid sm:grid-cols-3 gap-3 mb-5" id="demoPresetGroup"></div>
 
+        <div class="rounded-2xl p-4 mb-6" style="background:#F5F4EF; border:1px solid #3A5A401f;">
+          <p class="text-xs font-bold text-muted mb-2">🧩 Customized Roll-up Wizard <span class="font-normal">(선택한 프리셋에 맞춰 자동으로 채워져요)</span></p>
+          <div class="grid grid-cols-3 gap-2 mb-3" id="demoWizardTabGroup"></div>
+          <div class="space-y-2" id="demoWizardStepsWrap"></div>
+        </div>
+
         <button type="button" id="runSeonAnalysisBtn" class="btn-primary w-full sm:w-auto rounded-xl px-8 py-3.5 text-sm font-bold mb-6">▶ Run Seon Analysis</button>
         <p id="demoProcessingNote" class="hidden text-xs font-bold mb-4" style="color:#3A5A40;">⏳ 서온 엔진이 데이터를 분석하고 있어요...</p>
 
@@ -929,9 +941,8 @@
 
       <div class="max-w-5xl mx-auto space-y-5">
         <!-- ① 개체 생체 Baseline -->
-        <div class="rounded-[var(--radius-card)] p-6" style="background:#FFFFFF; border:1px solid #3A5A401f;">
+        <div class="rounded-[var(--radius-card)] p-6" data-meta-step="1" style="background:#FFFFFF; border:1px solid #3A5A401f;">
           <p class="font-bold text-sm mb-1" style="color:#2C241F;">🐾 개체 생체 Baseline</p>
-          <p class="text-xs text-muted mb-4">'🥣 1g 믹스 계산기'·'🛡️ 1일 안전 투약 타임라인'과는 완전히 별개의 독립 입력이에요.</p>
 
           <label class="block text-[11px] font-semibold mb-1.5" style="color:#2C241F;">강아지 이름</label>
           <input type="text" id="metaNameInput" placeholder="예: 초코" class="w-full rounded-xl px-3 py-2.5 mb-3 text-sm" style="border:1px solid #3A5A4033;">
@@ -993,7 +1004,7 @@
         </div>
 
         <!-- ② 사료/간식 정밀 인풋 -->
-        <div class="rounded-[var(--radius-card)] p-6" style="background:#FFFFFF; border:1px solid #3A5A401f;">
+        <div class="rounded-[var(--radius-card)] p-6" data-meta-step="3" style="background:#FFFFFF; border:1px solid #3A5A401f;">
           <p class="font-bold text-sm mb-4" style="color:#2C241F;">🍽️ 주식 & 간식 정밀 입력</p>
 
           <label class="block text-[11px] font-semibold mb-1.5" style="color:#2C241F;">제형 선택</label>
@@ -1062,14 +1073,14 @@
         </div>
 
         <!-- ③ 영양제 -->
-        <div class="rounded-[var(--radius-card)] p-6" style="background:#FFFFFF; border:1px solid #3A5A401f;">
+        <div class="rounded-[var(--radius-card)] p-6" data-meta-step="2" style="background:#FFFFFF; border:1px solid #3A5A401f;">
           <p class="font-bold text-sm mb-1" style="color:#2C241F;">💊 영양제</p>
           <p class="text-xs text-muted mb-3">해당 시 선택 후 제형과 회당 용량·1일 횟수를 입력해주세요 — 주요 대사 성분이 자동으로 매핑돼요.</p>
           <div class="grid grid-cols-2 gap-2" id="metaSupplementChecklist"></div>
         </div>
 
         <!-- ④ 처방약 -->
-        <div class="rounded-[var(--radius-card)] p-6" style="background:#FFFFFF; border:1px solid #3A5A401f;">
+        <div class="rounded-[var(--radius-card)] p-6" data-meta-step="2" style="background:#FFFFFF; border:1px solid #3A5A401f;">
           <p class="font-bold text-sm mb-3" style="color:#2C241F;">🩺 처방약</p>
 
           <div class="grid grid-cols-2 gap-2 mb-4" id="metaMedModeGroup">
@@ -1091,7 +1102,7 @@
         </div>
 
         <!-- ⑤ 장기별 대사 부하 게이지 -->
-        <div class="rounded-[var(--radius-card)] p-6" style="background:#FFFFFF; border:1px solid #3A5A401f;">
+        <div class="rounded-[var(--radius-card)] p-6" data-meta-output="1" style="background:#FFFFFF; border:1px solid #3A5A401f;">
           <p class="font-bold text-sm mb-4" style="color:#2C241F;">🫀 장기별 대사 부하 게이지</p>
           <div class="grid sm:grid-cols-2 gap-4 mb-5">
             <div id="liverBurdenCard"></div>
@@ -1102,14 +1113,14 @@
         </div>
 
         <!-- ⑤-1 장기 대사 최적화 Action Plan -->
-        <div id="metaActionPlanCard" class="rounded-[var(--radius-card)] p-6" style="background:#FFFFFF; border:1.5px solid #3A5A4022;">
+        <div id="metaActionPlanCard" class="rounded-[var(--radius-card)] p-6" data-meta-output="1" style="background:#FFFFFF; border:1.5px solid #3A5A4022;">
           <p class="font-bold text-sm mb-1" id="metaActionPlanTitle" style="color:#3A5A40;">💡 [서온] 장기 대사 최적화 Action Plan</p>
           <p class="text-xs text-muted mb-4">오늘 입력하신 Health Profile과 대사 부하 계산 결과를 바탕으로 맞춤 실행 지침을 안내해드려요.</p>
           <div id="metaActionPlanBody" class="space-y-3"></div>
         </div>
 
         <!-- ⑥ 1-Click 영양 부하 자동 교정 레시피 -->
-        <div id="metaCorrectionCard" class="hidden rounded-[var(--radius-card)] p-6" style="background:#FFFFFF; border:1.5px solid #C0473A44;">
+        <div id="metaCorrectionCard" class="hidden rounded-[var(--radius-card)] p-6" data-meta-output="1" style="background:#FFFFFF; border:1.5px solid #C0473A44;">
           <p class="font-bold text-sm mb-1" style="color:#C0473A;">⚡ 1-Click 영양 부하 자동 교정 레시피</p>
           <p class="text-xs text-muted mb-3">처방약 용량/횟수는 그대로 유지하고, 사료·영양제·트릿 조정만으로 안전 범위(80% 이하)까지 낮춰드려요.</p>
           <div id="metaCorrectionBody" class="space-y-2 mb-4"></div>
@@ -1118,13 +1129,13 @@
         </div>
 
         <!-- ⑦ 목표 음수량 -->
-        <div class="rounded-[var(--radius-card)] p-6" style="background:#FFFFFF; border:1px solid #3A5A401f;">
+        <div class="rounded-[var(--radius-card)] p-6" data-meta-output="1" style="background:#FFFFFF; border:1px solid #3A5A401f;">
           <p class="font-bold text-sm mb-3" style="color:#2C241F;">💧 오늘의 목표 음수량</p>
           <div id="waterTargetCard"></div>
         </div>
 
         <!-- 액션 버튼: 전용 저장 & 리포트 다운로드 -->
-        <div class="flex flex-wrap items-center justify-center gap-2 pt-2">
+        <div class="flex flex-wrap items-center justify-center gap-2 pt-2" data-meta-output="1">
           <button type="button" id="saveMetaLoadBtn" class="rounded-xl px-6 py-3 text-sm font-bold" style="background:#3A5A40; color:#fff;">💾 대사 부하 진단 결과 저장하기</button>
           <button type="button" id="viewMetaLoadReportBtn" class="rounded-xl px-6 py-3 text-sm font-bold" style="background:#FAF9F5; border:1.5px solid #3A5A4055; color:#3A5A40;">📄 대사 부하 메디컬 리포트 다운로드 (PDF)</button>
         </div>
@@ -1145,7 +1156,7 @@
 
         <!-- 입력 패널 -->
         <div class="rounded-[var(--radius-card)] p-6" style="background:#FFFFFF; border:1px solid #3A5A401f;">
-          <p class="font-bold text-sm mb-4" style="color:#2C241F;">① 기본 정보</p>
+          <p class="font-bold text-sm mb-4" id="insBioDataHeading" style="color:#2C241F;">① 기본 정보</p>
 
           <label class="block text-xs font-semibold mb-1.5" style="color:#2C241F;">아이 이름</label>
           <input type="text" id="insPetName" placeholder="예: 초코" class="w-full rounded-xl px-3 py-2.5 mb-4 text-sm" style="border:1px solid #3A5A4033;">
@@ -1191,7 +1202,7 @@
           </div>
 
           <div class="pt-4" style="border-top:1px dashed #3A5A4033;">
-            <p class="font-bold text-sm mb-2" style="color:#2C241F;">② 복용 중인 약물 <span class="font-normal text-[11px]" style="color:#6b6259;">(Drug Molecule 기반)</span></p>
+            <p class="font-bold text-sm mb-2" id="dniMedSectionHeading" style="color:#2C241F;">② 복용 중인 약물 <span class="font-normal text-[11px]" style="color:#6b6259;">(Drug Molecule 기반)</span></p>
 
             <div class="grid grid-cols-3 gap-2 mb-3" id="dniMedModeGroup">
               <button data-val="scan" class="mc-chip rounded-xl py-2.5 text-xs">📸 처방전 사진 스캔</button>
@@ -1256,7 +1267,7 @@
               <p class="text-[11px] mt-2" style="color:#6b6259;">약물이 없다면 추가하지 않고 넘어가셔도 돼요.</p>
             </div>
 
-            <p class="font-bold text-sm mb-1" style="color:#2C241F;">③ 복용 중인 영양제 <span class="font-normal text-[11px]" style="color:#6b6259;">(주성분 기반)</span></p>
+            <p class="font-bold text-sm mb-1" id="dniSuppSectionHeading" style="color:#2C241F;">③ 복용 중인 영양제 <span class="font-normal text-[11px]" style="color:#6b6259;">(주성분 기반)</span></p>
             <div class="grid grid-cols-3 gap-2" id="dniSuppGroup">
               <button data-val="joint" class="mc-chip rounded-xl py-2.5 text-xs">관절</button>
               <button data-val="gut" class="mc-chip rounded-xl py-2.5 text-xs">유산균</button>
@@ -1288,7 +1299,7 @@
           <p class="text-xs" style="color:rgba(255,255,255,.75);">아이의 건강 목표와 사료 정보를 입력하시면, 약물 상극을 피하는 최적의 1일 안전 투약 스케줄을 산출해 드려요.</p>
         </div>
         <div class="p-6">
-          <p class="text-xs font-bold mb-3" style="color:#2C241F;">🍽️ 급여 스케줄 입력 <span class="font-normal text-[11px]" style="color:#6b6259;">('🥣 1g 믹스 계산기'와는 별개의 독립 입력이에요)</span></p>
+          <p class="text-xs font-bold mb-3" id="chronoMealScheduleHeading" style="color:#2C241F;">🍽️ 급여 스케줄 입력</p>
 
           <label class="block text-[11px] font-semibold mb-1.5" style="color:#2C241F;">건강/체중 관리 목표</label>
           <div class="grid grid-cols-3 gap-2 mb-2" id="chronoWeightGoalGroup">
@@ -1344,7 +1355,7 @@
             <div class="grid grid-cols-2 gap-2" id="chronoMixinsGroup"></div>
           </div>
 
-          <div class="grid sm:grid-cols-2 gap-3 mb-4">
+          <div class="grid sm:grid-cols-2 gap-3 mb-4" id="chronoMealTimeRow">
             <div>
               <label class="block text-[11px] font-semibold mb-1.5" style="color:#2C241F;">급여 횟수</label>
               <input type="number" min="1" max="6" step="1" id="chronoFeedingFreqInput" value="3" class="w-full rounded-xl px-3 py-2.5 text-sm" style="border:1px solid #3A5A4033;">
@@ -2464,6 +2475,30 @@ function updateDots(){
     d.classList.toggle('done', i<currentStep);
   }
 }
+/* 💡 [AI Health Report] 3단계 롤업 진행 표시 — 기존 5단계(currentStep 1~5) 온보딩 플로우의
+   실제 네비게이션/검증 로직(goStep, validateStep, updateStepView)은 단 한 줄도 건드리지 않고,
+   순수하게 '지금 5단계 중 몇 번째가 어느 큰 단계에 해당하는지'만 시각적으로 보여주는 오버레이예요. */
+const MAIN_FORM_PHASES = [
+  { title:'Bio Baseline', steps:[1,2] },
+  { title:'Health History', steps:[3,4] },
+  { title:'Daily Care', steps:[5] },
+];
+function getMainFormPhaseIndex(step){
+  const idx = MAIN_FORM_PHASES.findIndex(p=>p.steps.includes(step));
+  return idx === -1 ? 0 : idx;
+}
+function renderMainFormPhaseIndicator(){
+  const el = document.getElementById('mainFormPhaseIndicator');
+  if(!el) return;
+  const activePhase = getMainFormPhaseIndex(currentStep);
+  el.innerHTML = MAIN_FORM_PHASES.map((p,i)=>{
+    const done = i < activePhase, active = i === activePhase;
+    const color = done ? '#1F8F76' : active ? '#3A5A40' : '#9a9186';
+    const bg = done ? '#2FBF9F14' : active ? '#3A5A401A' : '#F5F4F0';
+    return `<span class="text-[10px] font-bold px-2.5 py-1 rounded-full" style="background:${bg}; color:${color};">${done?'✅ ':''}Step ${i+1} · ${p.title}</span>`;
+  }).join('');
+}
+
 function updateStepView(){
   for(let i=1;i<=totalSteps;i++){
     document.getElementById('step'+i).classList.toggle('hidden', i!==currentStep);
@@ -2471,6 +2506,7 @@ function updateStepView(){
   document.getElementById('prevBtn').style.visibility = currentStep===1 ? 'hidden':'visible';
   document.getElementById('nextBtn').textContent = currentStep===totalSteps ? '결과 계산하기' : '다음';
   updateDots();
+  renderMainFormPhaseIndicator(); // 3단계 롤업 진행 표시(순수 디스플레이) 갱신
 }
 function validateStep(step){
   if(step===1){
@@ -8546,6 +8582,268 @@ function initFoodInputSection(prefix){
   renderMixinsGroup(prefix);
 }
 
+/* ============================================================
+   🧩 Roll-up Accordion Display Wrapper
+   — 이미 존재하는 인풋 카드(필드/state/이벤트 리스너 전부 그대로)를 런타임에
+   물리적으로 재배치(reparent)만 해서 Step별 롤업 아코디언으로 감싸요.
+   각 카드에 미리 붙여둔 data-*-step / data-*-output 속성만 읽어서 그룹핑하고,
+   appendChild로 옮기기만 하므로 id/이벤트 바인딩은 100% 그대로 유지돼요.
+============================================================ */
+/* 카드 경계를 넘나드는 필드들(예: Chrono-DNI처럼 서로 다른 부모 컨테이너에 흩어진 인풋들)을
+   하나의 Step으로 묶을 때 써요. HTML은 전혀 바꾸지 않고, 이미 존재하는 두 요소(start~end) 사이의
+   '형제 요소들'만 안전하게 수집해요. */
+function collectElementRange(startEl, endEl){
+  const result = [];
+  let node = startEl;
+  let guard = 0;
+  while(node && guard < 500){
+    result.push(node);
+    if(node === endEl) break;
+    node = node.nextElementSibling;
+    guard++;
+  }
+  return result;
+}
+/* buildRollupWizard의 '범위 기반' 버전 — 여러 개의 (start 앵커 ~ end 앵커) 구간을 지정하면,
+   그 구간의 기존 요소들을 그대로(내용/이벤트 리스너 변경 없이) 새 Step 컨테이너로 옮겨줘요.
+   앵커를 못 찾는 구간은 조용히 건너뛰어서 절대 에러가 나지 않도록 방어했어요. */
+function buildRollupWizardFromRanges(config){
+  if(document.getElementById(config.idPrefix + 'RollupRoot')) return; // 중복 실행 방지
+  const mountAnchor = document.querySelector(config.mountAnchorSelector);
+  if(!mountAnchor) return;
+
+  const stepGroups = {};
+  config.ranges.forEach(r=>{
+    const startEl = document.querySelector(r.from);
+    const endEl = document.querySelector(r.to);
+    if(!startEl || !endEl) return; // 안전 가드 — 앵커를 못 찾으면 그 구간은 조용히 건너뛰어요.
+    const els = collectElementRange(startEl, endEl);
+    if(!stepGroups[r.step]) stepGroups[r.step] = [];
+    stepGroups[r.step].push(...els);
+  });
+  if(Object.keys(stepGroups).length === 0) return;
+
+  const wizardRoot = document.createElement('div');
+  wizardRoot.id = config.idPrefix + 'RollupRoot';
+  wizardRoot.className = 'space-y-3 max-w-5xl mx-auto mb-5';
+  mountAnchor.parentNode.insertBefore(wizardRoot, mountAnchor);
+
+  // 원래 부모(카드)가 완전히 비게 되면 빈 박스가 남지 않도록 기억해뒀다가 숨겨요.
+  const originalParents = new Set();
+  Object.values(stepGroups).forEach(arr=>arr.forEach(el=>{ if(el.parentElement) originalParents.add(el.parentElement); }));
+
+  const stepCount = config.steps.length;
+  let activeStep = 1;
+  const stepBadges = {}, stepPendings = {}, stepActiveWraps = {};
+
+  function summarizeStep(stepEls){
+    try{
+      const texts = [];
+      stepEls.forEach(el=>{
+        el.querySelectorAll('input, select').forEach(inp=>{
+          if(inp.type === 'checkbox' || inp.type === 'radio' || inp.type === 'file') return;
+          if(inp.offsetParent === null) return;
+          if(inp.value) texts.push(String(inp.value).slice(0,14));
+        });
+      });
+      return texts.slice(0,4).join(' · ') || '입력됨';
+    }catch(e){ return '입력됨'; }
+  }
+
+  // ⚠️ 각 스텝의 실제 필드는 여기서 '딱 한 번만' 옮기고, 그 뒤로는 절대 다시 이동/제거하지 않아요.
+  // (완료/대기 배지 vs 펼쳐진 내용은 전부 항상 DOM에 붙어있고, hidden 클래스만 토글해요 — 이렇게 해야
+  // 다른 스텝이 화면에 안 보이는 동안에도 기존 코드가 getElementById로 그 안의 값을 안전하게 갱신할 수 있어요.)
+  for(let i=1;i<=stepCount;i++){
+    const stepEls = stepGroups[i];
+    if(!stepEls || !stepEls.length) continue;
+    const title = (config.steps[i-1] && config.steps[i-1].title) || `Step ${i}`;
+
+    const badge = document.createElement('div');
+    badge.className = 'hidden rounded-xl px-4 py-2.5 flex flex-wrap items-center gap-x-2 gap-y-1 cursor-pointer demo-wizard-step-done';
+    badge.style.cssText = 'background:#2FBF9F14; border:1px solid #2FBF9F44;';
+    badge.innerHTML = `<span class="text-xs font-bold" style="color:#1F8F76;">✅ Step ${i} · ${title}</span><span class="text-[11px] demo-step-summary" style="color:#3A5A40;"></span><span class="text-[10px] ml-auto" style="color:#6b6259;">(눌러서 수정)</span>`;
+    badge.addEventListener('click', ()=>{ activeStep = i; refresh(); });
+    stepBadges[i] = badge;
+
+    const pending = document.createElement('div');
+    pending.className = 'hidden rounded-xl px-4 py-2.5';
+    pending.style.cssText = 'background:#F5F4F0; border:1px dashed #3A5A4033;';
+    pending.innerHTML = `<span class="text-xs font-bold" style="color:#9a9186;">Step ${i} · ${title} (대기 중)</span>`;
+    stepPendings[i] = pending;
+
+    const activeWrap = document.createElement('div');
+    activeWrap.className = 'hidden rounded-[var(--radius-card)] p-6 space-y-3 demo-wizard-step-active';
+    activeWrap.style.cssText = 'background:#FFFFFF; border:1.5px solid #3A5A40;';
+    const header = document.createElement('p');
+    header.className = 'text-xs font-bold mb-1';
+    header.style.color = '#3A5A40';
+    header.textContent = `Step ${i} · ${title}`;
+    activeWrap.appendChild(header);
+    stepEls.forEach(el=>activeWrap.appendChild(el)); // 기존 요소를 그대로 이동(딱 한 번만) — 내용/로직 변경 없음
+    const nextBtnWrap = document.createElement('div');
+    nextBtnWrap.className = 'flex justify-end pt-2';
+    const nextBtn = document.createElement('button');
+    nextBtn.type = 'button';
+    nextBtn.className = 'demo-wizard-next-btn rounded-xl px-5 py-2.5 text-xs font-bold';
+    nextBtn.style.cssText = 'background:#3A5A40; color:#fff;';
+    nextBtn.textContent = i < stepCount ? '다음 단계로 →' : (config.finalButtonLabel || '완료 →');
+    nextBtn.addEventListener('click', ()=>{
+      activeStep = i + 1;
+      refresh();
+      if(activeStep > stepCount && typeof config.onCompleteCustom === 'function') config.onCompleteCustom();
+    });
+    nextBtnWrap.appendChild(nextBtn);
+    activeWrap.appendChild(nextBtnWrap);
+    stepActiveWraps[i] = activeWrap;
+
+    wizardRoot.appendChild(badge);
+    wizardRoot.appendChild(pending);
+    wizardRoot.appendChild(activeWrap);
+  }
+
+  function refresh(){
+    for(let i=1;i<=stepCount;i++){
+      if(!stepActiveWraps[i]) continue;
+      const isDone = i < activeStep, isActive = i === activeStep, isPending = i > activeStep;
+      stepBadges[i].classList.toggle('hidden', !isDone);
+      stepPendings[i].classList.toggle('hidden', !isPending);
+      stepActiveWraps[i].classList.toggle('hidden', !isActive);
+      if(isDone){
+        const summaryEl = stepBadges[i].querySelector('.demo-step-summary');
+        if(summaryEl) summaryEl.textContent = summarizeStep(stepGroups[i]);
+      }
+    }
+    originalParents.forEach(p=>{ if(p.children.length === 0) p.style.display = 'none'; });
+  }
+  refresh();
+  return { refresh, getActiveStep:()=>activeStep };
+}
+
+function buildRollupWizard(config){
+  const container = document.querySelector(config.container);
+  if(!container || container.dataset.rollupBuilt === '1') return; // 중복 실행 방지
+  container.dataset.rollupBuilt = '1';
+
+  const children = Array.from(container.children);
+  const stepGroups = {};
+  const outputGroup = [];
+  let firstStepEl = null;
+  children.forEach(el=>{
+    const stepVal = el.getAttribute(config.stepAttr);
+    const outVal = el.getAttribute(config.outputAttr);
+    if(stepVal){
+      if(!stepGroups[stepVal]) stepGroups[stepVal] = [];
+      stepGroups[stepVal].push(el);
+      if(!firstStepEl) firstStepEl = el;
+    } else if(outVal){
+      outputGroup.push(el);
+    }
+  });
+  if(!firstStepEl) return; // 안전 가드 — 태그된 카드가 없으면 아무 것도 건드리지 않아요.
+
+  const stepCount = Object.keys(stepGroups).length;
+  let activeStep = 1;
+
+  const wizardRoot = document.createElement('div');
+  wizardRoot.id = config.idPrefix + 'RollupRoot';
+  wizardRoot.className = 'space-y-3';
+  container.insertBefore(wizardRoot, firstStepEl);
+
+  function summarizeStep(stepEls){
+    try{
+      const texts = [];
+      stepEls.forEach(el=>{
+        el.querySelectorAll('input, select').forEach(inp=>{
+          if(inp.type === 'checkbox' || inp.type === 'radio'){ return; }
+          if(inp.offsetParent === null) return; // 숨겨진(비활성) 필드는 요약에서 제외해요.
+          if(inp.value) texts.push(String(inp.value).slice(0,14));
+        });
+      });
+      return texts.slice(0,4).join(' · ') || '입력됨';
+    }catch(e){ return '입력됨'; }
+  }
+
+  const stepBadges = {}, stepPendings = {}, stepActiveWraps = {};
+  // ⚠️ 각 스텝의 실제 카드는 여기서 '딱 한 번만' 이동시키고, 이후로는 절대 다시 이동/제거하지 않아요.
+  // 완료/대기 배지 vs 펼쳐진 내용은 전부 항상 DOM에 붙어있고 hidden 클래스만 토글해요 — 이렇게 해야
+  // 다른 스텝이 화면에 안 보이는 동안에도 renderMetaLoadPage() 등 기존 코드가 getElementById로
+  // 그 안의 값을 안전하게 갱신할 수 있어요.
+  for(let i=1;i<=stepCount;i++){
+    const stepEls = stepGroups[i];
+    if(!stepEls) continue;
+    const title = (config.steps[i-1] && config.steps[i-1].title) || `Step ${i}`;
+
+    const badge = document.createElement('div');
+    badge.className = 'hidden rounded-xl px-4 py-2.5 flex flex-wrap items-center gap-x-2 gap-y-1 cursor-pointer demo-wizard-step-done';
+    badge.style.cssText = 'background:#2FBF9F14; border:1px solid #2FBF9F44;';
+    badge.innerHTML = `<span class="text-xs font-bold" style="color:#1F8F76;">✅ Step ${i} · ${title}</span><span class="text-[11px] demo-step-summary" style="color:#3A5A40;"></span><span class="text-[10px] ml-auto" style="color:#6b6259;">(눌러서 수정)</span>`;
+    badge.addEventListener('click', ()=>{ activeStep = i; refresh(); });
+    stepBadges[i] = badge;
+
+    const pending = document.createElement('div');
+    pending.className = 'hidden rounded-xl px-4 py-2.5';
+    pending.style.cssText = 'background:#F5F4F0; border:1px dashed #3A5A4033;';
+    pending.innerHTML = `<span class="text-xs font-bold" style="color:#9a9186;">Step ${i} · ${title} (대기 중)</span>`;
+    stepPendings[i] = pending;
+
+    const activeWrap = document.createElement('div');
+    activeWrap.className = 'hidden space-y-3 demo-wizard-step-active';
+    const header = document.createElement('p');
+    header.className = 'text-xs font-bold px-1';
+    header.style.color = '#3A5A40';
+    header.textContent = `Step ${i} · ${title}`;
+    activeWrap.appendChild(header);
+    stepEls.forEach(el=>activeWrap.appendChild(el)); // 기존 카드를 그대로 이동(딱 한 번만) — 내용/로직 변경 없음
+    const nextBtnWrap = document.createElement('div');
+    nextBtnWrap.className = 'flex justify-end';
+    const nextBtn = document.createElement('button');
+    nextBtn.type = 'button';
+    nextBtn.className = 'demo-wizard-next-btn rounded-xl px-5 py-2.5 text-xs font-bold';
+    nextBtn.style.cssText = 'background:#3A5A40; color:#fff;';
+    nextBtn.textContent = i < stepCount ? '다음 단계로 →' : (config.finalButtonLabel || '완료 →');
+    nextBtn.addEventListener('click', ()=>{
+      activeStep = i + 1;
+      refresh();
+      if(activeStep > stepCount && config.onComplete) config.onComplete();
+    });
+    nextBtnWrap.appendChild(nextBtn);
+    activeWrap.appendChild(nextBtnWrap);
+    stepActiveWraps[i] = activeWrap;
+
+    wizardRoot.appendChild(badge);
+    wizardRoot.appendChild(pending);
+    wizardRoot.appendChild(activeWrap);
+  }
+
+  function refresh(){
+    for(let i=1;i<=stepCount;i++){
+      if(!stepActiveWraps[i]) continue;
+      const isDone = i < activeStep, isActive = i === activeStep, isPending = i > activeStep;
+      stepBadges[i].classList.toggle('hidden', !isDone);
+      stepPendings[i].classList.toggle('hidden', !isPending);
+      stepActiveWraps[i].classList.toggle('hidden', !isActive);
+      if(isDone){
+        const summaryEl = stepBadges[i].querySelector('.demo-step-summary');
+        if(summaryEl) summaryEl.textContent = summarizeStep(stepGroups[i]);
+      }
+    }
+  }
+
+  const outputWrap = document.createElement('div');
+  outputWrap.id = config.idPrefix + 'RollupOutputWrap';
+  outputWrap.className = 'space-y-5 hidden';
+  container.appendChild(outputWrap);
+  outputGroup.forEach(el=>outputWrap.appendChild(el));
+
+  config.onComplete = ()=>{
+    outputWrap.classList.remove('hidden');
+    outputWrap.scrollIntoView({ behavior:'smooth', block:'start' });
+  };
+
+  refresh();
+  return { refresh, getActiveStep:()=>activeStep };
+}
+
 function initMetaLoadPage(){
   document.getElementById('metaNameInput').value = metaHealthProfile.name;
   document.getElementById('metaNameInput').addEventListener('input', e=>{ metaHealthProfile.name = e.target.value; });
@@ -8635,6 +8933,19 @@ function initMetaLoadPage(){
   document.getElementById('applyMetaCorrectionBtn').addEventListener('click', applyMetaCorrection);
   bindGuardedReportButton('saveMetaLoadBtn', saveMetabolicLoadData);
   document.getElementById('viewMetaLoadReportBtn').addEventListener('click', ()=>withGuardianContact(openMetaLoadReport));
+
+  buildRollupWizard({
+    container: '#metaLoadPage .max-w-5xl',
+    stepAttr: 'data-meta-step',
+    outputAttr: 'data-meta-output',
+    steps: [
+      { title: '생체 정보 & 검사 수치' },
+      { title: '복용 약물 & 영양제' },
+      { title: '사료 & 급여 스케줄' },
+    ],
+    finalButtonLabel: '⚡ 대사 부하율 연산 확인하기',
+    idPrefix: 'meta',
+  });
 }
 
 
@@ -9743,6 +10054,30 @@ function initInsurancePage(){
   document.getElementById('insViewReportBtn').addEventListener('click', ()=>withGuardianContact(openChronoDniReport));
 
   updateInsuranceOutputs();
+
+  buildRollupWizardFromRanges({
+    idPrefix: 'chrono',
+    mountAnchorSelector: '#insurancePage .grid.lg\\:grid-cols-2',
+    ranges: [
+      // Step 1: 생체 정보(카드1 상단) + 식사 시간 스케줄(카드3 상단) — 서로 다른 카드에 있지만 하나의 Step으로 묶어요.
+      { step:1, from:'#insBioDataHeading', to:'#insHealthSubGoalWrap' },
+      { step:1, from:'#chronoMealScheduleHeading', to:'#chronoMealTimeRow' },
+      // Step 2: 처방약 조건/시간 (카드1의 ② 섹션)
+      { step:2, from:'#dniMedSectionHeading', to:'#dniManualPanel' },
+      // Step 3: 영양제 및 투여 시간 (카드1의 ③ 섹션)
+      { step:3, from:'#dniSuppSectionHeading', to:'#dniSuppDetailWrap' },
+    ],
+    steps: [
+      { title:'Bio & Meal Routine Anchor' },
+      { title:'Prescriptions Schedule' },
+      { title:'Supplement Grouping' },
+    ],
+    finalButtonLabel: '✅ 입력 완료 (24시간 타임라인 확인하기)',
+    onCompleteCustom: ()=>{
+      const timeline = document.getElementById('dniChronoTimeline');
+      if(timeline) timeline.scrollIntoView({ behavior:'smooth', block:'start' });
+    },
+  });
 }
 
 
@@ -10373,6 +10708,11 @@ const DEMO_PRESETS = [
         { time:"18:30", icon:"💊", label:"항생제 복용", type:"med", reason:"식후 30분" },
         { time:"20:30", icon:"🧪", label:"칼슘 보충제 급여", type:"supp", reason:"항생제 복용 2시간 후 격리" },
       ],
+    },
+    wizard:{
+      healthReport: { step1:["믹스견","9세","6.2kg"], step2:["만성 신장질환(CKD 2기)","식욕부진 · 체중감소"], step3:["1일 2회","약 280mL/일"] },
+      metabolicLoad: { step1:["신장(Kidney)","BUN 45mg/dL · Creatinine 2.1mg/dL"], step2:["항생제(Enrofloxacin)","칼슘/킬레이트 칼슘"], step3:["저단백(14%)","저나트륨(150mg/100g)"] },
+      chronoDni: { step1:["1일 2회","아침 08:00 · 저녁 18:00"], step2:["항생제(Enrofloxacin)","식후 30분"], step3:["칼슘/킬레이트 칼슘","항생제 복용 2시간 후(10:30·20:30)"] },
     } },
   { id:"senior_cardiac", label:"노령견 · 심장질환 + 이뇨제 + 나트륨 과다 (1일 3회 급여)",
     title:"🐕‍🦺 노령견 (심장질환)", subtitle:"이뇨제 + 나트륨 과다 주의", badge:"🥣 1일 3회 급여",
@@ -10390,6 +10730,11 @@ const DEMO_PRESETS = [
         { time:"19:00", icon:"🥣", label:"저녁 사료 급여", type:"food", reason:"저나트륨 심장 처방식 1/3" },
         { time:"19:30", icon:"💊", label:"심장약 2차 복용", type:"med", reason:"저녁 복용" },
       ],
+    },
+    wizard:{
+      healthReport: { step1:["포메라니안","12세","3.4kg"], step2:["심장질환(ACVIM B2)","기침 · 운동 후 호흡곤란"], step3:["1일 3회","약 200mL/일(이뇨제 소실 보정)"] },
+      metabolicLoad: { step1:["간·신장(순환 부담)","BNP 상승 · 전해질 경계"], step2:["이뇨제(Furosemide)","특이 영양제 없음"], step3:["표준 단백질","과다(고염 습식)"] },
+      chronoDni: { step1:["1일 3회","아침 08:00 · 점심 13:00 · 저녁 19:00"], step2:["심장약 & 이뇨제","아침 07:30 · 저녁 19:30"], step3:["특이사항 없음","음수량 체크 13:00"] },
     } },
   { id:"healthy_maintenance", label:"건강한 성견 · 유지 관리 케어 (1일 3회 급여)",
     title:"🐩 건강한 성견", subtitle:"오메가-3 + 유산균 + 관절 영양제", badge:"🥣 1일 3회 급여",
@@ -10408,10 +10753,41 @@ const DEMO_PRESETS = [
         { time:"18:30", icon:"🥣", label:"저녁 사료 급여", type:"food", reason:"주식 1/3" },
         { time:"19:00", icon:"🧪", label:"관절 종합 영양제 급여", type:"supp", reason:"식후 급여" },
       ],
+    },
+    wizard:{
+      healthReport: { step1:["골든리트리버","4세","28.5kg"], step2:["특이 기저질환 없음","특이 증상 없음(예방적 관리)"], step3:["1일 3회","약 1,400mL/일"] },
+      metabolicLoad: { step1:["간·신장 모두 안전 범위","정상 범위"], step2:["처방약 없음","오메가3 · 유산균 · 관절 영양제"], step3:["표준~고단백","표준"] },
+      chronoDni: { step1:["1일 3회","아침 08:00 · 점심 12:30 · 저녁 18:30"], step2:["처방약 없음","해당 없음"], step3:["오메가3 · 유산균 · 관절영양제","08:30 · 13:00 · 19:00"] },
     } },
 ];
 let demoSelectedPresetId = DEMO_PRESETS[0].id;
 function getDemoSelectedPreset(){ return DEMO_PRESETS.find(p=>p.id===demoSelectedPresetId) || DEMO_PRESETS[0]; }
+
+/* Customized Roll-up Wizard — 피처별로 정말 필요한 질문만 3단계 롤업으로 노출해요.
+   step 필드 순서는 preset.wizard[tabId][stepId] 배열의 순서와 1:1로 대응돼요. */
+const DEMO_WIZARD_TABS = [
+  { id:"healthReport", label:"AI Health Report", steps:[
+    { id:"step1", title:"Bio Data", fields:["견종","나이","체중"] },
+    { id:"step2", title:"Health History", fields:["기저질환","현재 증상"] },
+    { id:"step3", title:"Daily Care", fields:["1일 사료 급여 횟수","음수량"] },
+  ]},
+  { id:"metabolicLoad", label:"Metabolic Load", steps:[
+    { id:"step1", title:"Target Organ", fields:["타겟 장기","검사 수치"] },
+    { id:"step2", title:"Active Compounds", fields:["처방약 성분","영양제"] },
+    { id:"step3", title:"Dietary Load", fields:["단백질 수준","나트륨 수준"] },
+  ]},
+  { id:"chronoDni", label:"Chrono-DNI", steps:[
+    { id:"step1", title:"Meal Routine Anchor", fields:["급여 횟수","식사 시간"] },
+    { id:"step2", title:"Prescriptions Timing", fields:["처방약","조건"] },
+    { id:"step3", title:"Supplement Group", fields:["영양제","투여 시간대"] },
+  ]},
+];
+let demoWizardActiveTab = "healthReport";
+let demoWizardCompletedSteps = { healthReport:0, metabolicLoad:0, chronoDni:0 };
+function resetDemoWizard(){
+  demoWizardActiveTab = "healthReport";
+  demoWizardCompletedSteps = { healthReport:0, metabolicLoad:0, chronoDni:0 };
+}
 
 /* ---- ① Pipeline Visualizer ---- */
 function renderDemoPipeline(){
@@ -10459,6 +10835,9 @@ function renderDemoPresetGroup(){
       renderDemoPresetGroup();
       resetDemoOutputs();
       renderDemoApiRequestJson();
+      resetDemoWizard();
+      renderDemoWizardTabs();
+      renderDemoWizardSteps();
     });
   });
 }
@@ -10467,6 +10846,69 @@ function resetDemoOutputs(){
   document.getElementById('demoApiResponseJson').textContent = '// [Execute Sandbox]를 눌러 실행해보세요';
   document.getElementById('demoProcessingNote').classList.add('hidden');
 }
+
+/* ---- Customized Roll-up Wizard: Feature 탭 + 3단계 아코디언 ---- */
+function renderDemoWizardTabs(){
+  const wrap = document.getElementById('demoWizardTabGroup');
+  wrap.innerHTML = DEMO_WIZARD_TABS.map(t=>{
+    const active = t.id === demoWizardActiveTab;
+    return `<button type="button" class="demo-wizard-tab-btn rounded-xl py-2.5 text-xs font-bold transition" data-tab="${t.id}"
+      style="background:${active?'#3A5A40':'#FAF9F5'}; color:${active?'#fff':'#2C241F'}; border:1.5px solid ${active?'#3A5A40':'#3A5A4022'};">${t.label}</button>`;
+  }).join('');
+  wrap.querySelectorAll('.demo-wizard-tab-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      demoWizardActiveTab = btn.dataset.tab;
+      renderDemoWizardTabs();
+      renderDemoWizardSteps();
+    });
+  });
+}
+function renderDemoWizardSteps(){
+  const preset = getDemoSelectedPreset();
+  const tab = DEMO_WIZARD_TABS.find(t=>t.id===demoWizardActiveTab);
+  const wizardData = preset.wizard[demoWizardActiveTab];
+  const completed = demoWizardCompletedSteps[demoWizardActiveTab];
+  const wrap = document.getElementById('demoWizardStepsWrap');
+  wrap.innerHTML = tab.steps.map((step,i)=>{
+    const values = wizardData[step.id];
+    if(i < completed){
+      // ✅ 완료된 Step — 슬림한 요약 배지로 롤업(접힘)
+      return `
+      <div class="demo-wizard-step-done rounded-xl px-4 py-2.5 flex flex-wrap items-center gap-x-2 gap-y-1" style="background:#2FBF9F14; border:1px solid #2FBF9F44;">
+        <span class="text-xs font-bold" style="color:#1F8F76;">✅ Step ${i+1} · ${step.title}</span>
+        <span class="text-[11px]" style="color:#3A5A40;">${step.fields.map((f,fi)=>`${f}: ${values[fi]}`).join(' · ')}</span>
+      </div>`;
+    }
+    if(i === completed){
+      // 현재 활성화된 Step — 펼쳐진 상태로 입력값(모의) 노출
+      return `
+      <div class="demo-wizard-step-active rounded-xl p-4" style="background:#FAF9F5; border:1.5px solid #3A5A40;">
+        <p class="text-xs font-bold mb-3" style="color:#3A5A40;">Step ${i+1} · ${step.title}</p>
+        <div class="grid sm:grid-cols-2 gap-2 mb-3">
+          ${step.fields.map((f,fi)=>`
+            <div class="rounded-lg p-2.5" style="background:#fff; border:1px solid #3A5A4014;">
+              <p class="text-[10px] text-muted mb-0.5">${f}</p>
+              <p class="text-xs font-bold" style="color:#2C241F;">${values[fi]}</p>
+            </div>`).join('')}
+        </div>
+        <button type="button" class="demo-wizard-complete-btn rounded-lg px-4 py-2 text-xs font-bold" style="background:#3A5A40; color:#fff;">${i < tab.steps.length-1 ? '다음 단계로 →' : '✅ 입력 완료'}</button>
+      </div>`;
+    }
+    // 아직 열리지 않은(대기 중) Step
+    return `
+    <div class="demo-wizard-step-pending rounded-xl px-4 py-2.5" style="background:#F5F4F0; border:1px dashed #3A5A4033;">
+      <span class="text-xs font-bold" style="color:#9a9186;">Step ${i+1} · ${step.title} (대기 중)</span>
+    </div>`;
+  }).join('');
+  const completeBtn = wrap.querySelector('.demo-wizard-complete-btn');
+  if(completeBtn){
+    completeBtn.addEventListener('click', ()=>{
+      demoWizardCompletedSteps[demoWizardActiveTab] = Math.min(tab.steps.length, completed + 1);
+      renderDemoWizardSteps();
+    });
+  }
+}
+
 function demoZoneColor(pct){ return pct>100 ? '#C0473A' : pct>80 ? '#D89A1E' : '#2FBF9F'; }
 function demoZoneLabel(pct){ return pct>100 ? 'Danger Zone' : pct>80 ? 'Caution' : 'Safe'; }
 
@@ -10586,6 +11028,8 @@ function executeDemoSandbox(){
 function initDemoPage(){
   renderDemoPipeline();
   renderDemoPresetGroup();
+  renderDemoWizardTabs();
+  renderDemoWizardSteps();
   renderDemoApiRequestJson();
   document.getElementById('runSeonAnalysisBtn').addEventListener('click', runSeonAnalysisDemo);
   document.getElementById('demoExecuteSandboxBtn').addEventListener('click', executeDemoSandbox);
