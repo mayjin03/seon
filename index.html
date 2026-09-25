@@ -308,6 +308,7 @@
     <div class="flex justify-center mb-6">
       <div class="inline-flex bg-primary-light rounded-full p-1 gap-1">
         <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="home">🏠 홈 / 진단</button>
+        <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="demo">🧬 기술 & 데모</button>
         <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="mixcalc">🥣 1g 믹스 계산기</button>
         <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="metaload">⚙️ 대사 부하 검문</button>
         <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="insurance">🛡️ 1일 안전 투약 타임라인</button>
@@ -730,6 +731,82 @@
     <section id="dashboardSection" class="hidden"></section>
 
     </div><!-- /homePage -->
+
+    <!-- ===================== DEMO PAGE: 기술 & 데모 (Tech & Demo Showcase) ===================== -->
+    <div id="demoPage" class="hidden">
+
+      <!-- ① HERO & ALGORITHM PIPELINE VISUALIZER -->
+      <div class="rounded-[28px] p-6 sm:p-10 mb-8" style="background:linear-gradient(160deg,#0F1B14,#1C2E22); color:#fff;">
+        <div class="text-center mb-8">
+          <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full mb-4 text-xs font-bold" style="background:rgba(47,191,159,.18); color:#5FE0BE;">
+            <span>🧬</span><span>TECH &amp; DEMO SHOWCASE</span>
+          </div>
+          <h1 class="font-display font-bold mb-3" style="font-size:clamp(1.4rem,4.5vw,2.2rem); line-height:1.35;">Seon DNI &amp; Metabolic Load<br class="hidden sm:block"> Engine Pipeline</h1>
+          <p class="text-sm max-w-xl mx-auto leading-relaxed" style="color:rgba(255,255,255,.6);">Interactive Visualization of Data Ingestion, AI Health Reporting, Metabolic Load Calculation, and DNI Matrix Analysis</p>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-0 mb-3" id="demoPipelineWrap">
+          <!-- 5 nodes rendered by JS -->
+        </div>
+        <div id="demoNodeTooltip" class="hidden rounded-2xl p-4 text-xs leading-relaxed" style="background:rgba(255,255,255,.06); border:1px solid rgba(95,224,190,.3); color:rgba(255,255,255,.85);"></div>
+      </div>
+
+      <!-- ② LIVE B2C DEMO -->
+      <div class="rounded-[28px] p-6 sm:p-8 mb-8" style="background:#FFFFFF; border:1px solid #3A5A401f;">
+        <div class="mb-6">
+          <p class="text-[11px] font-bold tracking-widest mb-1" style="color:#3A5A40;">LIVE B2C DEMO</p>
+          <h2 class="font-display font-bold" style="font-size:clamp(1.1rem,3vw,1.5rem);">서온의 3대 핵심 기능, 지금 바로 체험해보세요</h2>
+        </div>
+
+        <p class="text-xs font-bold text-muted mb-2">프리셋 선택 (클릭해보세요)</p>
+        <div class="grid sm:grid-cols-3 gap-2 mb-5" id="demoPresetGroup"></div>
+
+        <button type="button" id="runSeonAnalysisBtn" class="btn-primary w-full sm:w-auto rounded-xl px-8 py-3.5 text-sm font-bold mb-6">▶ Run Seon Analysis</button>
+        <p id="demoProcessingNote" class="hidden text-xs font-bold mb-4" style="color:#3A5A40;">⏳ 서온 엔진이 데이터를 분석하고 있어요...</p>
+
+        <div class="space-y-5" id="demoOutputWrap">
+          <!-- ① Integrated Health Report -->
+          <div id="demoHealthReportCard" class="demo-output-card hidden rounded-2xl p-5" style="background:#FAF9F5; border:1.5px solid #3A5A4022;">
+            <p class="text-xs font-bold mb-3" style="color:#3A5A40;">📑 ① AI Comprehensive Pet Health Assessment</p>
+            <div id="demoHealthReportBody"></div>
+          </div>
+
+          <!-- ② Metabolic Load Indicator -->
+          <div id="demoMetabolicLoadCard" class="demo-output-card hidden rounded-2xl p-5" style="background:#FAF9F5; border:1.5px solid #3A5A4022;">
+            <p class="text-xs font-bold mb-3" style="color:#3A5A40;">🫀 ② Hepatic &amp; Renal Metabolic Load Rate</p>
+            <div id="demoMetabolicLoadBody"></div>
+          </div>
+
+          <!-- ③ DNI Matrix Analysis -->
+          <div id="demoDniMatrixCard" class="demo-output-card hidden rounded-2xl p-5" style="background:#FAF9F5; border:1.5px solid #3A5A4022;">
+            <p class="text-xs font-bold mb-3" style="color:#3A5A40;">🧬 ③ Drug-Nutrient Interaction &amp; 24-Hour Safety Timeline</p>
+            <div id="demoDniMatrixBody"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ③ INTERACTIVE B2B API SANDBOX -->
+      <div class="rounded-[28px] p-6 sm:p-8" style="background:#0F1B14; color:#fff;">
+        <p class="text-[11px] font-bold tracking-widest mb-1" style="color:#5FE0BE;">INTERACTIVE B2B API SANDBOX</p>
+        <h2 class="font-display font-bold mb-1" style="font-size:clamp(1.1rem,3vw,1.5rem);">POST /api/v1/seon/analyze</h2>
+        <p class="text-xs mb-6" style="color:rgba(255,255,255,.55);">선택한 프리셋을 그대로 요청 JSON에 담아, 서온 엔진이 실시간으로 계산한 응답을 콘솔로 확인해보세요.</p>
+
+        <div class="grid lg:grid-cols-2 gap-5">
+          <div>
+            <p class="text-[10px] font-bold mb-2" style="color:rgba(255,255,255,.5);">REQUEST</p>
+            <pre id="demoApiRequestJson" class="rounded-xl p-4 text-[11px] overflow-x-auto" style="background:#050B08; border:1px solid rgba(95,224,190,.25); color:#8FE9CE; font-family:'SF Mono',Consolas,monospace; max-height:420px;"></pre>
+          </div>
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <p class="text-[10px] font-bold" style="color:rgba(255,255,255,.5);">RESPONSE</p>
+              <button type="button" id="demoExecuteSandboxBtn" class="rounded-lg px-4 py-2 text-xs font-bold" style="background:#5FE0BE; color:#0F1B14;">⚡ Execute Sandbox</button>
+            </div>
+            <pre id="demoApiResponseJson" class="rounded-xl p-4 text-[11px] overflow-x-auto" style="background:#050B08; border:1px solid rgba(95,224,190,.25); color:#8FE9CE; font-family:'SF Mono',Consolas,monospace; max-height:420px; min-height:120px;">// [Execute Sandbox]를 눌러 실행해보세요</pre>
+          </div>
+        </div>
+        <p class="text-[10px] mt-4" style="color:rgba(255,255,255,.35);">※ 이 페이지는 백엔드 연동 없이 프론트엔드 Mock Data로만 동작하는 인터랙티브 프로토타입이에요 — 실제 서버 통신은 발생하지 않아요.</p>
+      </div>
+    </div>
 
     <!-- ===================== MIX CALC PAGE: 1g 실시간 믹스 계산기 ===================== -->
     <div id="mixCalcPage" class="hidden">
@@ -6235,6 +6312,7 @@ function bindStudioTabEvents(){
 function switchMainTab(tab){
   document.querySelectorAll('.main-tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
   document.getElementById('homePage').classList.toggle('hidden', tab!=='home');
+  document.getElementById('demoPage').classList.toggle('hidden', tab!=='demo');
   document.getElementById('mixCalcPage').classList.toggle('hidden', tab!=='mixcalc');
   document.getElementById('metaLoadPage').classList.toggle('hidden', tab!=='metaload');
   document.getElementById('insurancePage').classList.toggle('hidden', tab!=='insurance');
@@ -10156,8 +10234,8 @@ function openChronoDniReport(){
 ============================================================ */
 /* '1일 안전 투약 타임라인'의 정식 경로는 #/safe-timeline이에요. 예전 링크(#/chrono)로 들어와도
    깨지지 않도록 과거 경로도 계속 인식하되, 화면에는 항상 새 경로로 자동 리다이렉트해요. */
-const ROUTE_TO_TAB = { '': 'home', 'main': 'home', 'safe-timeline': 'insurance', 'chrono': 'insurance', 'mix-calc': 'mixcalc', 'metabolic-load': 'metaload' };
-const TAB_TO_ROUTE = { home: '', insurance: 'safe-timeline', mixcalc: 'mix-calc', metaload: 'metabolic-load' };
+const ROUTE_TO_TAB = { '': 'home', 'main': 'home', 'safe-timeline': 'insurance', 'chrono': 'insurance', 'mix-calc': 'mixcalc', 'metabolic-load': 'metaload', 'demo': 'demo' };
+const TAB_TO_ROUTE = { home: '', insurance: 'safe-timeline', mixcalc: 'mix-calc', metaload: 'metabolic-load', demo: 'demo' };
 const LEGACY_ROUTES = { 'chrono': 'safe-timeline' }; // 구 경로 → 신 경로 매핑 (자동 리다이렉트용)
 
 function getTabFromCurrentHash(){
@@ -10256,6 +10334,228 @@ window.addEventListener('hashchange', saveAppStateSnapshot);
 window.addEventListener('beforeunload', saveAppStateSnapshot);
 
 /* ============================================================
+   🧬 기술 & 데모 (Tech & Demo Showcase) — 완전한 Mock Data 기반
+   백엔드 DB 연동이나 외부 API 호출 없이, 프론트엔드 정적 더미 데이터만으로
+   동작하는 100% 안정적인 인터랙티브 프로토타입이에요.
+============================================================ */
+const DEMO_PIPELINE_NODES = [
+  { id:1, icon:"🐾", title:"Data Ingestion", subtitle:"Pet Bio Data, Prescriptions & Supplement Parsing", desc:"견종/체중/기저질환과 처방약·영양제 정보를 파싱해 구조화된 입력 데이터로 변환해요." },
+  { id:2, icon:"📋", title:"AI Health Report", subtitle:"Comprehensive Initial Health Assessment", desc:"AI 기반으로 종합 상태를 파악하고, 1차 맞춤 건강 리포트 생성을 위한 데이터를 구조화해요." },
+  { id:3, icon:"🫀", title:"Metabolic Load Engine", subtitle:"Hepatic & Renal Stress Quantification", desc:"간·신장 대사 부하를 정량적으로 연산하고 스코어링해요." },
+  { id:4, icon:"🧬", title:"DNI Matrix Analysis", subtitle:"Drug-Nutrient Interaction & Safety Schedule", desc:"약물-영양소 체내 충돌 매트릭스 알고리즘을 적용해 안전 투약 타임라인을 생성해요." },
+  { id:5, icon:"🔗", title:"Integrated API Output", subtitle:"B2C Dashboard & B2B JSON Stream", desc:"B2C 종합 대시보드와 B2B JSON API를 동시에 생성해요." },
+];
+
+const DEMO_PRESETS = [
+  { id:"mixed_renal", label:"믹스견 · 신부전 + 항생제 + 칼슘",
+    input:{ name:"초코", breed:"믹스견", weight:6.2, ageYear:9, condition:"만성 신장질환(CKD 2기)", medication:"항생제(Enrofloxacin) 1일 2회", supplement:"칼슘/킬레이트 칼슘 1일 1회" },
+    output:{
+      healthScore:58, riskLevel:"주의",
+      summary:"신장 기능 저하가 진행 중이며, 현재 급여 중인 칼슘 보충제가 항생제 흡수를 방해하고 있어요.",
+      guides:["단백질·인 함량이 낮은 신장 처방식으로 전환을 고려해보세요.","칼슘 보충제는 항생제 복용과 최소 2시간 간격을 두세요.","목표 음수량을 하루 310mL 이상으로 유지해주세요."],
+      liverPct:92, kidneyPct:135,
+      dniPairs:[{ drug:"항생제(Enrofloxacin)", nutrient:"칼슘/킬레이트 칼슘", effect:"흡수율 약 60% 상쇄", severity:"주의" }],
+      timeline:[
+        { time:"08:00", label:"항생제 복용", type:"med" },
+        { time:"10:00", label:"칼슘 보충제 급여 (2시간 격리)", type:"supp" },
+        { time:"18:00", label:"항생제 복용", type:"med" },
+        { time:"20:00", label:"칼슘 보충제 급여 (2시간 격리)", type:"supp" },
+      ],
+    } },
+  { id:"senior_cardiac", label:"노령견 · 심장질환 + 이뇨제 + 나트륨 과다",
+    input:{ name:"보리", breed:"포메라니안", weight:3.4, ageYear:12, condition:"심장질환(ACVIM B2)", medication:"이뇨제(Furosemide) 1일 2회", supplement:"나트륨 함량 높은 습식 위주 급여" },
+    output:{
+      healthScore:64, riskLevel:"주의",
+      summary:"이뇨제 복용 중 나트륨 섭취가 과다해 체액·전해질 균형에 부담을 주고 있어요.",
+      guides:["나트륨 함량이 낮은 저염 사료로 전환해주세요.","이뇨제 복용으로 손실되는 칼륨·마그네슘 보충을 고려해보세요.","체중 급변 여부를 주 1회 체크해주세요."],
+      liverPct:71, kidneyPct:88,
+      dniPairs:[{ drug:"이뇨제(Furosemide)", nutrient:"나트륨(고염 식이)", effect:"체액저류 위험 증가", severity:"주의" }],
+      timeline:[
+        { time:"08:00", label:"이뇨제 복용", type:"med" },
+        { time:"08:30", label:"저염 사료 급여", type:"food" },
+        { time:"19:00", label:"이뇨제 복용", type:"med" },
+        { time:"19:30", label:"저염 사료 급여", type:"food" },
+      ],
+    } },
+  { id:"healthy_maintenance", label:"건강한 성견 · 유지 관리 케어",
+    input:{ name:"몽이", breed:"골든리트리버", weight:28.5, ageYear:4, condition:"특이 기저질환 없음", medication:"복용 중인 처방약 없음", supplement:"오메가3(관절/피모 보조)" },
+    output:{
+      healthScore:91, riskLevel:"양호",
+      summary:"전반적인 대사 지표가 안전 범위 내에 있어요. 예방적 관리를 꾸준히 유지해주세요.",
+      guides:["현재 급여 패턴을 그대로 유지해주세요.","활동량에 맞춰 오메가3 급여량을 정기적으로 재확인해주세요.","6개월 주기로 혈액검사를 통해 기초 대사 지표를 추적해보세요."],
+      liverPct:38, kidneyPct:42,
+      dniPairs:[],
+      timeline:[
+        { time:"08:00", label:"아침 사료 + 오메가3", type:"food" },
+        { time:"19:00", label:"저녁 사료", type:"food" },
+      ],
+    } },
+];
+let demoSelectedPresetId = DEMO_PRESETS[0].id;
+function getDemoSelectedPreset(){ return DEMO_PRESETS.find(p=>p.id===demoSelectedPresetId) || DEMO_PRESETS[0]; }
+
+/* ---- ① Pipeline Visualizer ---- */
+function renderDemoPipeline(){
+  const wrap = document.getElementById('demoPipelineWrap');
+  wrap.innerHTML = DEMO_PIPELINE_NODES.map((n,i)=>`
+    <button type="button" class="demo-pipeline-node flex-1 rounded-2xl p-4 text-center transition" data-node="${n.id}" style="background:rgba(255,255,255,.05); border:1.5px solid rgba(95,224,190,.25);">
+      <span class="text-2xl block mb-1">${n.icon}</span>
+      <p class="text-[10px] font-bold" style="color:#5FE0BE;">NODE ${n.id}</p>
+      <p class="text-xs font-bold" style="color:#fff;">${n.title}</p>
+      <p class="text-[9px] mt-0.5" style="color:rgba(255,255,255,.45);">${n.subtitle}</p>
+    </button>
+    ${i < DEMO_PIPELINE_NODES.length-1 ? `<div class="hidden sm:flex items-center justify-center px-1 text-lg" style="color:rgba(95,224,190,.5);">➜</div>` : ''}
+  `).join('');
+  const showNodeTooltip = (node, btn)=>{
+    wrap.querySelectorAll('.demo-pipeline-node').forEach(b=>{ b.style.borderColor = 'rgba(95,224,190,.25)'; b.style.boxShadow = 'none'; });
+    btn.style.borderColor = '#5FE0BE';
+    btn.style.boxShadow = '0 0 18px rgba(95,224,190,.45)'; // 노드 라이팅 효과
+    const tooltip = document.getElementById('demoNodeTooltip');
+    tooltip.classList.remove('hidden');
+    tooltip.innerHTML = `<b style="color:#5FE0BE;">Node ${node.id} · ${node.title}</b> <span style="color:rgba(255,255,255,.5);">(${node.subtitle})</span><br>${node.desc}`;
+  };
+  wrap.querySelectorAll('.demo-pipeline-node').forEach(btn=>{
+    const node = DEMO_PIPELINE_NODES.find(n=>n.id===parseInt(btn.dataset.node));
+    btn.addEventListener('click', ()=>showNodeTooltip(node, btn));
+    btn.addEventListener('mouseenter', ()=>showNodeTooltip(node, btn));
+  });
+}
+
+/* ---- ② Live B2C Demo ---- */
+function renderDemoPresetGroup(){
+  const wrap = document.getElementById('demoPresetGroup');
+  wrap.innerHTML = DEMO_PRESETS.map(p=>`
+    <button type="button" class="demo-preset-btn rounded-xl p-3 text-left text-xs font-bold" data-preset="${p.id}"
+      style="background:#FAF9F5; border:1.5px solid ${p.id===demoSelectedPresetId?'#3A5A40':'#3A5A4022'}; color:${p.id===demoSelectedPresetId?'#3A5A40':'#2C241F'};">${p.label}</button>
+  `).join('');
+  wrap.querySelectorAll('.demo-preset-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      demoSelectedPresetId = btn.dataset.preset;
+      renderDemoPresetGroup();
+      resetDemoOutputs();
+      renderDemoApiRequestJson();
+    });
+  });
+}
+function resetDemoOutputs(){
+  ['demoHealthReportCard','demoMetabolicLoadCard','demoDniMatrixCard'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+  document.getElementById('demoApiResponseJson').textContent = '// [Execute Sandbox]를 눌러 실행해보세요';
+  document.getElementById('demoProcessingNote').classList.add('hidden');
+}
+function demoZoneColor(pct){ return pct>100 ? '#C0473A' : pct>80 ? '#D89A1E' : '#2FBF9F'; }
+function demoZoneLabel(pct){ return pct>100 ? 'Danger Zone' : pct>80 ? 'Caution' : 'Safe'; }
+
+function renderDemoHealthReportCard(preset){
+  const o = preset.output;
+  document.getElementById('demoHealthReportBody').innerHTML = `
+    <div class="grid sm:grid-cols-3 gap-3 mb-4">
+      <div class="rounded-xl p-3 text-center" style="background:#fff;"><p class="text-[10px] text-muted mb-1">종합 건강 스코어</p><p class="font-display font-bold text-2xl" style="color:#3A5A40;">${o.healthScore}점</p></div>
+      <div class="rounded-xl p-3 text-center" style="background:#fff;"><p class="text-[10px] text-muted mb-1">위험도</p><p class="font-display font-bold text-2xl" style="color:${o.riskLevel==='양호'?'#2FBF9F':'#D89A1E'};">${o.riskLevel}</p></div>
+      <div class="rounded-xl p-3 text-center" style="background:#fff;"><p class="text-[10px] text-muted mb-1">DNI 충돌 감지</p><p class="font-display font-bold text-2xl" style="color:${o.dniPairs.length?'#C0473A':'#2FBF9F'};">${o.dniPairs.length}건</p></div>
+    </div>
+    <p class="text-xs mb-3" style="color:#2C241F;">${o.summary}</p>
+    <p class="text-[11px] font-bold mb-1.5" style="color:#3A5A40;">💡 영양소 투여 가이드</p>
+    <ul class="text-xs space-y-1 mb-4" style="color:#2C241F;">${o.guides.map(g=>`<li>· ${g}</li>`).join('')}</ul>
+    <div class="rounded-xl p-3 mb-3" style="background:#3A5A400d;">
+      <p class="text-[10px] font-bold mb-1" style="color:#3A5A40;">🩺 수의사 상담용 요약 카드</p>
+      <p class="text-[11px]" style="color:#2C241F;">${preset.input.name}(${preset.input.breed}, ${preset.input.weight}kg, ${preset.input.ageYear}세) · 기저질환: ${preset.input.condition} · 복용약: ${preset.input.medication}</p>
+    </div>
+    <button type="button" class="demo-pdf-download-btn rounded-xl px-4 py-2 text-xs font-bold" style="background:#FAF9F5; border:1.5px solid #3A5A4055; color:#3A5A40;">📥 PDF 다운로드 (모의)</button>
+  `;
+  document.querySelector('#demoHealthReportBody .demo-pdf-download-btn').addEventListener('click', ()=>{
+    alert('📄 (Mock) 리포트 PDF 다운로드가 시작됐다고 가정해요 — 이 데모에서는 실제 파일이 생성되지 않아요.');
+  });
+}
+function renderDemoMetabolicLoadCard(preset){
+  const o = preset.output;
+  document.getElementById('demoMetabolicLoadBody').innerHTML = `
+    <div class="grid sm:grid-cols-2 gap-4">
+      ${[['간(Liver)', o.liverPct], ['신장(Kidney)', o.kidneyPct]].map(([label,pct])=>`
+        <div class="rounded-xl p-4" style="background:#fff;">
+          <p class="text-xs font-bold mb-2">${label} 대사 부하율</p>
+          <div class="w-full rounded-full overflow-hidden mb-2" style="height:14px; background:#3A5A401A;">
+            <div class="demo-gauge-bar" data-target="${Math.min(100,pct)}" style="width:0%; height:100%; background:${demoZoneColor(pct)}; transition:width 1.1s cubic-bezier(.22,.9,.34,1);"></div>
+          </div>
+          <p class="font-display font-bold text-xl" style="color:${demoZoneColor(pct)};">${pct}% <span class="text-xs font-bold px-2 py-0.5 rounded-full" style="background:${demoZoneColor(pct)}1A;">${demoZoneLabel(pct)}</span></p>
+        </div>`).join('')}
+    </div>`;
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      document.querySelectorAll('#demoMetabolicLoadBody .demo-gauge-bar').forEach(bar=>{ bar.style.width = bar.dataset.target + '%'; });
+    });
+  });
+}
+function renderDemoDniMatrixCard(preset){
+  const o = preset.output;
+  const pairsHtml = o.dniPairs.length ? o.dniPairs.map(p=>`
+    <div class="rounded-xl p-3 mb-2" style="background:#C0473A0d; border:1px solid #C0473A33;">
+      <p class="text-xs font-bold" style="color:#C0473A;">⚠️ ${p.drug} + ${p.nutrient} 동시 복용 시 ${p.effect} (${p.severity})</p>
+    </div>`).join('') : `<p class="text-xs" style="color:#2FBF9F;">✅ 감지된 약물-영양소 충돌이 없어요.</p>`;
+  const timelineHtml = o.timeline.map(t=>`
+    <div class="flex items-center gap-2 rounded-lg p-2" style="background:#fff;">
+      <span class="text-xs font-bold" style="color:#3A5A40; min-width:48px;">${t.time}</span>
+      <span class="text-xs">${t.type==='food'?'🍚':'💊'} ${t.label}</span>
+    </div>`).join('');
+  document.getElementById('demoDniMatrixBody').innerHTML = `
+    ${pairsHtml}
+    <p class="text-[11px] font-bold mt-3 mb-2" style="color:#3A5A40;">⏰ 24시간 안전 투약 타임라인</p>
+    <div class="space-y-1.5">${timelineHtml}</div>
+  `;
+}
+function runSeonAnalysisDemo(){
+  const preset = getDemoSelectedPreset();
+  resetDemoOutputs();
+  const note = document.getElementById('demoProcessingNote');
+  note.classList.remove('hidden');
+  setTimeout(()=>{ renderDemoHealthReportCard(preset); document.getElementById('demoHealthReportCard').classList.remove('hidden'); }, 500);
+  setTimeout(()=>{ renderDemoMetabolicLoadCard(preset); document.getElementById('demoMetabolicLoadCard').classList.remove('hidden'); }, 1200);
+  setTimeout(()=>{ renderDemoDniMatrixCard(preset); document.getElementById('demoDniMatrixCard').classList.remove('hidden'); note.classList.add('hidden'); }, 2000);
+}
+
+/* ---- ③ Interactive B2B API Sandbox ---- */
+function buildDemoApiRequestPayload(preset){
+  return {
+    pet: { name: preset.input.name, breed: preset.input.breed, weight_kg: preset.input.weight, age_year: preset.input.ageYear },
+    condition: preset.input.condition,
+    medication: preset.input.medication,
+    supplement: preset.input.supplement,
+  };
+}
+function buildDemoApiResponsePayload(preset){
+  const o = preset.output;
+  return {
+    status: 200,
+    data: {
+      health_report: { score: o.healthScore, risk_level: o.riskLevel, summary: o.summary, guides: o.guides },
+      metabolic_load: {
+        liver_pct: o.liverPct, kidney_pct: o.kidneyPct,
+        liver_zone: o.liverPct>100?'danger':o.liverPct>80?'caution':'safe',
+        kidney_zone: o.kidneyPct>100?'danger':o.kidneyPct>80?'caution':'safe',
+      },
+      dni_matrix: { conflicts: o.dniPairs, timeline: o.timeline },
+    },
+    meta: { engine_version: "seon-dni-engine-v1", generated_at: new Date().toISOString() },
+  };
+}
+function renderDemoApiRequestJson(){
+  document.getElementById('demoApiRequestJson').textContent = JSON.stringify(buildDemoApiRequestPayload(getDemoSelectedPreset()), null, 2);
+}
+function executeDemoSandbox(){
+  const preset = getDemoSelectedPreset();
+  const responseEl = document.getElementById('demoApiResponseJson');
+  responseEl.textContent = '// 요청을 처리하는 중...';
+  setTimeout(()=>{ responseEl.textContent = JSON.stringify(buildDemoApiResponsePayload(preset), null, 2); }, 600);
+}
+
+function initDemoPage(){
+  renderDemoPipeline();
+  renderDemoPresetGroup();
+  renderDemoApiRequestJson();
+  document.getElementById('runSeonAnalysisBtn').addEventListener('click', runSeonAnalysisDemo);
+  document.getElementById('demoExecuteSandboxBtn').addEventListener('click', executeDemoSandbox);
+}
+
+/* ============================================================
    INIT
 ============================================================ */
 restoreAppStateSnapshot(); // 다른 init 함수들이 state를 읽어 DOM을 그리기 전에 가장 먼저 복원해요.
@@ -10264,6 +10564,7 @@ restoreAppStateSnapshot(); // 다른 init 함수들이 state를 읽어 DOM을 �
 // 값도 모달에 보이지 않아요. (저장 자체는 계속하므로, 필요 시 백엔드/분석 용도로는 남아있어요.)
 init();
 initMixCalcPage();
+initDemoPage();
 initMetaLoadPage();
 initInsurancePage();
 redirectLegacyRouteIfNeeded(); // #/chrono로 딥링크 접속해도 조용히 #/safe-timeline으로 갱신
