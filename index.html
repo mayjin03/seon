@@ -112,6 +112,15 @@
   .demo-wizard-step-active{ animation:demoWizardFadeIn .35s ease; }
   .demo-wizard-step-done{ animation:demoWizardFadeIn .3s ease; }
   @keyframes demoWizardFadeIn{ from{ opacity:0; transform:translateY(-6px); } to{ opacity:1; transform:translateY(0); } }
+
+  /* ---- B2B API 샌드박스 RESPONSE 패널 전용 스타일 (다른 영역에 영향 없음) ---- */
+  .demo-response-tab-btn{ background:transparent; color:rgba(255,255,255,.4); border-bottom:2px solid transparent; }
+  .demo-response-tab-btn.active{ background:#132018; color:#5FE0BE; border-bottom:2px solid #5FE0BE; }
+  .demo-json-key{ color:#5FE0BE; }
+  .demo-json-string{ color:#F2C14E; }
+  .demo-json-number{ color:#8FE9CE; }
+  .demo-json-boolean{ color:#E8604C; font-weight:700; }
+  .demo-json-null{ color:rgba(255,255,255,.35); }
   .main-tab-btn.active{ background:var(--c-primary); color:#fff; opacity:1; }
   .sticker-palette-btn.is-text{ font-size:11px; font-weight:700; padding:8px 10px; white-space:nowrap; }
 
@@ -822,10 +831,25 @@
               <p class="text-[10px] font-bold" style="color:rgba(255,255,255,.5);">RESPONSE</p>
               <button type="button" id="demoExecuteSandboxBtn" class="rounded-lg px-4 py-2 text-xs font-bold" style="background:#5FE0BE; color:#0F1B14;">⚡ Execute Sandbox</button>
             </div>
-            <pre id="demoApiResponseJson" class="rounded-xl p-4 text-[11px] overflow-x-auto" style="background:#050B08; border:1px solid rgba(95,224,190,.25); color:#8FE9CE; font-family:'SF Mono',Consolas,monospace; max-height:420px; min-height:120px;">// [Execute Sandbox]를 눌러 실행해보세요</pre>
+
+            <div class="flex gap-1" id="demoResponseTabGroup">
+              <button type="button" class="demo-response-tab-btn rounded-t-lg px-3 py-1.5 text-[10px] font-bold transition" data-response-tab="raw">Raw JSON</button>
+              <button type="button" class="demo-response-tab-btn rounded-t-lg px-3 py-1.5 text-[10px] font-bold transition" data-response-tab="b2b">B2B Value Impact</button>
+            </div>
+
+            <div id="demoResponseRawPanel">
+              <div id="demoResponseStatusBar" class="hidden px-3 py-1.5 text-[10px] font-bold flex items-center gap-1.5" style="background:#132018; border:1px solid rgba(95,224,190,.25); border-bottom:none;">
+                <span style="color:#4ADE80;">●</span><span id="demoResponseStatusText" style="color:#5FE0BE;">200 OK | 14ms</span>
+              </div>
+              <pre id="demoApiResponseJson" class="p-4 text-[11px] overflow-x-auto" style="background:#050B08; border:1px solid rgba(95,224,190,.25); color:#8FE9CE; font-family:'SF Mono',Consolas,monospace; max-height:420px; min-height:120px; border-radius:0 0 12px 12px;">// [Execute Sandbox]를 눌러 실행해보세요</pre>
+            </div>
+
+            <div id="demoResponseB2BPanel" class="hidden space-y-3 rounded-xl p-3" style="background:#050B08; border:1px solid rgba(95,224,190,.25); max-height:420px; overflow-y:auto;"></div>
           </div>
         </div>
-        <p class="text-[10px] mt-4" style="color:rgba(255,255,255,.35);">※ 이 페이지는 백엔드 연동 없이 프론트엔드 Mock Data로만 동작하는 인터랙티브 프로토타입이에요 — 실제 서버 통신은 발생하지 않아요.</p>
+        <div class="mt-4 pt-3 flex items-center gap-2 flex-wrap" style="border-top:1px solid rgba(95,224,190,.15);">
+          <p class="text-[10px]" style="color:rgba(255,255,255,.4); font-family:'SF Mono',Consolas,monospace;">SEON Live B2B API Engine v1.0.4 | Latency: 14ms | Status: <span style="color:#4ADE80;">● Operational</span></p>
+        </div>
       </div>
     </div>
 
@@ -10801,6 +10825,16 @@ const DEMO_PRESETS = [
         { time:"18:30", icon:"💊", label:"항생제 복용", type:"med", reason:"식후 30분" },
         { time:"20:30", icon:"🧪", label:"칼슘 보충제 급여", type:"supp", reason:"항생제 복용 2시간 후 격리" },
       ],
+      b2b:{
+        severityLabel:"CRITICAL",
+        mechanism:"Chelation binding reduces antibiotic systemic absorption by approximately 64%",
+        optimalGapHours:3,
+        recommendedSchedule:"08:00 Antibiotics | 11:00 Calcium",
+        blockedItems:["Calcium Chelate","Magnesium Complex"],
+        substitutes:[{ product_id:"SUPP_PROT_092", name:"Renal-Safe Joint Collagen (Non-Mineral)", conversion_lift_est:"+18%" }],
+        claimRiskReduction:"42%",
+        lossRatioImpact:"-3.8%",
+      },
     },
     wizard:{
       healthReport: { step1:["믹스견","9세","6.2kg"], step2:["만성 신장질환(CKD 2기)","식욕부진 · 체중감소"], step3:["1일 2회","약 280mL/일"] },
@@ -10823,6 +10857,16 @@ const DEMO_PRESETS = [
         { time:"19:00", icon:"🥣", label:"저녁 사료 급여", type:"food", reason:"저나트륨 심장 처방식 1/3" },
         { time:"19:30", icon:"💊", label:"심장약 2차 복용", type:"med", reason:"저녁 복용" },
       ],
+      b2b:{
+        severityLabel:"MODERATE",
+        mechanism:"Excess dietary sodium counteracts diuretic-induced natriuresis, increasing fluid-retention risk",
+        optimalGapHours:null,
+        recommendedSchedule:"N/A — timing gap 대신 저나트륨 처방식으로 식이 조성 자체를 전환 필요",
+        blockedItems:["High-Sodium Wet Food"],
+        substitutes:[{ product_id:"FOOD_CARD_204", name:"Low-Sodium Cardiac Support Wet Food", conversion_lift_est:"+12%" }],
+        claimRiskReduction:"25%",
+        lossRatioImpact:"-2.1%",
+      },
     },
     wizard:{
       healthReport: { step1:["포메라니안","12세","3.4kg"], step2:["심장질환(ACVIM B2)","기침 · 운동 후 호흡곤란"], step3:["1일 3회","약 200mL/일(이뇨제 소실 보정)"] },
@@ -10846,6 +10890,16 @@ const DEMO_PRESETS = [
         { time:"18:30", icon:"🥣", label:"저녁 사료 급여", type:"food", reason:"주식 1/3" },
         { time:"19:00", icon:"🧪", label:"관절 종합 영양제 급여", type:"supp", reason:"식후 급여" },
       ],
+      b2b:{
+        severityLabel:"NONE",
+        mechanism:null,
+        optimalGapHours:null,
+        recommendedSchedule:"N/A — 감지된 약물-영양소 상충 없음",
+        blockedItems:[],
+        substitutes:[],
+        claimRiskReduction:"N/A (예방적 관리 단계)",
+        lossRatioImpact:"N/A",
+      },
     },
     wizard:{
       healthReport: { step1:["골든리트리버","4세","28.5kg"], step2:["특이 기저질환 없음","특이 증상 없음(예방적 관리)"], step3:["1일 3회","약 1,400mL/일"] },
@@ -11094,28 +11148,134 @@ function buildDemoApiRequestPayload(preset){
 }
 function buildDemoApiResponsePayload(preset){
   const o = preset.output;
+  const b2b = o.b2b || {};
+  const hasConflict = o.dniPairs.length > 0;
+  const primaryPair = hasConflict ? o.dniPairs[0] : null;
   return {
-    status: 200,
-    data: {
-      health_report: { score: o.healthScore, risk_level: o.riskLevel, summary: o.summary, guides: o.guides },
-      metabolic_load: {
-        liver_pct: o.liverPct, kidney_pct: o.kidneyPct,
-        liver_zone: o.liverPct>100?'danger':o.liverPct>80?'caution':'safe',
-        kidney_zone: o.kidneyPct>100?'danger':o.kidneyPct>80?'caution':'safe',
+    status: "SUCCESS",
+    timestamp: new Date().toISOString(),
+    clinical_analytics: {
+      overall_health_score: o.healthScore,
+      dni_conflict_detected: hasConflict,
+      primary_risk: primaryPair ? {
+        pair: `${primaryPair.drug} x ${primaryPair.nutrient}`,
+        severity: b2b.severityLabel || "MODERATE",
+        mechanism: b2b.mechanism || primaryPair.effect,
+      } : null,
+      organ_metabolic_load: {
+        hepatic_strain_index: `${o.liverPct}% (${o.liverPct>100?'CRITICAL':o.liverPct>80?'ELEVATED':'NORMAL'})`,
+        renal_clearance_stress: `${o.kidneyPct}% (${o.kidneyPct>100?'CRITICAL':o.kidneyPct>80?'HIGH_RISK':'NORMAL'})`,
       },
-      dni_matrix: { conflicts: o.dniPairs, timeline: o.timeline },
     },
-    meta: { engine_version: "seon-dni-engine-v1", generated_at: new Date().toISOString() },
+    b2b_value_capture_outputs: {
+      chrono_care_plan: {
+        optimal_administration_gap_hours: b2b.optimalGapHours ?? null,
+        recommended_schedule: b2b.recommendedSchedule || "N/A",
+      },
+      ecommerce_recommendation_engine: {
+        action: hasConflict ? "SAFE_CROSS_SELL" : "NO_RISK_DETECTED",
+        blocked_items: b2b.blockedItems || [],
+        recommended_safe_substitutes: b2b.substitutes || [],
+      },
+      insurance_underwriting_metrics: {
+        avoidable_claim_risk_reduction: b2b.claimRiskReduction || "N/A",
+        projected_annual_loss_ratio_impact: b2b.lossRatioImpact || "N/A",
+      },
+    },
   };
+}
+/* Response 패널의 'Raw JSON' 탭 전용 — 다크 모드 구문 하이라이팅(키/문자열/숫자/불리언/null 색상 구분) */
+function syntaxHighlightJson(json){
+  const escaped = json.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return escaped.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\btrue\b|\bfalse\b|\bnull\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, (match)=>{
+    let cls = 'demo-json-number';
+    if(/^"/.test(match)) cls = /:$/.test(match) ? 'demo-json-key' : 'demo-json-string';
+    else if(/true|false/.test(match)) cls = 'demo-json-boolean';
+    else if(/null/.test(match)) cls = 'demo-json-null';
+    return `<span class="${cls}">${match}</span>`;
+  });
 }
 function renderDemoApiRequestJson(){
   document.getElementById('demoApiRequestJson').textContent = JSON.stringify(buildDemoApiRequestPayload(getDemoSelectedPreset()), null, 2);
 }
+let demoResponseActiveTab = 'raw';
+function renderDemoResponseTabs(){
+  document.querySelectorAll('.demo-response-tab-btn').forEach(btn=>{
+    btn.classList.toggle('active', btn.dataset.responseTab === demoResponseActiveTab);
+  });
+  document.getElementById('demoResponseRawPanel').classList.toggle('hidden', demoResponseActiveTab !== 'raw');
+  document.getElementById('demoResponseB2BPanel').classList.toggle('hidden', demoResponseActiveTab !== 'b2b');
+}
+function bindDemoResponseTabs(){
+  document.querySelectorAll('.demo-response-tab-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{ demoResponseActiveTab = btn.dataset.responseTab; renderDemoResponseTabs(); });
+  });
+}
+/* [B2B Value Impact] 탭 — 방금 실행한 응답(payload)을 바탕으로 3개 B2B 가치 카드를 그려요. */
+function renderDemoB2BValueCards(preset, payload){
+  const o = preset.output;
+  const wrap = document.getElementById('demoResponseB2BPanel');
+  const eco = payload.b2b_value_capture_outputs.ecommerce_recommendation_engine;
+  const ins = payload.b2b_value_capture_outputs.insurance_underwriting_metrics;
+  const hasConflict = payload.clinical_analytics.dni_conflict_detected;
+  const maxPct = Math.max(o.liverPct, o.kidneyPct);
+  const reductionNum = parseFloat(ins.avoidable_claim_risk_reduction) || 0;
+  const reducedPct = Math.max(0, Math.round(maxPct * (1 - reductionNum/100)));
+
+  wrap.innerHTML = `
+    <div class="rounded-xl p-3" style="background:#0F1B14; border:1px solid rgba(95,224,190,.2);">
+      <p class="text-[11px] font-bold mb-2" style="color:#5FE0BE;">🛒 Pet E-Commerce</p>
+      ${hasConflict ? `
+        <span class="inline-block text-[10px] font-bold px-2 py-1 rounded-full mb-2" style="background:#C0473A22; color:#FF8A75;">🚫 구매 차단: ${eco.blocked_items.join(', ')}</span>
+        ${eco.recommended_safe_substitutes.map(s=>`
+          <div class="rounded-lg p-2 flex items-center justify-between gap-2" style="background:#050B08;">
+            <div class="min-w-0">
+              <p class="text-[11px] font-bold truncate" style="color:#fff;">✅ ${s.name}</p>
+              <p class="text-[9px]" style="color:rgba(255,255,255,.4);">${s.product_id}</p>
+            </div>
+            <span class="text-[11px] font-bold shrink-0" style="color:#4ADE80;">${s.conversion_lift_est}</span>
+          </div>`).join('')}
+      ` : `<p class="text-[11px]" style="color:rgba(255,255,255,.5);">감지된 위험 성분이 없어요 — 안전 교차판매 대상 없음</p>`}
+    </div>
+
+    <div class="rounded-xl p-3" style="background:#0F1B14; border:1px solid rgba(95,224,190,.2);">
+      <p class="text-[11px] font-bold mb-2" style="color:#5FE0BE;">🛡️ Pet Insurers</p>
+      <p class="text-[10px] mb-1" style="color:rgba(255,255,255,.5);">DNI 위험도 ${maxPct}% ➔ ${reducedPct}%로 감소</p>
+      <div class="w-full rounded-full overflow-hidden mb-1" style="height:8px; background:rgba(255,255,255,.08);">
+        <div style="width:${Math.min(100,maxPct)}%; height:100%; background:#C0473A;"></div>
+      </div>
+      <div class="w-full rounded-full overflow-hidden mb-2" style="height:8px; background:rgba(255,255,255,.08);">
+        <div style="width:${Math.min(100,reducedPct)}%; height:100%; background:#4ADE80;"></div>
+      </div>
+      <div class="flex flex-wrap gap-x-4 gap-y-1 text-[11px]" style="color:#fff;">
+        <span>회피 가능 청구 위험: <b style="color:#4ADE80;">${ins.avoidable_claim_risk_reduction}</b></span>
+        <span>손해율 개선: <b style="color:#4ADE80;">${ins.projected_annual_loss_ratio_impact}</b></span>
+      </div>
+    </div>
+
+    <div class="rounded-xl p-3 flex items-center justify-between gap-2" style="background:#0F1B14; border:1px solid rgba(95,224,190,.2);">
+      <div class="min-w-0">
+        <p class="text-[11px] font-bold mb-1" style="color:#5FE0BE;">🩺 Veterinary EMR</p>
+        <p class="text-[10px]" style="color:rgba(255,255,255,.55);">1-Click 24시간 Chrono-DNI 처방 안전 가이드 출력</p>
+      </div>
+      <span class="text-[10px] font-bold px-2.5 py-1.5 rounded-full shrink-0" style="background:#5FE0BE; color:#0F1B14;">✅ Ready</span>
+    </div>
+  `;
+}
 function executeDemoSandbox(){
   const preset = getDemoSelectedPreset();
   const responseEl = document.getElementById('demoApiResponseJson');
+  const statusBar = document.getElementById('demoResponseStatusBar');
+  statusBar.classList.add('hidden');
   responseEl.textContent = '// 요청을 처리하는 중...';
-  setTimeout(()=>{ responseEl.textContent = JSON.stringify(buildDemoApiResponsePayload(preset), null, 2); }, 600);
+  document.getElementById('demoResponseB2BPanel').innerHTML = '';
+  setTimeout(()=>{
+    const payload = buildDemoApiResponsePayload(preset);
+    responseEl.innerHTML = syntaxHighlightJson(JSON.stringify(payload, null, 2));
+    statusBar.classList.remove('hidden');
+    document.getElementById('demoResponseStatusText').textContent = '200 OK | 14ms';
+    renderDemoB2BValueCards(preset, payload);
+  }, 600);
 }
 
 function initDemoPage(){
@@ -11124,6 +11284,8 @@ function initDemoPage(){
   renderDemoWizardTabs();
   renderDemoWizardSteps();
   renderDemoApiRequestJson();
+  renderDemoResponseTabs();
+  bindDemoResponseTabs();
   document.getElementById('runSeonAnalysisBtn').addEventListener('click', runSeonAnalysisDemo);
   document.getElementById('demoExecuteSandboxBtn').addEventListener('click', executeDemoSandbox);
 }
