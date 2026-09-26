@@ -420,29 +420,41 @@
             <button type="button" class="landing-cta-btn btn-primary w-full rounded-xl py-3 text-sm font-bold">무료 진단 시작하고 비주얼 리포트 받기</button>
           </div>
 
-          <!-- PREMIUM CARD -->
-          <div class="rounded-2xl p-6 border-2 relative" style="border-color:#F97A3D55; background:linear-gradient(160deg,#2B241F,#4A3F38);">
-            <span class="text-[11px] font-bold px-2.5 py-1 rounded-full" style="background:#F97A3D; color:#fff;">🟡 유료</span>
-            <p class="font-display font-bold text-lg mt-3 mb-1 leading-snug" style="color:#fff;">수의학 데이터 기반<br>1:1 정밀 케어 솔루션</p>
-            <p class="text-xs mb-4" style="color:rgba(255,255,255,.55);">8페이지 프리미엄 리포트로 완성하는 맞춤 케어</p>
-            <div class="space-y-2 mb-4">
-              <p class="text-xs" style="color:rgba(255,255,255,.85);">📊 정밀 칼로리·영양소 계산서 (1g 단위 급여 스케줄)</p>
-              <p class="text-xs" style="color:rgba(255,255,255,.85);">🔍 급여 사료·영양제 교차 적합도 평가</p>
-              <p class="text-xs" style="color:rgba(255,255,255,.85);">🍲 임상 징후별 1:1 맞춤 화식·수제식 레시피</p>
-              <p class="text-xs" style="color:rgba(255,255,255,.85);">📋 28일 케어 캘린더 &amp; 수의 진료용 예진 서머리</p>
-            </div>
+          <!-- PRICING SECTION: 노령·만성질환견을 위한 1:1 정기 케어 구독 (월 정기 구독 모델) -->
+          <div class="rounded-2xl p-6 relative" style="background:linear-gradient(160deg,#0F1B14,#1C2E22); color:#fff;">
+            <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full" style="background:rgba(95,224,190,.15); color:#5FE0BE;">🩺 노령·만성질환견을 위한 1:1 정기 케어 구독</span>
+            <p class="font-display font-bold text-lg mt-3 mb-1 leading-snug" style="color:#fff;">월 4,900원부터 부담 없이 시작하기</p>
+            <p class="text-xs mb-4" style="color:rgba(255,255,255,.55);">매월 최신 데이터 기반 정밀 분석 리포트 발행 &amp; 실시간 대사 부하 관제</p>
 
-            <!-- 블러 & 잠금 티저 -->
-            <div class="rounded-xl p-4 mb-4" style="background:rgba(255,255,255,.07);">
-              <p class="text-[10px] mb-2" style="color:rgba(255,255,255,.45);">🔒 정밀 리포트 미리보기</p>
-              <div class="relative">
-                <p class="text-sm font-bold" style="color:#fff; filter:blur(5px); user-select:none;">일일 급여량 62.4g · 간식 한도 18.2kcal · 관절 영양제 적합도 92%</p>
-                <div class="absolute inset-0 flex items-center justify-center text-xl">🔒</div>
+            <div class="grid sm:grid-cols-2 gap-3">
+              <!-- 베이직 케어 -->
+              <div class="rounded-xl p-4 flex flex-col" style="background:rgba(255,255,255,.04); border:1.5px solid rgba(95,224,190,.25);">
+                <p class="text-[11px] font-bold mb-1" style="color:#5FE0BE;">베이직 케어</p>
+                <p class="font-display font-bold text-xl mb-0.5">월 4,900원</p>
+                <p class="text-[10px] mb-3" style="color:rgba(255,255,255,.45);">연간 결제 시 10% 할인 (월 4,410원)</p>
+                <div class="space-y-1.5 mb-4 flex-1">
+                  <p class="text-[11px]" style="color:rgba(255,255,255,.85);">📄 매월 최신 정밀 분석 리포트 정기 발행</p>
+                  <p class="text-[11px]" style="color:rgba(255,255,255,.85);">⚠️ 기본 DNI 충돌 위험 알림</p>
+                </div>
+                <button type="button" id="basicSubscribeBtn" class="w-full rounded-xl py-2.5 text-xs font-bold" style="background:rgba(255,255,255,.08); border:1.5px solid #5FE0BE; color:#5FE0BE;">베이직으로 시작하기</button>
+              </div>
+
+              <!-- 프리미엄 정밀 케어 -->
+              <div class="rounded-xl p-4 flex flex-col relative" style="background:linear-gradient(160deg,#173226,#0F1B14); border:1.5px solid #5FE0BE;">
+                <span class="absolute -top-3 left-4 text-[9px] font-bold px-2 py-1 rounded-full" style="background:#5FE0BE; color:#0F1B14;">가장 많이 선택해요</span>
+                <p class="text-[11px] font-bold mb-1 mt-1" style="color:#5FE0BE;">프리미엄 정밀 케어</p>
+                <p class="font-display font-bold text-xl mb-0.5">월 9,900원</p>
+                <p class="text-[10px] mb-3" style="color:rgba(255,255,255,.45);">연간 결제 시 15% 할인 (월 8,415원)</p>
+                <div class="space-y-1.5 mb-4 flex-1">
+                  <p class="text-[11px]" style="color:rgba(255,255,255,.9);">📄 매월 최신 정밀 분석 리포트 정기 발행</p>
+                  <p class="text-[11px]" style="color:rgba(255,255,255,.9);">🫀 실시간 장기 대사 부하 관제</p>
+                  <p class="text-[11px]" style="color:rgba(255,255,255,.9);">📈 동적 건강 평가 스코어링</p>
+                  <p class="text-[11px]" style="color:rgba(255,255,255,.9);">⏰ 개인 맞춤형 24시간 Chrono-DNI 안전 투약 스케줄</p>
+                  <p class="text-[11px]" style="color:rgba(255,255,255,.9);">🍲 1:1 수의학 맞춤 화식/수제식 레시피 &amp; 28일 케어 캘린더</p>
+                </div>
+                <button type="button" id="premiumSampleBtn" class="w-full rounded-xl py-2.5 text-xs font-bold" style="background:#5FE0BE; color:#0F1B14;">프리미엄으로 시작하기</button>
               </div>
             </div>
-
-            <button type="button" id="premiumSampleBtn" class="w-full rounded-xl py-3 text-sm font-bold" style="background:#F97A3D; color:#fff;">⭐ 프리미엄 1:1 정밀 리포트 샘플 보기</button>
-            <p class="text-[11px] mt-2 text-center" style="color:rgba(255,255,255,.5);">런칭 프로모션 <span id="landingPromoPrice"></span> (정가 <span id="landingOriginalPrice"></span>)</p>
           </div>
         </div>
 
@@ -2160,6 +2172,7 @@ function init(){
   }
   document.querySelectorAll('.demo-preview-card').forEach(b=>b.addEventListener('click', ()=>openDemoPreviewModal(b.dataset.demo)));
   document.getElementById('premiumSampleBtn')?.addEventListener('click', ()=>openDemoPreviewModal('premium'));
+  document.getElementById('basicSubscribeBtn')?.addEventListener('click', ()=>openDemoPreviewModal('basic'));
   const landingPromoEl = document.getElementById('landingPromoPrice');
   const landingOriginalEl = document.getElementById('landingOriginalPrice');
   if(landingPromoEl) landingPromoEl.textContent = PDF_PROMO_PRICE;
