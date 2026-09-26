@@ -3693,12 +3693,29 @@ function buildMealTimeline(planId, totalG){
 /* ============================================================
    기본(무료) 리포트 — Visual Overview 헬퍼
 ============================================================ */
+/* 품종별 대표 호발 리스크(veterinary breed predisposition) — 종합 스코어에 소폭 참고용으로만
+   반영해요. 품종은 '경향성'이지 확정된 리스크가 아니라서 최대 -4점으로 영향력을 제한했어요. */
+const MAIN_BREED_RISK_PENALTY = {
+  "닥스훈트":4, "프렌치불독":4, "골든리트리버":3, "래브라도리트리버":3, "웰시코기":3,
+  "코카스파니엘":2, "시베리안허스키":2, "사모예드":2, "말티즈":2, "포메라니안":2,
+  "요크셔테리어":2, "비숑프리제":2, "시츄":2, "비글":2, "잭러셀테리어":1, "진돗개":1, "보더콜리":1,
+};
 function computeHealthScore(r){
   let score = 100;
   score -= Math.abs(dog.bcs - 5) * 9; // 이상 체형(BCS 5)에서 멀수록 감점
   if(dog.conditions.length && !dog.conditions.includes('none')) score -= dog.conditions.length * 6;
   if(r.allocation.snackRatio > 0.10) score -= 10;
   if(r.allocation.supplementRatio > 0.10) score -= 5;
+  // ⚠️ 이전에는 나이/품종/건강목표가 스코어 계산에 전혀 반영되지 않아서, 같은 BCS·질환 수를 가진
+  // 1세 강아지와 12세 노령견이 동일한 점수를 받는 문제가 있었어요.
+  // ---- 나이(Age): 노령견은 장기 예비력(organ reserve)이 낮아 동일 조건에서도 리스크가 더 커요 ----
+  const ageYear = dog.ageYear || 0;
+  if(ageYear >= 10) score -= 8;
+  else if(ageYear >= 7) score -= 4;
+  // ---- 품종(Breed): 대표적인 호발 소인을 소폭 반영해요(참고용) ----
+  score -= (MAIN_BREED_RISK_PENALTY[dog.breed] || 0);
+  // ---- 건강 목표(Goal): 구체적인 케어 플랜을 설정한 것 자체가 능동적 관리 신호라 소폭 가점해요 ----
+  if(dog.plan && dog.plan !== 'general') score += 3;
   score = Math.max(15, Math.min(100, Math.round(score)));
   const light = score>=75 ? 'green' : score>=50 ? 'yellow' : 'red';
   const verdictMap = {
@@ -7455,7 +7472,14 @@ const META_STANDARD_DOSAGE_MG_PER_KG_PER_DAY = {
    - 가루약/액상 + mg을 모르는 경우('모름(보통 용량 적용)'): 체중(kg) 비례 보정 계수를 대신 써요
      (기준 체중 10kg 대비, 0.5~2.5배로 제한). */
 function metaComputeMedicationDoseFactor(entry, weight){
-  if(entry.formulation !== 'powder' && entry.formulation !== 'liquid') return (entry.dosePerAdmin||1);
+  if(entry.formulation !== 'powder' && entry.formulation !== 'liquid'){
+    // ⚠️ 이전에는 정제(tablet)/주사(injection) 제형에 체중 보정이 전혀 없어서, 3kg 소형견과
+    // 40kg 대형견이 똑같이 '1정'을 먹어도 항상 동일한 부하로 계산됐어요(체중/BSA 미반영).
+    // 분말/액상과 같은 방향으로, 10kg을 기준으로 약하게(0.85~1.2배로 좁게 제한) 보정해요 —
+    // 기존 검증된 계산 결과들이 크게 흔들리지 않도록 영향력을 최소화했어요.
+    const weightNormFactor = Math.max(0.85, Math.min(1.2, weight / 10));
+    return (entry.dosePerAdmin||1) * weightNormFactor;
+  }
   const stdMgPerKgDay = META_STANDARD_DOSAGE_MG_PER_KG_PER_DAY[entry.category] || META_STANDARD_DOSAGE_MG_PER_KG_PER_DAY.other;
   if(entry.knownDoseMg && entry.knownDoseMg > 0){
     const stdDailyMg = weight * stdMgPerKgDay;
@@ -9057,6 +9081,7 @@ const DNI_MOLECULE_RULES = [
 
 function detectDniWarnings(){
   const activeMeds = dniMatrix.medicationEntries.map(e=>({
+    id: e.id,
     category: e.category,
     molecule: resolveEntryMolecule(e),
     dosage: e.dosage,
@@ -9093,6 +9118,7 @@ function detectDniWarnings(){
         clinical_reference: rule.reference,
         recommendation_note: recommendationNote,
         medCategory: med.category,
+        medEntryId: med.id,
         suppCategory: supp.category,
       });
     });
@@ -9214,10 +9240,15 @@ function buildDniChronoSchedule(warnings){
   const slots = mealMinutes.map((m,i)=>({ time: fmt(m), label: MEAL_LABELS[i] || `${i+1}번째`, minutes: m, foodG: perMealG, items: [] }));
 
   const conflictedSuppCategories = new Set(warnings.map(w=>w.suppCategory));
+  // 카테고리별로 '가장 긴 격리시간'뿐 아니라, 실제 상충을 일으킨 약물 엔트리(medEntryId)들도 함께 모아둬요
+  // — 이래야 그 약물의 '오늘 실제 모든 복용 시각'을 정확히 추적해서 격리 시각을 계산할 수 있어요.
   const isolationByCategory = {};
+  const conflictMedIdsByCategory = {};
   warnings.forEach(w=>{
     if(w.interaction_type === 'CONFLICT'){
       isolationByCategory[w.suppCategory] = Math.max(isolationByCategory[w.suppCategory] || 0, w.isolation_hours);
+      if(!conflictMedIdsByCategory[w.suppCategory]) conflictMedIdsByCategory[w.suppCategory] = new Set();
+      if(w.medEntryId != null) conflictMedIdsByCategory[w.suppCategory].add(w.medEntryId);
     }
   });
 
@@ -9235,8 +9266,16 @@ function buildDniChronoSchedule(warnings){
     const productName = dniMatrix.supplementDetails[cat] && dniMatrix.supplementDetails[cat].productName;
     const label = `${ingredient}${productName ? ` - ${productName}` : ''}`;
     if(conflictedSuppCategories.has(cat)){
-      const targetMinutes = computeIsolationTargetMinutes(mealMinutes[0], isolationByCategory[cat]);
-      const targetSlot = slots.find(s=>s.minutes >= targetMinutes) || slots[slots.length-1];
+      // ⚠️ 이전에는 '첫 끼 시각' 하나만 기준으로 계산해서, 약물이 하루 2회 이상 복용되거나
+      // 첫 끼와 다른 시각에 투약되는 경우를 놓쳤어요. 이제 실제 상충 약물의 '오늘 모든 복용 시각'을
+      // 모아서, 그 전부로부터 안전 거리를 만족하는 시각을 찾아요.
+      const conflictIds = conflictMedIdsByCategory[cat];
+      const relevantEntries = conflictIds && conflictIds.size
+        ? dniMatrix.medicationEntries.filter(e=>conflictIds.has(e.id))
+        : dniMatrix.medicationEntries; // medEntryId 추적이 안 되는 예외 상황에 대한 안전 폴백
+      const allDoseMinutes = relevantEntries.flatMap(e=>computeEntryDoseTimesMinutes(e));
+      const targetMinutes = findSafeIsolatedMinutes(allDoseMinutes, isolationByCategory[cat], mealMinutes[0]);
+      const targetSlot = slots.reduce((best,s)=> Math.abs(s.minutes-targetMinutes) < Math.abs(best.minutes-targetMinutes) ? s : best, slots[0]);
       targetSlot.items.push(`💊(격리) ${label}`);
     } else {
       slots[slots.length-1].items.push(`💊 ${label}`);
@@ -10116,10 +10155,41 @@ function formatKoreanTime(totalMinutes){
 function computeIsolationTargetMinutes(baseMinutes, isolationHours){
   return baseMinutes + isolationHours*60 + 30;
 }
+/* 24시간을 순환(자정을 넘나드는) 구조로 보고 두 시각 사이의 최단 거리(분)를 구해요.
+   예: 23:00과 01:00은 실제로는 2시간 차이지만 단순 뺄셈으로는 22시간처럼 잘못 계산되는 걸 막아줘요. */
+function circularMinuteDistance(a, b){
+  const diff = Math.abs(a - b) % 1440;
+  return Math.min(diff, 1440 - diff);
+}
+/* ⚠️ 이전 버전은 상충하는 영양제의 격리 시각을 무조건 '첫 끼 시각(mealMinutes[0])' 하나만 기준으로
+   계산했어요. 그러면 (1) 약물이 실제로 먹는 시각과 첫 끼 시각이 다르거나, (2) 약물을 하루 2회 이상
+   복용해서 저녁 복용분과도 격리가 필요한 경우 전혀 반영되지 않는 문제가 있었어요.
+   이제는 실제로 상충을 일으킨 '그 약물'의 하루 모든 복용 시각(doseTimesMinutes)으로부터 최소
+   isolationHours 이상 떨어진 시각을 15분 단위로 탐색해서(24시간 순환 거리 기준) 찾아요. */
+function findSafeIsolatedMinutes(doseTimesMinutes, isolationHours, preferredStartMinutes){
+  const minGap = isolationHours * 60;
+  if(!doseTimesMinutes.length) return preferredStartMinutes;
+  let bestT = preferredStartMinutes, bestDist = -1;
+  for(let offset=0; offset<1440; offset+=15){
+    const t = (preferredStartMinutes + offset) % 1440;
+    const minDist = Math.min(...doseTimesMinutes.map(d=>circularMinuteDistance(t,d)));
+    if(minDist >= minGap) return t; // 모든 복용 시각으로부터 충분히 떨어진 첫 안전 시각을 찾았어요.
+    if(minDist > bestDist){ bestDist = minDist; bestT = t; } // 완벽한 시각이 없을 경우를 대비한 최선 폴백
+  }
+  return bestT;
+}
 /* "아침 08:00 [약물] 복용 ➔ [영양소]은(는) 오전 10:30으로 격리해서 급여해주세요." 형태의
    보호자용 행동 문장을 만들어요. 같은 영양제가 여러 약물과 겹치면 가장 긴 격리시간을 기준으로 안내해요. */
+function timeOfDayLabelForMinutes(m){
+  const h = Math.floor(m/60) % 24;
+  if(h < 5) return '새벽';
+  if(h < 11) return '아침';
+  if(h < 14) return '점심';
+  if(h < 18) return '오후';
+  if(h < 22) return '저녁';
+  return '야간';
+}
 function buildChronoActionSentences(warnings){
-  const baseMedTime = 8*60;
   const conflictWarnings = warnings.filter(w=>w.interaction_type==='CONFLICT');
   if(!conflictWarnings.length) return [];
   const bySupp = {};
@@ -10129,8 +10199,13 @@ function buildChronoActionSentences(warnings){
     }
   });
   return Object.values(bySupp).map(w=>{
-    const isolatedMinutes = computeIsolationTargetMinutes(baseMedTime, w.isolation_hours);
-    return `아침 ${formatKoreanTime(baseMedTime)} ${w.molecule} 복용 ➔ ${w.nutrient}은(는) ${formatKoreanTime(isolatedMinutes)}으로 격리해서 급여해주세요.`;
+    // ⚠️ 이전에는 '아침 8시'로 하드코딩돼 있어서, 실제로 설정한 약물 복용 시각과 무관하게
+    // 항상 같은 문장이 나왔어요. 이제 그 약물의 실제 첫 복용 시각을 그대로 사용해요.
+    const relevantEntry = w.medEntryId != null ? dniMatrix.medicationEntries.find(e=>e.id===w.medEntryId) : null;
+    const doseTimes = relevantEntry ? computeEntryDoseTimesMinutes(relevantEntry) : [computeChronoMealTimesMinutes()[0]];
+    const baseMedTime = doseTimes[0];
+    const isolatedMinutes = findSafeIsolatedMinutes(doseTimes, w.isolation_hours, baseMedTime);
+    return `${timeOfDayLabelForMinutes(baseMedTime)} ${formatKoreanTime(baseMedTime)} ${w.molecule} 복용 ➔ ${w.nutrient}은(는) ${timeOfDayLabelForMinutes(isolatedMinutes)} ${formatKoreanTime(isolatedMinutes)}으로 격리해서 급여해주세요.`;
   });
 }
 
@@ -10158,9 +10233,12 @@ function buildMinuteLevelChronoMatrix(warnings){
   });
 
   const isolationByCategory = {};
+  const conflictMedIdsByCategory = {};
   warnings.forEach(w=>{
     if(w.interaction_type === 'CONFLICT'){
       isolationByCategory[w.suppCategory] = Math.max(isolationByCategory[w.suppCategory] || 0, w.isolation_hours);
+      if(!conflictMedIdsByCategory[w.suppCategory]) conflictMedIdsByCategory[w.suppCategory] = new Set();
+      if(w.medEntryId != null) conflictMedIdsByCategory[w.suppCategory].add(w.medEntryId);
     }
   });
 
@@ -10169,7 +10247,14 @@ function buildMinuteLevelChronoMatrix(warnings){
     const detail = dniMatrix.supplementDetails[cat] || {};
     const label = `🥣 ${ingredient}${detail.productName ? ` (${detail.productName})` : ''}`;
     if(isolationByCategory[cat]){
-      const t = computeIsolationTargetMinutes(baseMedTime, isolationByCategory[cat]);
+      // ⚠️ 이전에는 '첫 끼 시각'에만 앵커해서, 하루 여러 번 복용하는 약물의 다른 복용 시각들과의
+      // 격리 여부를 확인하지 않았어요. 이제 실제 상충 약물의 오늘 모든 복용 시각을 모아서 계산해요.
+      const conflictIds = conflictMedIdsByCategory[cat];
+      const relevantEntries = conflictIds && conflictIds.size
+        ? dniMatrix.medicationEntries.filter(e=>conflictIds.has(e.id))
+        : dniMatrix.medicationEntries;
+      const allDoseMinutes = relevantEntries.flatMap(e=>computeEntryDoseTimesMinutes(e));
+      const t = findSafeIsolatedMinutes(allDoseMinutes, isolationByCategory[cat], baseMedTime);
       items.push({ minutes: t, label: `${label} — 상극 회피를 위해 격리 배치`, type:'영양제(격리)' });
     } else {
       items.push({ minutes: lastMealTime, label, type:'영양제' });
