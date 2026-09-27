@@ -120,6 +120,8 @@
   /* ---- Developer Portal 코드 탭 전용 스타일 (다른 영역에 영향 없음) ---- */
   .dev-code-tab-btn{ background:transparent; color:#64748B; border-bottom:2px solid transparent; }
   .dev-code-tab-btn.active{ background:#020617; color:#34D399; border-bottom:2px solid #34D399; }
+  .home-code-tab-btn{ background:transparent; color:#64748B; border-bottom:2px solid transparent; }
+  .home-code-tab-btn.active{ background:#020617; color:#34D399; border-bottom:2px solid #34D399; }
   .demo-json-key{ color:#5FE0BE; }
   .demo-json-string{ color:#F2C14E; }
   .demo-json-number{ color:#8FE9CE; }
@@ -128,14 +130,13 @@
   .main-tab-btn.active{ background:var(--c-primary); color:#fff; opacity:1; }
   .sticker-palette-btn.is-text{ font-size:11px; font-weight:700; padding:8px 10px; white-space:nowrap; }
 
-  /* ---- 1g 믹스 계산기 & 1일 안전 투약 타임라인 공용: Forest Sage & Warm Cream 테마 ---- */
+  /* ---- 1일 안전 투약 타임라인 테마: Forest Sage & Warm Cream ---- */
   .mc-chip{ background:#FAF9F5; border:1.5px solid #3A5A4026; color:#2C241F; transition:all .18s cubic-bezier(.22,1,.36,1); font-weight:600; box-shadow:0 1px 2px rgba(44,36,31,.03); }
   .mc-chip:hover{ border-color:#3A5A4055; transform:translateY(-1px); box-shadow:0 6px 14px -9px rgba(58,90,64,.28); }
   .mc-chip.active{ background:#3A5A40; border-color:#3A5A40; color:#fff; box-shadow:0 6px 16px -8px rgba(58,90,64,.45); }
   .mc-bcs-btn{ background:#FAF9F5; border:1.5px solid #3A5A4026; color:#2C241F; border-radius:10px; padding:7px 0; font-size:11px; font-weight:700; text-align:center; cursor:pointer; transition:all .18s cubic-bezier(.22,1,.36,1); }
   .mc-bcs-btn:hover{ border-color:#3A5A4055; transform:translateY(-1px); }
   .mc-bcs-btn.active{ background:#3A5A40; border-color:#3A5A40; color:#fff; box-shadow:0 4px 10px -5px rgba(58,90,64,.4); }
-  #mixCalcPage input[type="range"]{ accent-color:#3A5A40; }
   .mc-cat-btn{ background:#FAF9F5; border:1.5px solid #3A5A4026; color:#2C241F; border-radius:12px; padding:7px 2px; text-align:center; cursor:pointer; transition:all .18s cubic-bezier(.22,1,.36,1); }
   .mc-cat-btn:hover{ border-color:#3A5A4055; transform:translateY(-1px); }
   .mc-cat-btn.active{ background:#3A5A40; border-color:#3A5A40; color:#fff; box-shadow:0 4px 10px -5px rgba(58,90,64,.4); }
@@ -328,7 +329,6 @@
         <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="home">🏠 홈 / 진단</button>
         <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="demo">🧬 기술 & 데모</button>
         <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="developers">🧑‍💻 Developers</button>
-        <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="mixcalc">🥣 1g 믹스 계산기</button>
         <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="metaload">⚙️ 대사 부하 검문</button>
         <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="insurance">🛡️ 1일 안전 투약 타임라인</button>
       </div>
@@ -339,189 +339,194 @@
     <!-- ===================== LANDING SECTION ===================== -->
     <section id="landingSection">
 
-      <!-- HERO -->
-      <div class="text-center py-10 sm:py-20">
-        <div class="inline-flex items-center gap-1.5 bg-primary-light text-primary-dark text-xs font-bold px-3 py-1.5 rounded-full mb-5">
-          <span>🐾</span><span>수의영양학 기반 맞춤 케어 플랫폼</span>
+      <!-- ============ B2B ENTERPRISE HERO & DEVELOPER CONSOLE (Slate/Emerald 다크 테마) ============ -->
+      <div class="rounded-[28px] p-6 sm:p-10 mb-10" style="background:#0F172A;">
+
+        <!-- ① HERO -->
+        <div class="text-center py-6 sm:py-10">
+          <div class="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full mb-5" style="background:rgba(16,185,129,.14); color:#34D399;">
+            <span>🧬</span><span>B2B Pharmacological Intelligence Platform</span>
+          </div>
+          <h1 class="font-display font-bold mb-4 max-w-3xl mx-auto" style="font-size:clamp(1.4rem,4.2vw,2.4rem); line-height:1.35; color:#F1F5F9;">B2B Pharmacological Intelligence &amp; Organ Strain Analytics Layer for Pet Enterprise</h1>
+          <div class="flex flex-wrap items-center justify-center gap-2 mb-8">
+            <span class="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full" style="background:#1E293B; border:1px solid rgba(16,185,129,.35); color:#6EE7B7;">⚡ 1-Click Widget SDK Integration</span>
+            <span class="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full" style="background:#1E293B; border:1px solid rgba(99,102,241,.35); color:#A5B4FC;">🚀 Sub-20ms Ultra-Low Latency RESTful API</span>
+            <span class="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full" style="background:#1E293B; border:1px solid rgba(16,185,129,.35); color:#6EE7B7;">✅ Non-Diagnostic Clinical Decision-Support (FDA/CVM Aligned)</span>
+          </div>
+          <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <button type="button" id="homeGoSandboxBtn" class="rounded-xl px-6 py-3 text-sm font-bold" style="background:#10B981; color:#022C22;">Explore Live Sandbox (seon-ivy.vercel.app)</button>
+            <button type="button" id="homeGoDevDocsBtn" class="rounded-xl px-6 py-3 text-sm font-bold" style="background:transparent; border:1.5px solid rgba(148,163,184,.35); color:#F1F5F9;">View Developer Documentation</button>
+          </div>
         </div>
-        <h1 class="font-display font-bold mb-4" style="font-size:clamp(1.7rem,5vw,3rem); line-height:1.3;">
-          우리 아이 건강 상태,<br class="hidden sm:block">
-          수의영양학 맞춤 데이터로<br class="hidden sm:block">
-          한눈에
-        </h1>
-        <p class="text-muted text-sm sm:text-base max-w-lg mx-auto mb-9 leading-relaxed">
-          사료 성분 분석부터 12주 케어 타임라인까지,<br class="hidden sm:block">
-          3분 만에 받는 반려동물 맞춤 영양 리포트
-        </p>
-        <button type="button" class="landing-cta-btn btn-primary rounded-2xl px-7 py-4 text-sm sm:text-base font-bold inline-flex items-center gap-2">
-          3분 만에 무료 건강 리포트 받기
-        </button>
+
+        <!-- ② B2B ENTERPRISE TARGET VERTICALS -->
+        <div class="mb-10 mt-4">
+          <p class="text-[11px] font-bold tracking-widest mb-4 text-center" style="color:#34D399;">B2B ENTERPRISE TARGET VERTICALS</p>
+          <div class="grid sm:grid-cols-3 gap-4">
+            <div class="rounded-2xl p-5" style="background:#1E293B; border:1px solid rgba(99,102,241,.25);">
+              <p class="text-sm font-bold mb-2" style="color:#F1F5F9;">🛡️ Pet Insurers</p>
+              <p class="text-xs leading-relaxed" style="color:#94A3B8;">DNI(약물-영양소 충돌) 및 장기 대사 부하 위험도를 정량화해, 언더라이팅 리스크와 손해율(Loss-Ratio)을 감소시켜요.</p>
+            </div>
+            <div class="rounded-2xl p-5" style="background:#1E293B; border:1px solid rgba(16,185,129,.25);">
+              <p class="text-sm font-bold mb-2" style="color:#F1F5F9;">🛒 Pet E-Commerce</p>
+              <p class="text-xs leading-relaxed" style="color:#94A3B8;">영양제 결제 단계에서 실시간 DNI 충돌을 체크하고, 안전한 대체 상품으로 Cross-selling해요.</p>
+            </div>
+            <div class="rounded-2xl p-5" style="background:#1E293B; border:1px solid rgba(16,185,129,.25);">
+              <p class="text-sm font-bold mb-2" style="color:#F1F5F9;">🩺 Veterinary EMRs</p>
+              <p class="text-xs leading-relaxed" style="color:#94A3B8;">처방 시스템 내부에 실시간 Chrono-DNI 알림 모듈을 그대로 이식해요.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ③ LIVE DEVELOPER SANDBOX & CODE INTEGRATION PREVIEW -->
+        <div class="mb-10">
+          <p class="text-[11px] font-bold tracking-widest mb-4 text-center" style="color:#34D399;">LIVE DEVELOPER SANDBOX &amp; CODE INTEGRATION PREVIEW</p>
+          <div class="rounded-2xl overflow-hidden mb-4" style="background:#1E293B; border:1px solid rgba(148,163,184,.15);">
+            <div class="flex gap-1 px-3 pt-3 flex-wrap" id="homeCodeTabGroup">
+              <button type="button" class="home-code-tab-btn rounded-t-lg px-3 py-2 text-xs font-bold" data-code-tab="html">HTML Script Tag</button>
+              <button type="button" class="home-code-tab-btn rounded-t-lg px-3 py-2 text-xs font-bold" data-code-tab="react">React Component</button>
+              <button type="button" class="home-code-tab-btn rounded-t-lg px-3 py-2 text-xs font-bold" data-code-tab="reactnative">React Native / Mobile</button>
+              <button type="button" class="home-code-tab-btn rounded-t-lg px-3 py-2 text-xs font-bold" data-code-tab="curl">cURL API</button>
+            </div>
+            <pre id="homeCodeSnippetBox" class="p-4 text-[11px] overflow-x-auto" style="background:#020617; color:#6EE7B7; font-family:'SF Mono',Consolas,monospace; min-height:110px;"></pre>
+          </div>
+
+          <div class="grid lg:grid-cols-2 gap-4">
+            <div class="rounded-2xl p-4" style="background:#1E293B; border:1px solid rgba(148,163,184,.15);">
+              <p class="text-[10px] font-bold mb-2" style="color:#64748B;">JSON REQUEST (Pet Bio · Prescribed Drugs · Supplement Stack)</p>
+              <pre class="rounded-xl p-3 text-[11px] overflow-x-auto" style="background:#020617; color:#93C5FD; font-family:'SF Mono',Consolas,monospace;">{
+  "pet": { "name": "초코", "breed": "말티즈", "weight_kg": 4.2 },
+  "medication": "Enrofloxacin",
+  "supplement": "칼슘/킬레이트 칼슘"
+}</pre>
+            </div>
+            <div class="rounded-2xl p-4" style="background:#1E293B; border:1px solid rgba(148,163,184,.15);">
+              <p class="text-[10px] font-bold mb-2" style="color:#64748B;">JSON RESPONSE</p>
+              <pre class="rounded-xl p-3 text-[11px] overflow-x-auto" style="background:#020617; color:#6EE7B7; font-family:'SF Mono',Consolas,monospace;">{
+  "status": "SUCCESS",
+  "dni_conflict_detected": true,
+  "conflict_pair": "Enrofloxacin x 칼슘/킬레이트 칼슘",
+  "isolation_hours": 2,
+  "organ_stress_index": { "hepatic": "75%", "renal": "92%" },
+  "recommended_schedule": "복용 직후 → 최소 2시간 격리 후 급여"
+}</pre>
+            </div>
+          </div>
+
+          <div class="rounded-2xl p-4 sm:p-5 mt-4" style="background:#1E293B; border:1px solid rgba(148,163,184,.15);">
+            <p class="text-[10px] font-bold mb-3" style="color:#64748B;">LIVE WIDGET PREVIEW — 파트너 앱/웹에 그대로 렌더링될 위젯</p>
+            <div class="rounded-xl p-4 max-w-md" style="background:#F8FAFC;">
+              <div class="rounded-xl p-4" style="background:#fff; border:1.5px solid #FBBF24; box-shadow:0 4px 14px -6px rgba(0,0,0,.12);">
+                <div class="flex items-center gap-2 mb-2 flex-wrap">
+                  <span class="text-[10px] font-bold px-2 py-1 rounded-full" style="background:#0F172A; color:#34D399;">🧬 SEON Chrono-DNI</span>
+                  <span class="text-[10px] font-bold px-2 py-1 rounded-full" style="background:#FEF3C7; color:#B45309;">⚠️ 상호작용 주의</span>
+                </div>
+                <p class="text-xs font-bold mb-1" style="color:#0F172A;">'칼슘/킬레이트 칼슘'이 등록된 처방약(Enrofloxacin)과 상충할 수 있어요.</p>
+                <p class="text-[11px]" style="color:#64748B;">흡수 저해 방지를 위해 최소 2시간 간격을 두고 급여해주세요.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="text-center mt-5">
+            <button type="button" id="homeGoFullSandboxBtn" class="rounded-xl px-6 py-2.5 text-xs font-bold" style="background:transparent; border:1.5px solid rgba(52,211,153,.4); color:#34D399;">Explore Full Interactive Sandbox →</button>
+          </div>
+        </div>
+
+        <!-- ④ 3대 코어 진단 엔진 아키텍처 (Engine Pipeline Flow) -->
+        <div>
+          <p class="text-[11px] font-bold tracking-widest mb-4 text-center" style="color:#34D399;">ENGINE PIPELINE FLOW</p>
+          <div class="flex flex-col sm:flex-row items-stretch gap-1.5" id="homePipelineWrap">
+            <div class="flex-1 rounded-2xl p-3 text-center" style="background:#1E293B; border:1.5px solid rgba(148,163,184,.2);">
+              <p class="text-[9px] font-bold" style="color:#34D399;">NODE 1</p>
+              <p class="text-[11px] font-bold" style="color:#F1F5F9;">Data Ingestion</p>
+              <p class="text-[9px] mt-0.5" style="color:#64748B;">Pet Bio &amp; Prescriptions</p>
+            </div>
+            <div class="hidden sm:flex items-center justify-center text-sm" style="color:#475569;">➜</div>
+            <div class="flex-1 rounded-2xl p-3 text-center" style="background:#1E293B; border:1.5px solid rgba(148,163,184,.2);">
+              <p class="text-[9px] font-bold" style="color:#34D399;">NODE 2</p>
+              <p class="text-[11px] font-bold" style="color:#F1F5F9;">Goal-Oriented Health Scoring Engine</p>
+            </div>
+            <div class="hidden sm:flex items-center justify-center text-sm" style="color:#475569;">➜</div>
+            <div class="flex-1 rounded-2xl p-3 text-center" style="background:#1E293B; border:1.5px solid rgba(148,163,184,.2);">
+              <p class="text-[9px] font-bold" style="color:#34D399;">NODE 3</p>
+              <p class="text-[11px] font-bold" style="color:#F1F5F9;">Organ Metabolic Load Calculator</p>
+              <p class="text-[9px] mt-0.5" style="color:#64748B;">Hepatic &amp; Renal Filtration Stress</p>
+            </div>
+            <div class="hidden sm:flex items-center justify-center text-sm" style="color:#475569;">➜</div>
+            <div class="flex-1 rounded-2xl p-3 text-center" style="background:#1E293B; border:1.5px solid rgba(148,163,184,.2);">
+              <p class="text-[9px] font-bold" style="color:#34D399;">NODE 4</p>
+              <p class="text-[11px] font-bold" style="color:#F1F5F9;">Chrono-DNI Matrix Analysis</p>
+              <p class="text-[9px] mt-0.5" style="color:#64748B;">CYP450 &amp; Mineral Chelation Rules</p>
+            </div>
+            <div class="hidden sm:flex items-center justify-center text-sm" style="color:#475569;">➜</div>
+            <div class="flex-1 rounded-2xl p-3 text-center" style="background:#1E293B; border:1.5px solid rgba(148,163,184,.2);">
+              <p class="text-[9px] font-bold" style="color:#34D399;">NODE 5</p>
+              <p class="text-[11px] font-bold" style="color:#F1F5F9;">Integrated API Output Stream</p>
+            </div>
+          </div>
+        </div>
+
       </div>
 
-      <!-- 3대 핵심 기능 소개 섹션 -->
-      <div class="mb-16 sm:mb-24">
+      <!-- ============ [MIDDLE] B2B ENGINE MODULES — LIVE DEMO
+           (기존 3대 진단 카드를 그대로 재사용 — 버튼 클릭 시 아래 실제 탭/폼의 100% 라이브
+           백엔드·DB 연동 로직을 그대로 타요. 여기서는 카피/스타일만 B2B로 바꿨어요.) ============ -->
+      <div class="rounded-[28px] p-6 sm:p-10 mb-16 sm:mb-24" style="background:#0F172A;">
         <div class="text-center mb-10">
-          <p class="text-[11px] sm:text-xs font-bold tracking-widest mb-2" style="color:#3A5A40;">SEON PRECISION NUTRITION &amp; DNI CARE</p>
-          <h2 class="font-display font-bold mb-3" style="font-size:clamp(1.3rem,4vw,2rem); line-height:1.35;">임상 영양 데이터와 약학 수식으로<br class="hidden sm:block"> 완성하는 정밀 케어</h2>
-          <p class="text-muted text-sm max-w-xl mx-auto leading-relaxed">서온은 수의영양학 및 약학 수식을 바탕으로, 아이가 매일 섭취하는 식단과 처방약의 장기 대사 부담 및 영양 상호작용을 데이터로 관리해 드리는 영양 케어 보조 솔루션입니다.</p>
+          <p class="text-[11px] sm:text-xs font-bold tracking-widest mb-2" style="color:#34D399;">B2B ENGINE MODULES — LIVE DEMO</p>
+          <h2 class="font-display font-bold mb-3" style="font-size:clamp(1.3rem,4vw,2rem); line-height:1.35; color:#F1F5F9;">기업 고객사 시스템에 그대로 이식되는<br class="hidden sm:block"> 3대 B2B API 연산 모듈</h2>
+          <p class="text-sm max-w-xl mx-auto leading-relaxed" style="color:#94A3B8;">아래 각 모듈은 Mock이 아닌 서온의 실제 프로덕션 연산 엔진과 DB에 100% 라이브로 연동돼요. 버튼을 누르면 실제 데이터 흐름을 직접 체험할 수 있어요.</p>
         </div>
 
-        <div class="grid sm:grid-cols-3 gap-5 mb-6">
-          <!-- Feature 1: 메디컬 건강 리포트 -->
-          <div class="surface rounded-2xl p-6 flex flex-col border-2" style="border-color:#3A5A4022;">
+        <div class="grid sm:grid-cols-3 gap-5 mb-2">
+          <!-- Module 1: Goal-Oriented Health Scoring Engine -->
+          <div class="rounded-2xl p-6 flex flex-col" style="background:#1E293B; border:1px solid rgba(99,102,241,.25);">
             <span class="text-3xl mb-3 block">📑</span>
-            <span class="inline-block text-[11px] font-bold px-2.5 py-1 rounded-full mb-3 self-start" style="background:#3A5A401A; color:#3A5A40;">영양 분석 &amp; 전문 PDF</span>
-            <p class="font-display font-bold text-base mb-2 leading-snug">100점 영양 스코어 &amp; 병원 제출용 데이터 리포트</p>
-            <p class="text-xs text-muted mb-5 leading-relaxed flex-1">BCS 체형 및 생체 지표 기반 기초대사량(RER/DER) 진단부터 수의사 재진 시 참고용으로 제시할 수 있는 정밀 PDF 데이터 리포트를 발급합니다.</p>
-            <button type="button" class="landing-cta-btn w-full rounded-xl py-3 text-sm font-bold" style="background:#3A5A40; color:#fff;">무료 영양 진단 시작하기</button>
+            <span class="inline-block text-[11px] font-bold px-2.5 py-1 rounded-full mb-3 self-start" style="background:rgba(99,102,241,.14); color:#A5B4FC;">Goal-Oriented Health Scoring API</span>
+            <p class="font-display font-bold text-base mb-2 leading-snug" style="color:#F1F5F9;">100점 건강 스코어 & 병원 제출용 데이터 리포트 연산 모듈</p>
+            <p class="text-xs mb-5 leading-relaxed flex-1" style="color:#94A3B8;">BCS·생체 지표 기반 RER/DER 연산부터 정밀 PDF 데이터 리포트 생성까지, 실제 프로덕션 DB에 저장되는 라이브 엔진이에요.</p>
+            <button type="button" class="landing-cta-btn w-full rounded-xl py-3 text-sm font-bold" style="background:#10B981; color:#022C22;">Live Demo 실행하기</button>
           </div>
 
-          <!-- Feature 2: 대사 부하 검문 -->
-          <div class="surface rounded-2xl p-6 flex flex-col border-2" style="border-color:#3A5A4022;">
+          <!-- Module 2: Organ Metabolic Load Calculator -->
+          <div class="rounded-2xl p-6 flex flex-col" style="background:#1E293B; border:1px solid rgba(16,185,129,.25);">
             <span class="text-3xl mb-3 block">🧪</span>
-            <span class="inline-block text-[11px] font-bold px-2.5 py-1 rounded-full mb-3 self-start" style="background:#3A5A401A; color:#3A5A40;">간·신장 대사 부하율(%)</span>
-            <p class="font-display font-bold text-base mb-2 leading-snug">식단 &amp; 약물의 장기 대사 부담 수치화 및 자동 교정</p>
-            <p class="text-xs text-muted mb-5 leading-relaxed flex-1">5종 식단 및 부재료 비율(%)을 반영해 간/신장 배설 대사 부하율(%)을 정밀 연산하고, 장기 부담을 낮추는 [1-Click 자동 교정 레시피]를 제안합니다.</p>
-            <button type="button" id="landingGoMetaLoadBtn" class="w-full rounded-xl py-3 text-sm font-bold" style="background:#3A5A40; color:#fff;">대사 부하 검문하기</button>
+            <span class="inline-block text-[11px] font-bold px-2.5 py-1 rounded-full mb-3 self-start" style="background:rgba(16,185,129,.14); color:#6EE7B7;">Organ Metabolic Load API</span>
+            <p class="font-display font-bold text-base mb-2 leading-snug" style="color:#F1F5F9;">간·신장 대사 부하율(%) 정량 연산 모듈</p>
+            <p class="text-xs mb-5 leading-relaxed flex-1" style="color:#94A3B8;">5종 식단·부재료 비율을 반영해 간/신장 배설 부하율을 정밀 연산하고, 자동 교정 레시피까지 실시간으로 생성해요.</p>
+            <button type="button" id="landingGoMetaLoadBtn" class="w-full rounded-xl py-3 text-sm font-bold" style="background:#10B981; color:#022C22;">Live Demo 실행하기</button>
           </div>
 
-          <!-- Feature 3: 1일 안전 투약 타임라인 -->
-          <div class="surface rounded-2xl p-6 flex flex-col border-2" style="border-color:#3A5A4022;">
+          <!-- Module 3: Chrono-DNI Matrix Analysis -->
+          <div class="rounded-2xl p-6 flex flex-col" style="background:#1E293B; border:1px solid rgba(99,102,241,.25);">
             <span class="text-3xl mb-3 block">⏰</span>
-            <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full mb-3 self-start" style="background:#3A5A401A; color:#3A5A40;">
-              약-영양소 체내 충돌(DNI) 방지
-              <button type="button" id="dniTooltipToggleBtn" class="inline-flex items-center justify-center" style="width:14px; height:14px; border-radius:50%; background:#3A5A40; color:#fff; font-size:9px; line-height:1;" aria-label="DNI 용어 설명 보기">💡</button>
+            <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full mb-3 self-start" style="background:rgba(99,102,241,.14); color:#A5B4FC;">
+              Chrono-DNI Safety API
+              <button type="button" id="dniTooltipToggleBtn" class="inline-flex items-center justify-center" style="width:14px; height:14px; border-radius:50%; background:#6366F1; color:#fff; font-size:9px; line-height:1;" aria-label="DNI 용어 설명 보기">💡</button>
             </span>
             <div id="dniTooltipBox" class="hidden tooltip-box p-3 text-[11px] mb-3 leading-relaxed" style="color:#2C241F;">
               💡 <b>DNI(Drug-Nutrient Interaction)</b>란?<br>
               처방약과 특정 영양 성분(칼슘, 철분, 비타민 등)이 몸속에서 서로 만나 약효가 떨어지거나 장기에 부담을 주는 '약물-영양소 체내 충돌(상극 반응)'을 의미합니다. 서온은 이 충돌을 피할 수 있는 안전한 투약 시간대를 계산해 드립니다.
             </div>
-            <p class="font-display font-bold text-base mb-2 leading-snug">상극 충돌을 방지하는 시간대별 1일 안전 투약 스케줄</p>
-            <p class="text-xs text-muted mb-5 leading-relaxed flex-1">처방약과 영양 성분(칼슘, 철분 등) 간 킬레이트 결합 및 흡수 방해 요소를 분석하여 최적의 시간대별 1일 안전 투약 스케줄을 산출합니다.</p>
-            <button type="button" id="landingGoInsuranceBtn" class="w-full rounded-xl py-3 text-sm font-bold" style="background:#3A5A40; color:#fff;">안전 투약 스케줄 생성하기</button>
+            <p class="font-display font-bold text-base mb-2 leading-snug" style="color:#F1F5F9;">상극 충돌 방지 24시간 안전 투약 스케줄 연산 모듈</p>
+            <p class="text-xs mb-5 leading-relaxed flex-1" style="color:#94A3B8;">처방약과 영양 성분 간 킬레이트 결합·흡수 방해 요소를 실시간 분석해 시간대별 안전 투약 스케줄을 산출해요.</p>
+            <button type="button" id="landingGoInsuranceBtn" class="w-full rounded-xl py-3 text-sm font-bold" style="background:#10B981; color:#022C22;">Live Demo 실행하기</button>
           </div>
         </div>
 
-        <p class="text-center text-[11px] text-muted leading-relaxed max-w-2xl mx-auto">※ 서온은 수의사의 직접적인 진료나 처방을 대신하지 않으며, 수의영양학 및 약학 수식 데이터를 기반으로 한 영양 및 투약 관리 보조 도구입니다. 질병의 정확한 진단과 치료는 반드시 담당 수의사와 상의하세요.</p>
+        <p class="text-center text-[11px] leading-relaxed max-w-2xl mx-auto mt-4" style="color:#64748B;">※ 서온은 수의사의 직접적인 진료나 처방을 대신하지 않으며, 수의영양학 및 약학 수식 데이터를 기반으로 한 비진단(Non-Diagnostic) 의사결정 보조 API입니다.</p>
       </div>
 
-      <!-- PREVIEW DEMO: 무료 vs 유료 비교 -->
-      <div class="mb-16 sm:mb-24">
-        <p class="text-center font-display font-bold text-xl sm:text-2xl mb-2">무료로 시작해서, 프리미엄으로 완성하세요</p>
-        <p class="text-center text-muted text-sm mb-8">두 리포트의 차이를 미리 확인해보세요</p>
 
-        <div class="grid sm:grid-cols-2 gap-5 mb-8">
-          <!-- FREE CARD -->
-          <div class="surface rounded-2xl p-6 border-2" style="border-color:#2FBF9F3a;">
-            <span class="text-[11px] font-bold text-mint bg-mint-light px-2.5 py-1 rounded-full">🟢 무료</span>
-            <p class="font-display font-bold text-lg mt-3 mb-1 leading-snug">한눈에 파악하는<br>아이의 건강 신호등</p>
-            <p class="text-xs text-muted mb-4">3분 진단으로 바로 받아보는 비주얼 리포트</p>
-            <div class="space-y-2 mb-5">
-              <p class="text-xs text-muted">✨ 100점 만점 시각화 게이지 &amp; 5각 헬스 레이더 차트</p>
-              <p class="text-xs text-muted">🚦 3단계 건강 신호등 지표 (양호 / 주의 / 경고)</p>
-              <p class="text-xs text-muted">🐾 BCS 체형 분석 비주얼 카드 &amp; 한 줄 가이드</p>
-              <p class="text-xs text-muted">🥗 권장 일일 칼로리 및 맞춤 추천 사료 2~3종</p>
-            </div>
-            <button type="button" class="landing-cta-btn btn-primary w-full rounded-xl py-3 text-sm font-bold">무료 진단 시작하고 비주얼 리포트 받기</button>
-          </div>
-
-          <!-- PRICING SECTION: 노령·만성질환견을 위한 1:1 정기 케어 구독 (월 정기 구독 모델) -->
-          <div class="rounded-2xl p-6 relative" style="background:linear-gradient(160deg,#0F1B14,#1C2E22); color:#fff;">
-            <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full" style="background:rgba(95,224,190,.15); color:#5FE0BE;">🩺 노령·만성질환견을 위한 1:1 정기 케어 구독</span>
-            <p class="font-display font-bold text-lg mt-3 mb-1 leading-snug" style="color:#fff;">월 4,900원부터 부담 없이 시작하기</p>
-            <p class="text-xs mb-4" style="color:rgba(255,255,255,.55);">매월 최신 데이터 기반 정밀 분석 리포트 발행 &amp; 실시간 대사 부하 관제</p>
-
-            <div class="grid sm:grid-cols-2 gap-3">
-              <!-- 베이직 케어 -->
-              <div class="rounded-xl p-4 flex flex-col" style="background:rgba(255,255,255,.04); border:1.5px solid rgba(95,224,190,.25);">
-                <p class="text-[11px] font-bold mb-1" style="color:#5FE0BE;">베이직 케어</p>
-                <p class="font-display font-bold text-xl mb-0.5">월 4,900원</p>
-                <p class="text-[10px] mb-3" style="color:rgba(255,255,255,.45);">연간 결제 시 10% 할인 (월 4,410원)</p>
-                <div class="space-y-1.5 mb-4 flex-1">
-                  <p class="text-[11px]" style="color:rgba(255,255,255,.85);">📄 매월 최신 정밀 분석 리포트 정기 발행</p>
-                  <p class="text-[11px]" style="color:rgba(255,255,255,.85);">⚠️ 기본 DNI 충돌 위험 알림</p>
-                </div>
-                <button type="button" id="basicSubscribeBtn" class="w-full rounded-xl py-2.5 text-xs font-bold" style="background:rgba(255,255,255,.08); border:1.5px solid #5FE0BE; color:#5FE0BE;">베이직으로 시작하기</button>
-              </div>
-
-              <!-- 프리미엄 정밀 케어 -->
-              <div class="rounded-xl p-4 flex flex-col relative" style="background:linear-gradient(160deg,#173226,#0F1B14); border:1.5px solid #5FE0BE;">
-                <span class="absolute -top-3 left-4 text-[9px] font-bold px-2 py-1 rounded-full" style="background:#5FE0BE; color:#0F1B14;">가장 많이 선택해요</span>
-                <p class="text-[11px] font-bold mb-1 mt-1" style="color:#5FE0BE;">프리미엄 정밀 케어</p>
-                <p class="font-display font-bold text-xl mb-0.5">월 9,900원</p>
-                <p class="text-[10px] mb-3" style="color:rgba(255,255,255,.45);">연간 결제 시 15% 할인 (월 8,415원)</p>
-                <div class="space-y-1.5 mb-4 flex-1">
-                  <p class="text-[11px]" style="color:rgba(255,255,255,.9);">📄 매월 최신 정밀 분석 리포트 정기 발행</p>
-                  <p class="text-[11px]" style="color:rgba(255,255,255,.9);">🫀 실시간 장기 대사 부하 관제</p>
-                  <p class="text-[11px]" style="color:rgba(255,255,255,.9);">📈 동적 건강 평가 스코어링</p>
-                  <p class="text-[11px]" style="color:rgba(255,255,255,.9);">⏰ 개인 맞춤형 24시간 Chrono-DNI 안전 투약 스케줄</p>
-                  <p class="text-[11px]" style="color:rgba(255,255,255,.9);">🍲 1:1 수의학 맞춤 화식/수제식 레시피 &amp; 28일 케어 캘린더</p>
-                </div>
-                <button type="button" id="premiumSampleBtn" class="w-full rounded-xl py-2.5 text-xs font-bold" style="background:#5FE0BE; color:#0F1B14;">프리미엄으로 시작하기</button>
-              </div>
-            </div>
-          </div>
+      <!-- [BOTTOM] ENTERPRISE CTA & DOCUMENTATION -->
+      <div class="rounded-[28px] p-8 sm:p-12 text-center" style="background:#0F172A;">
+        <p class="text-[11px] font-bold tracking-widest mb-3" style="color:#34D399;">READY TO INTEGRATE?</p>
+        <p class="font-display font-bold text-lg sm:text-2xl mb-3 leading-relaxed" style="color:#F1F5F9;">서온의 약학 지능 API를 귀사 서비스에 이식해보세요.</p>
+        <p class="text-xs sm:text-sm max-w-xl mx-auto mb-8 leading-relaxed" style="color:#94A3B8;">PoC(Proof of Concept) 또는 정식 계약(LOI) 문의부터 개발자 문서까지, 필요한 모든 자료를 안내해 드려요.</p>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <a href="mailto:seon.forivy@gmail.com?subject=SEON%20Enterprise%20PoC%2FLOI%20Inquiry&body=Company%2FOrganization%3A%0AName%20(role)%3A%0AIntended%20use%3A%20" id="homeGoEnterpriseLoiBtn" class="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-bold" style="background:#10B981; color:#022C22;">📧 Enterprise PoC / LOI 문의하기</a>
+          <button type="button" id="homeGoDevDocsBtn2" class="rounded-xl px-6 py-3 text-sm font-bold" style="background:transparent; border:1.5px solid rgba(148,163,184,.35); color:#F1F5F9;">View Developer Documentation</button>
         </div>
-
-        <!-- 추천 태그 -->
-        <div class="mb-10">
-          <p class="text-center text-xs font-bold text-muted mb-3">이런 분들께 유료 리포트를 추천해요</p>
-          <div class="flex flex-wrap justify-center gap-2">
-            <span class="text-xs font-medium px-3 py-1.5 rounded-full surface-2">사료 급여량을 g 단위로 정확히 계산하고 싶으신 분</span>
-            <span class="text-xs font-medium px-3 py-1.5 rounded-full surface-2">먹이는 영양제와 사료가 아이에게 맞는지 궁금하신 분</span>
-            <span class="text-xs font-medium px-3 py-1.5 rounded-full surface-2">병원 방문 전 예진 자료가 필요하신 분</span>
-          </div>
-        </div>
-
-        <p class="text-center text-xs font-bold text-muted mb-4">더 자세히 미리보기</p>
-        <div class="grid sm:grid-cols-3 gap-4">
-          <button type="button" class="demo-preview-card surface rounded-2xl p-5 text-left transition hover:-translate-y-1" data-demo="basic">
-            <span class="text-3xl mb-3 block">📄</span>
-            <p class="font-bold text-sm mb-1.5">기본 리포트</p>
-            <p class="text-xs text-muted leading-relaxed">한눈에 파악하는 100점 만점 건강 스코어 &amp; 5각 케어 차트</p>
-            <p class="text-[11px] font-semibold text-primary-dark mt-3">미리보기 →</p>
-          </button>
-          <button type="button" class="demo-preview-card surface rounded-2xl p-5 text-left transition hover:-translate-y-1" data-demo="premium">
-            <span class="text-3xl mb-3 block">⭐</span>
-            <p class="font-bold text-sm mb-1.5">유료 상세 리포트</p>
-            <p class="text-xs text-muted leading-relaxed">맞춤 홈메이드 레시피 3종, 1:1 운동·마사지 루틴 &amp; 12주 케어 타임라인</p>
-            <p class="text-[11px] font-semibold text-primary-dark mt-3">미리보기 →</p>
-          </button>
-          <button type="button" class="demo-preview-card surface rounded-2xl p-5 text-left transition hover:-translate-y-1" data-demo="clinical">
-            <span class="text-3xl mb-3 block">🏥</span>
-            <p class="font-bold text-sm mb-1.5">메디컬 서머리</p>
-            <p class="text-xs text-muted leading-relaxed">동물병원 방문 시 수의사에게 바로 보여주는 1장 정식 수의영양학 소견서</p>
-            <p class="text-[11px] font-semibold text-primary-dark mt-3">미리보기 →</p>
-          </button>
-        </div>
-      </div>
-
-      <!-- WHY SEON -->
-      <div class="mb-16 sm:mb-24">
-        <p class="text-center font-display font-bold text-xl sm:text-2xl mb-8">Why seon?</p>
-        <div class="grid sm:grid-cols-3 gap-4">
-          <div class="surface-2 rounded-2xl p-5">
-            <p class="text-2xl mb-3">🧮</p>
-            <p class="font-bold text-sm mb-1.5">정밀 수의영양학 공식 연산</p>
-            <p class="text-xs text-muted leading-relaxed">단순 계산이 아닌 RER/MER 및 DM(Dry Matter) 기준 정밀 분석으로 계산해요.</p>
-          </div>
-          <div class="surface-2 rounded-2xl p-5">
-            <p class="text-2xl mb-3">🏷️</p>
-            <p class="font-bold text-sm mb-1.5">먹이는 브랜드 1:1 라벨 분석</p>
-            <p class="text-xs text-muted leading-relaxed">사료·영양제 브랜드의 성분 과다·상충을 자동으로 체크해드려요.</p>
-          </div>
-          <div class="surface-2 rounded-2xl p-5">
-            <p class="text-2xl mb-3">🏥</p>
-            <p class="font-bold text-sm mb-1.5">동물병원 연계 서머리</p>
-            <p class="text-xs text-muted leading-relaxed">수의사 상담 시 바로 보여줄 수 있는 메디컬 서머리를 제공해요.</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- BOTTOM CTA -->
-      <div class="rounded-[var(--radius-card)] p-8 sm:p-12 text-center bg-primary-light">
-        <p class="font-display font-bold text-lg sm:text-xl mb-6 leading-relaxed">지금 바로 우리 아이만을 위한<br class="sm:hidden"> 맞춤 케어 플랜을 시작해보세요.</p>
-        <button type="button" class="landing-cta-btn btn-primary rounded-2xl px-7 py-4 text-sm sm:text-base font-bold">무료 맞춤 진단 시작하기</button>
       </div>
     </section>
 
@@ -1059,105 +1064,6 @@
       </div>
     </div>
 
-    <!-- ===================== MIX CALC PAGE: 1g 실시간 믹스 계산기 ===================== -->
-    <div id="mixCalcPage" class="hidden">
-      <div class="text-center mb-8">
-        <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full mb-4" style="background:#3A5A401A; color:#3A5A40;">
-          <span>🥣</span><span class="text-xs font-bold">Dynamic Meal Prep &amp; Scaling Calculator</span>
-        </div>
-        <h1 class="font-display font-bold mb-2" style="font-size:clamp(1.4rem,4vw,2rem); color:#2C241F;">1g 실시간 믹스 계산기</h1>
-        <p class="text-sm" style="color:#6b6259;">간식·토핑을 조절하면 사료량이 실시간으로 계산돼요</p>
-      </div>
-
-      <div class="grid lg:grid-cols-2 gap-5 max-w-5xl mx-auto">
-
-        <!-- 좌측: 프로필 & 목표 입력 -->
-        <div class="rounded-[var(--radius-card)] p-6" style="background:#FFFFFF; border:1px solid #3A5A401f;">
-          <p class="font-bold text-sm mb-4" style="color:#2C241F;">① 기본 프로필 &amp; 목표</p>
-
-          <label class="block text-xs font-semibold mb-1.5" style="color:#2C241F;">체중 <span id="mcWeightLabel" style="color:#3A5A40;">10.0kg</span></label>
-          <input type="range" min="1.0" max="25.0" step="0.1" value="10.0" id="mcWeightSlider" class="w-full mb-5">
-
-          <label class="block text-xs font-semibold mb-2" style="color:#2C241F;">BCS 단계</label>
-          <div class="grid grid-cols-9 gap-1 mb-5" id="mcBcsGroup"></div>
-
-          <label class="block text-xs font-semibold mb-2" style="color:#2C241F;">체중 관리 목표</label>
-          <div class="grid grid-cols-3 gap-2 mb-3" id="mcGoalGroup">
-            <button data-val="maintain" class="mc-chip rounded-xl py-2.5 text-xs">⚡ 체중 유지</button>
-            <button data-val="loss" class="mc-chip rounded-xl py-2.5 text-xs">📉 감량</button>
-            <button data-val="gain" class="mc-chip rounded-xl py-2.5 text-xs">📈 증량</button>
-          </div>
-
-          <div id="mcTargetChangeWrap" class="hidden mb-5">
-            <label class="block text-xs font-semibold mb-1.5" style="color:#2C241F;">
-              <span id="mcTargetChangeLabel">목표 감량 체중</span> <span id="mcTargetChangeValue" style="color:#3A5A40;">0.5kg</span>
-            </label>
-            <input type="range" min="0.1" max="5.0" step="0.1" value="0.5" id="mcTargetChangeSlider" class="w-full">
-            <p class="text-[11px] mt-1" style="color:#6b6259;">이상 체중 약 <b id="mcIdealWeightOut">9.5</b>kg 기준으로 정밀 계산돼요.</p>
-          </div>
-
-          <label class="block text-xs font-semibold mb-1.5" style="color:#2C241F;">주식 사료</label>
-          <select id="mcFoodPreset" class="w-full rounded-xl px-3 py-2.5 mb-2 text-sm" style="border:1px solid #3A5A4033;"></select>
-          <div class="relative mb-4" id="mcCustomKcalWrap">
-            <input type="number" id="mcCustomKcal" value="360" min="150" max="600" class="w-full rounded-xl px-3 py-2.5 text-sm" style="border:1px solid #3A5A4033;">
-            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs" style="color:#6b6259;">kcal / 100g</span>
-          </div>
-
-          <div class="rounded-xl p-4 text-center" style="background:#3A5A400d;">
-            <p class="text-xs font-semibold mb-1" style="color:#3A5A40;">🥣 하루 목표 에너짓량</p>
-            <p class="font-display font-bold text-xl" style="color:#2C241F;">약 <span id="mcTargetKcal">320</span>kcal</p>
-            <p class="text-xs mt-1" style="color:#6b6259;">권장 건식 사료 약 <b id="mcBaseFoodG">88</b>g</p>
-          </div>
-        </div>
-
-        <!-- 우측: 실시간 토핑/믹스 계산기 -->
-        <div class="rounded-[var(--radius-card)] p-6" style="background:#FFFFFF; border:1px solid #3A5A401f;">
-          <p class="font-bold text-sm mb-4" style="color:#2C241F;">② 오늘의 토핑·간식 믹스</p>
-
-          <label class="block text-xs font-semibold mb-2" style="color:#2C241F;">🍖 간식(Treats) 카테고리</label>
-          <div class="grid grid-cols-4 gap-1.5 mb-3" id="mcTreatCatGroup"></div>
-          <label class="block text-xs font-semibold mb-1.5" style="color:#2C241F;">급여량 <span id="mcTreatLabel" style="color:#3A5A40;">0g</span></label>
-          <input type="range" min="0" max="100" step="1" value="0" id="mcTreatSlider" class="w-full mb-1">
-          <p id="mcTreatWarning" class="text-[11px] font-semibold mb-4 min-h-[16px]" style="color:#C0473A;"></p>
-
-          <label class="block text-xs font-semibold mb-2" style="color:#2C241F;">🥫 습식/화식 토핑 카테고리</label>
-          <div class="grid grid-cols-4 gap-1.5 mb-3" id="mcWetCatGroup"></div>
-          <label class="block text-xs font-semibold mb-1.5" style="color:#2C241F;">급여량 <span id="mcWetLabel" style="color:#3A5A40;">0g</span></label>
-          <input type="range" min="0" max="150" step="1" value="0" id="mcWetSlider" class="w-full mb-5">
-
-          <div class="rounded-xl p-4 mb-4" style="background:#3A5A40; color:#fff;">
-            <p class="text-xs font-bold mb-2 opacity-90">💡 실시간 계산 결과</p>
-            <p class="text-sm leading-relaxed" id="mcLiveOutputText">오늘은 추가하신 간식·토핑이 없어요! 건식 사료 <b>88g</b>을 그대로 담아주세요.</p>
-          </div>
-
-          <div class="grid grid-cols-3 gap-2 text-center">
-            <div class="rounded-lg p-2.5" style="background:#FAF9F5;">
-              <p class="text-[10px]" style="color:#6b6259;">간식 kcal</p>
-              <p class="font-display font-bold text-sm" id="mcTreatKcalOut">0</p>
-            </div>
-            <div class="rounded-lg p-2.5" style="background:#FAF9F5;">
-              <p class="text-[10px]" style="color:#6b6259;">토핑 kcal</p>
-              <p class="font-display font-bold text-sm" id="mcWetKcalOut">0</p>
-            </div>
-            <div class="rounded-lg p-2.5" style="background:#FAF9F5;">
-              <p class="text-[10px]" style="color:#6b6259;">건식 사료</p>
-              <p class="font-display font-bold text-sm" style="color:#3A5A40;" id="mcFinalFoodG">88g</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- SECTION 3: 오늘의 맞춤 추천 수제 레시피 -->
-      <div class="rounded-[var(--radius-card)] p-6 max-w-5xl mx-auto mt-5" style="background:#FFFFFF; border:1px solid #3A5A401f;">
-        <p class="font-bold text-sm mb-1" style="color:#2C241F;">👩‍🍳 오늘 저녁은 이 수제 토핑 레시피를 시도해보세요!</p>
-        <p class="text-xs mb-4" style="color:#6b6259;">체중·BCS·목표에 맞춰 자동으로 조정된 레시피예요.</p>
-        <div class="rounded-xl p-4" style="background:#FAF9F5;">
-          <p class="font-bold text-sm mb-2" id="mcRecipeName" style="color:#2C241F;">황태 오이 쿨링 토핑 <span class="text-xs font-normal" style="color:#6b6259;">(체중 조절 및 관절 케어용)</span></p>
-          <p class="text-xs mb-2" style="color:#3A5A40;"><b>재료:</b> <span id="mcRecipeIngredients">염분 뺀 황태채 5g + 얇게 썬 오이 10g</span></p>
-          <p class="text-xs" style="color:#6b6259;" id="mcRecipeInstructions">황태채를 20분간 물에 우려 염분을 완전히 뺀 뒤, 오이와 함께 살짝 데쳐 사료 위에 토핑으로 올려주세요. (오늘 사료량에서 약 8g 차감 반영됨)</p>
-        </div>
-      </div>
-    </div>
 
     <!-- ===================== 대사 부하 검문 PAGE: 장기별 대사 부하 게이지 & 1-Click 교정 & 목표 음수량 ===================== -->
     <div id="metaLoadPage" class="hidden">
@@ -6640,7 +6546,6 @@ function switchMainTab(tab){
   document.getElementById('homePage').classList.toggle('hidden', tab!=='home');
   document.getElementById('demoPage').classList.toggle('hidden', tab!=='demo');
   document.getElementById('developersPage').classList.toggle('hidden', tab!=='developers');
-  document.getElementById('mixCalcPage').classList.toggle('hidden', tab!=='mixcalc');
   document.getElementById('metaLoadPage').classList.toggle('hidden', tab!=='metaload');
   document.getElementById('insurancePage').classList.toggle('hidden', tab!=='insurance');
   if(tab === 'metaload') renderMetaLoadPage(); // 진입할 때마다 최신 프로필/DNI 데이터 기준으로 다시 계산해요.
@@ -6658,237 +6563,6 @@ function resetHomeTabToLandingView(){
   if(form) form.classList.add('hidden');
   if(dashboard) dashboard.classList.add('hidden');
   currentStep = 1; // 다음에 다시 '진단 시작하기'를 누르면 항상 Step 1부터 자연스럽게 시작돼요.
-}
-
-/* ============================================================
-   1g 실시간 믹스 계산기 (Dynamic Meal Prep & Scaling Calculator)
-   — DB 저장 없이 순수 프론트엔드 상태로만 동작해요.
-============================================================ */
-const MIXCALC_FOOD_PRESETS = [
-  {id:"rc_mini",         label:"로얄캐닌 미니 어덜트",           kcal:384},
-  {id:"rc_light",        label:"로얄캐닌 체중조절/라이트",        kcal:323},
-  {id:"hills_adult",     label:"힐스 사이언스 다이어트 어덜트",     kcal:365},
-  {id:"hills_metabolic", label:"힐스 처방식 메타볼릭",           kcal:310},
-  {id:"now_small",       label:"나우 프레시 스몰브리드 어덜트",     kcal:369},
-  {id:"orijen_small",    label:"오리젠 스몰브리드",              kcal:390},
-  {id:"custom",          label:"직접 입력 (Custom)",           kcal:null},
-];
-
-const MIXCALC_TREAT_CATEGORIES = [
-  {id:"veg_fruit",    emoji:"🥬", label:"야채/과일",   kcal:35},
-  {id:"churu_treat",  emoji:"🍗", label:"츄르/트릿",   kcal:150},
-  {id:"jerky",        emoji:"🥩", label:"육포/포류",   kcal:300},
-  {id:"dental_chew",  emoji:"🧀", label:"개껌/쿠키",   kcal:350},
-];
-const MIXCALC_WET_CATEGORIES = [
-  {id:"cooling_veg",  emoji:"🥒", label:"쿨링/야채퓨레", kcal:40},
-  {id:"wet_pouch",    emoji:"🥫", label:"습식 파우치/캔", kcal:90},
-  {id:"homemade",     emoji:"🍲", label:"수제 화식",     kcal:130},
-  {id:"freeze_dried", emoji:"🥩", label:"동결건조/생식",  kcal:420},
-];
-
-const mixCalc = {
-  weight: 10.0, bcs: 5, goal: "maintain", goalChangeKg: 0.5,
-  foodPresetId: "rc_mini", customKcal: 360,
-  treatCategoryId: "veg_fruit", wetCategoryId: "cooling_veg",
-  treatG: 0, wetG: 0,
-};
-
-function mixCalcIdealWeight(){
-  if(mixCalc.goal === 'loss') return Math.max(0.5, mixCalc.weight - mixCalc.goalChangeKg);
-  if(mixCalc.goal === 'gain') return mixCalc.weight + mixCalc.goalChangeKg;
-  return mixCalc.weight;
-}
-function mixCalcTargetKcal(){
-  // 감량/증량 목표가 설정되면, 현재 체중이 아닌 '이상 체중(목표 체중)' 기준으로 RER/MER을 정밀 계산해요.
-  const rerBasisWeight = mixCalcIdealWeight();
-  const RER = 70 * Math.pow(rerBasisWeight, 0.75);
-  const bcsCoef = mixCalc.bcs<=3 ? 1.1 : mixCalc.bcs<=5 ? 1.0 : mixCalc.bcs<=7 ? 0.95 : 0.85;
-  const baseFactor = 1.6; // 성견 유지 기준 표준 계수
-  const goalCoef = mixCalc.goal==='loss' ? baseFactor*0.825 // 약 17.5% 차감 (15~20% 범위)
-                  : mixCalc.goal==='gain' ? baseFactor*1.2
-                  : baseFactor;
-  return RER * bcsCoef * goalCoef;
-}
-function mixCalcCurrentKcalPer100g(){
-  if(mixCalc.foodPresetId === 'custom') return mixCalc.customKcal || 360;
-  const preset = MIXCALC_FOOD_PRESETS.find(f=>f.id===mixCalc.foodPresetId);
-  return preset ? preset.kcal : 360;
-}
-
-function buildMixCalcBcsButtons(){
-  const wrap = document.getElementById('mcBcsGroup');
-  wrap.innerHTML = '';
-  for(let n=1;n<=9;n++){
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'mc-bcs-btn' + (n===mixCalc.bcs ? ' active' : '');
-    btn.textContent = n;
-    btn.addEventListener('click', ()=>{
-      mixCalc.bcs = n;
-      wrap.querySelectorAll('.mc-bcs-btn').forEach(b=>b.classList.remove('active'));
-      btn.classList.add('active');
-      updateMixCalcOutputs();
-    });
-    wrap.appendChild(btn);
-  }
-}
-
-function buildMixCalcCategoryButtons(containerId, categories, activeId, onSelect){
-  const wrap = document.getElementById(containerId);
-  wrap.innerHTML = '';
-  categories.forEach(cat=>{
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'mc-cat-btn' + (cat.id===activeId ? ' active' : '');
-    btn.innerHTML = `<span class="mc-cat-emoji">${cat.emoji}</span><span class="mc-cat-label">${cat.label}</span><span class="mc-cat-kcal">${cat.kcal}kcal/100g</span>`;
-    btn.addEventListener('click', ()=>{
-      wrap.querySelectorAll('.mc-cat-btn').forEach(b=>b.classList.remove('active'));
-      btn.classList.add('active');
-      onSelect(cat.id);
-    });
-    wrap.appendChild(btn);
-  });
-}
-
-function updateMixCalcOutputs(){
-  const kcalPer100g = mixCalcCurrentKcalPer100g();
-  const targetKcal = mixCalcTargetKcal();
-  const baseFoodG = (targetKcal / kcalPer100g) * 100;
-
-  const treatCat = MIXCALC_TREAT_CATEGORIES.find(c=>c.id===mixCalc.treatCategoryId) || MIXCALC_TREAT_CATEGORIES[0];
-  const wetCat = MIXCALC_WET_CATEGORIES.find(c=>c.id===mixCalc.wetCategoryId) || MIXCALC_WET_CATEGORIES[0];
-  const treatKcal = mixCalc.treatG * (treatCat.kcal / 100);
-  const wetKcal = mixCalc.wetG * (wetCat.kcal / 100);
-  const remainingKcal = Math.max(0, targetKcal - treatKcal - wetKcal);
-  const finalFoodG = Math.round((remainingKcal / kcalPer100g) * 100);
-
-  document.getElementById('mcWeightLabel').textContent = mixCalc.weight.toFixed(1) + 'kg';
-  document.getElementById('mcTargetKcal').textContent = Math.round(targetKcal);
-  document.getElementById('mcBaseFoodG').textContent = Math.round(baseFoodG);
-  document.getElementById('mcTreatLabel').textContent = mixCalc.treatG + 'g';
-  document.getElementById('mcWetLabel').textContent = mixCalc.wetG + 'g';
-  document.getElementById('mcTreatKcalOut').textContent = Math.round(treatKcal);
-  document.getElementById('mcWetKcalOut').textContent = Math.round(wetKcal);
-  document.getElementById('mcFinalFoodG').textContent = finalFoodG + 'g';
-
-  // 목표 감량/증량 kg 세팅 UI 표시 여부 & 이상 체중 표기
-  const targetChangeWrap = document.getElementById('mcTargetChangeWrap');
-  targetChangeWrap.classList.toggle('hidden', mixCalc.goal === 'maintain');
-  document.getElementById('mcTargetChangeLabel').textContent = mixCalc.goal === 'gain' ? '목표 증량 체중' : '목표 감량 체중';
-  document.getElementById('mcTargetChangeValue').textContent = mixCalc.goalChangeKg.toFixed(1) + 'kg';
-  document.getElementById('mcIdealWeightOut').textContent = mixCalcIdealWeight().toFixed(1);
-
-  // 간식 칼로리가 하루 목표 칼로리의 10% 초과 시 경고
-  const treatWarningEl = document.getElementById('mcTreatWarning');
-  if(treatKcal > targetKcal * 0.10){
-    treatWarningEl.textContent = `⚠️ 간식 칼로리가 하루 목표의 10%를 초과했어요 (${Math.round(treatKcal/targetKcal*100)}%). 조금 줄여보세요.`;
-  } else {
-    treatWarningEl.textContent = '';
-  }
-
-  // 실시간 계산 결과 문구
-  const liveOutput = document.getElementById('mcLiveOutputText');
-  if(mixCalc.treatG===0 && mixCalc.wetG===0){
-    liveOutput.innerHTML = `오늘은 추가하신 간식·토핑이 없어요! 건식 사료 <b>${finalFoodG}g</b>을 그대로 담아주세요.`;
-  } else {
-    const parts = [];
-    if(mixCalc.wetG>0) parts.push(`${wetCat.label} [${mixCalc.wetG}g]`);
-    if(mixCalc.treatG>0) parts.push(`${treatCat.label} [${mixCalc.treatG}g]`);
-    liveOutput.innerHTML = `오늘 저녁엔 ${parts.join('과 ')}을 주시네요! 건식 사료는 정확히 <b>[${finalFoodG}g]</b>만 담아주세요.`;
-  }
-
-  updateMixCalcRecipe(targetKcal, kcalPer100g);
-}
-
-function updateMixCalcRecipe(targetKcal, kcalPer100g){
-  // 체중 기준으로 재료량을 스케일링해요 (기준: 체중 5kg당 황태채 2.5g / 오이 5g)
-  const scale = Math.max(0.5, mixCalc.weight / 5);
-  const hwangtaeG = Math.round(2.5 * scale);
-  const cucumberG = Math.round(5 * scale);
-  const recipeKcal = hwangtaeG * 1.8 + cucumberG * 0.13; // 황태채 ≈1.8kcal/g, 오이 ≈0.13kcal/g
-  const deductG = Math.round((recipeKcal / kcalPer100g) * 100);
-
-  const isJointOrDiet = mixCalc.goal === 'loss' || mixCalc.bcs >= 6;
-  const recipeName = isJointOrDiet
-    ? '황태 오이 쿨링 토핑 <span class="text-xs font-normal" style="color:#6b6259;">(체중 조절 및 관절 케어용)</span>'
-    : '황태 단호박 토핑 <span class="text-xs font-normal" style="color:#6b6259;">(기력 보충 및 기호성 강화용)</span>';
-  const ingredientsText = isJointOrDiet
-    ? `염분 뺀 황태채 ${hwangtaeG}g + 얇게 썬 오이 ${cucumberG}g`
-    : `염분 뺀 황태채 ${hwangtaeG}g + 삶은 단호박 ${cucumberG}g`;
-  const instructionsText = isJointOrDiet
-    ? `황태채를 20분간 물에 우려 염분을 완전히 뺀 뒤, 오이와 함께 살짝 데쳐 사료 위에 토핑으로 올려주세요. (오늘 사료량에서 약 ${deductG}g 차감 반영됨)`
-    : `황태채를 20분간 물에 우려 염분을 완전히 뺀 뒤, 부드럽게 삶은 단호박과 함께 으깨어 사료 위에 토핑으로 올려주세요. (오늘 사료량에서 약 ${deductG}g 차감 반영됨)`;
-
-  document.getElementById('mcRecipeName').innerHTML = recipeName;
-  document.getElementById('mcRecipeIngredients').textContent = ingredientsText;
-  document.getElementById('mcRecipeInstructions').textContent = instructionsText;
-}
-
-function initMixCalcPage(){
-  buildMixCalcBcsButtons();
-
-  const foodSelect = document.getElementById('mcFoodPreset');
-  MIXCALC_FOOD_PRESETS.forEach(f=>{
-    const opt = document.createElement('option');
-    opt.value = f.id;
-    opt.textContent = f.kcal!=null ? `${f.label} (${f.kcal} kcal / 100g)` : f.label;
-    foodSelect.appendChild(opt);
-  });
-  foodSelect.value = mixCalc.foodPresetId;
-
-  const customKcalWrap = document.getElementById('mcCustomKcalWrap');
-  const syncCustomKcalVisibility = ()=>{ customKcalWrap.classList.toggle('hidden', mixCalc.foodPresetId !== 'custom'); };
-  syncCustomKcalVisibility();
-
-  foodSelect.addEventListener('change', e=>{
-    mixCalc.foodPresetId = e.target.value;
-    syncCustomKcalVisibility();
-    updateMixCalcOutputs();
-  });
-  document.getElementById('mcCustomKcal').addEventListener('input', e=>{
-    mixCalc.customKcal = parseFloat(e.target.value) || 360;
-    updateMixCalcOutputs();
-  });
-
-  document.getElementById('mcWeightSlider').addEventListener('input', e=>{
-    mixCalc.weight = parseFloat(e.target.value);
-    updateMixCalcOutputs();
-  });
-
-  document.querySelectorAll('#mcGoalGroup button').forEach(btn=>{
-    if(btn.dataset.val === mixCalc.goal) btn.classList.add('active');
-    btn.addEventListener('click', ()=>{
-      mixCalc.goal = btn.dataset.val;
-      document.querySelectorAll('#mcGoalGroup button').forEach(b=>b.classList.remove('active'));
-      btn.classList.add('active');
-      updateMixCalcOutputs();
-    });
-  });
-  document.getElementById('mcTargetChangeSlider').addEventListener('input', e=>{
-    mixCalc.goalChangeKg = parseFloat(e.target.value);
-    updateMixCalcOutputs();
-  });
-
-  buildMixCalcCategoryButtons('mcTreatCatGroup', MIXCALC_TREAT_CATEGORIES, mixCalc.treatCategoryId, id=>{
-    mixCalc.treatCategoryId = id;
-    updateMixCalcOutputs();
-  });
-  buildMixCalcCategoryButtons('mcWetCatGroup', MIXCALC_WET_CATEGORIES, mixCalc.wetCategoryId, id=>{
-    mixCalc.wetCategoryId = id;
-    updateMixCalcOutputs();
-  });
-
-  document.getElementById('mcTreatSlider').addEventListener('input', e=>{
-    mixCalc.treatG = parseInt(e.target.value);
-    updateMixCalcOutputs();
-  });
-  document.getElementById('mcWetSlider').addEventListener('input', e=>{
-    mixCalc.wetG = parseInt(e.target.value);
-    updateMixCalcOutputs();
-  });
-
-  updateMixCalcOutputs();
 }
 
 
@@ -7056,7 +6730,7 @@ const dniMatrix = {
   sessionId: null,               // 이 DNI 제출 세션의 고유 식별자 — UPSERT 충돌키 (중복 INSERT 방지)
 };
 
-/* Chrono Matrix 전용 독립 입력 — '🥣 1g 믹스 계산기'의 State와는 완전히 분리된, DNI-Chrono만의 데이터예요. */
+/* Chrono Matrix 전용 독립 입력 — DNI-Chrono만의 데이터예요. */
 const chronoInput = {
   weightGoal: "maintain",     // 'loss' | 'maintain' | 'gain' — 건강/체중 관리 목표
   targetWeight: null,         // 목표 체중(kg) — 선택 입력, 없으면 현재 체중 기준으로 계산
@@ -7301,7 +6975,7 @@ function computeChronoDailyFoodG(){
 }
 /* ============================================================
    ⚙️ 대사 부하 검문 (Metabolic Load Screening) — 임상 정밀 통합 모듈 v5
-   — '🥣 1g 믹스 계산기'·'🛡️ 1일 안전 투약 타임라인'과 전혀 State를 공유하지 않는 완전 독립 모듈이에요.
+   — '🛡️ 1일 안전 투약 타임라인'과 전혀 State를 공유하지 않는 완전 독립 모듈이에요.
    ⚠️ 이 수치는 실제 혈액검사/임상 지표가 아닌 참고용 추정치예요 — 실제 간·신장 질환이
    의심되면 반드시 수의사 진료를 받아주세요.
 ============================================================ */
@@ -11005,8 +10679,8 @@ function openChronoDniReport(){
 ============================================================ */
 /* '1일 안전 투약 타임라인'의 정식 경로는 #/safe-timeline이에요. 예전 링크(#/chrono)로 들어와도
    깨지지 않도록 과거 경로도 계속 인식하되, 화면에는 항상 새 경로로 자동 리다이렉트해요. */
-const ROUTE_TO_TAB = { '': 'home', 'main': 'home', 'safe-timeline': 'insurance', 'chrono': 'insurance', 'mix-calc': 'mixcalc', 'metabolic-load': 'metaload', 'demo': 'demo', 'developers': 'developers', 'sdk': 'developers' };
-const TAB_TO_ROUTE = { home: '', insurance: 'safe-timeline', mixcalc: 'mix-calc', metaload: 'metabolic-load', demo: 'demo', developers: 'developers' };
+const ROUTE_TO_TAB = { '': 'home', 'main': 'home', 'safe-timeline': 'insurance', 'chrono': 'insurance', 'metabolic-load': 'metaload', 'demo': 'demo', 'developers': 'developers', 'sdk': 'developers' };
+const TAB_TO_ROUTE = { home: '', insurance: 'safe-timeline', metaload: 'metabolic-load', demo: 'demo', developers: 'developers' };
 const LEGACY_ROUTES = { 'chrono': 'safe-timeline' }; // 구 경로 → 신 경로 매핑 (자동 리다이렉트용)
 
 function getTabFromCurrentHash(){
@@ -11054,12 +10728,6 @@ function saveAppStateSnapshot(){
       petInsurance,
       chronoInput,
       guardianContact,
-      mixCalcLite: {
-        weight: mixCalc.weight, bcs: mixCalc.bcs, goal: mixCalc.goal, goalChangeKg: mixCalc.goalChangeKg,
-        foodPresetId: mixCalc.foodPresetId, customKcal: mixCalc.customKcal,
-        treatCategoryId: mixCalc.treatCategoryId, wetCategoryId: mixCalc.wetCategoryId,
-        treatG: mixCalc.treatG, wetG: mixCalc.wetG,
-      },
       dniMatrixLite: {
         supplements: dniMatrix.supplements,
         supplementDetails: dniMatrix.supplementDetails,
@@ -11086,7 +10754,6 @@ function restoreAppStateSnapshot(){
     // ⚠️ guardianContact는 의도적으로 여기서 복원하지 않아요 — 새로고침/재방문 시 모달에 이전 세션의
     // 보호자 정보가 "정체불명의 더미 데이터"처럼 미리 채워져 보이는 문제를 막기 위해, 매 페이지 로드마다
     // 항상 빈 값으로 시작하고 이번 세션에 실제로 입력한 값만 (세션 내에서) 기억하도록 해요.
-    if(snap.mixCalcLite && typeof snap.mixCalcLite === 'object') Object.assign(mixCalc, snap.mixCalcLite);
     if(snap.dniMatrixLite && typeof snap.dniMatrixLite === 'object'){
       if(Array.isArray(snap.dniMatrixLite.supplements)) dniMatrix.supplements = snap.dniMatrixLite.supplements;
       if(snap.dniMatrixLite.supplementDetails) dniMatrix.supplementDetails = snap.dniMatrixLite.supplementDetails;
@@ -11588,6 +11255,32 @@ function executeDemoSandbox(){
   }, 600);
 }
 
+/* ============================================================
+   🏢 홈 페이지 B2B Hero 섹션 — 코드탭은 Developers 페이지에서 이미
+   정의한 DEV_CODE_SNIPPETS를 그대로 재사용해요(내용 중복 없이 표시 위치만 추가).
+============================================================ */
+let homeActiveCodeTab = 'html';
+function renderHomeCodeTabs(){
+  document.querySelectorAll('.home-code-tab-btn').forEach(btn=>{
+    btn.classList.toggle('active', btn.dataset.codeTab === homeActiveCodeTab);
+  });
+  const box = document.getElementById('homeCodeSnippetBox');
+  if(box) box.textContent = DEV_CODE_SNIPPETS[homeActiveCodeTab];
+}
+function bindHomeCodeTabs(){
+  document.querySelectorAll('.home-code-tab-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{ homeActiveCodeTab = btn.dataset.codeTab; renderHomeCodeTabs(); });
+  });
+}
+function initHomeB2BSection(){
+  renderHomeCodeTabs();
+  bindHomeCodeTabs();
+  document.getElementById('homeGoSandboxBtn')?.addEventListener('click', ()=>navigateToTab('demo'));
+  document.getElementById('homeGoDevDocsBtn')?.addEventListener('click', ()=>navigateToTab('developers'));
+  document.getElementById('homeGoFullSandboxBtn')?.addEventListener('click', ()=>navigateToTab('demo'));
+  document.getElementById('homeGoDevDocsBtn2')?.addEventListener('click', ()=>navigateToTab('developers'));
+}
+
 function initDemoPage(){
   renderDemoPipeline();
   renderDemoPresetGroup();
@@ -11808,9 +11501,9 @@ restoreAppStateSnapshot(); // 다른 init 함수들이 state를 읽어 DOM을 �
 // 페이지를 새로 열 때마다 항상 빈 값에서 시작해야, 유저가 직접 입력하기 전까지 어떤 임의의
 // 값도 모달에 보이지 않아요. (저장 자체는 계속하므로, 필요 시 백엔드/분석 용도로는 남아있어요.)
 init();
-initMixCalcPage();
 initDemoPage();
 initDevelopersPage();
+initHomeB2BSection();
 initMetaLoadPage();
 initInsurancePage();
 redirectLegacyRouteIfNeeded(); // #/chrono로 딥링크 접속해도 조용히 #/safe-timeline으로 갱신
