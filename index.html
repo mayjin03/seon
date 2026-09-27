@@ -888,6 +888,25 @@
           </div>
         </div>
 
+        <!-- ② LICENSE KEY APPLICATION (TTCare SDK B2B 스타일 벤치마킹) -->
+        <div class="mb-10">
+          <div class="rounded-2xl p-5 sm:p-6" style="background:#1E293B; border:1px solid rgba(99,102,241,.3);">
+            <p class="text-sm font-bold mb-2" style="color:#F1F5F9;">🔑 SEON SDK License Key Application Guide</p>
+            <p class="text-xs leading-relaxed mb-4" style="color:#94A3B8;">To use the SEON SDK or RESTful API in your production environment, you need to obtain a License Key issued by SEON.</p>
+
+            <div class="rounded-xl p-4" style="background:#0F172A; border:1px solid rgba(148,163,184,.15);">
+              <p class="text-xs leading-relaxed mb-3" style="color:#CBD5E1;">To receive a License Key for PoC or commercial integration, please contact <b style="color:#6EE7B7;">business@seon.ai</b> with the following details:</p>
+              <div class="flex flex-wrap gap-2 mb-4">
+                <span class="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full" style="background:rgba(99,102,241,.14); border:1px solid rgba(99,102,241,.35); color:#A5B4FC;">👤 Name <span class="font-normal" style="color:#94A3B8;">(Your name &amp; role)</span></span>
+                <span class="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full" style="background:rgba(99,102,241,.14); border:1px solid rgba(99,102,241,.35); color:#A5B4FC;">🏢 Company <span class="font-normal" style="color:#94A3B8;">(Company / Organization name)</span></span>
+                <span class="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full" style="background:rgba(99,102,241,.14); border:1px solid rgba(99,102,241,.35); color:#A5B4FC;">🎯 Purpose <span class="font-normal" style="color:#94A3B8;">(Intended use: e.g., Pet Insurance, Vet EMR, E-Commerce)</span></span>
+              </div>
+              <p class="text-[11px] leading-relaxed mb-4" style="color:#64748B;">💡 For technical specifications or SDK integration support, reach out to <b style="color:#6EE7B7;">dev@seon.ai</b>.</p>
+              <a href="mailto:business@seon.ai?subject=SEON%20SDK%20License%20Key%20Request&body=Name%20(role)%3A%0ACompany%2FOrganization%3A%0AIntended%20use%3A%20" id="devLicenseRequestBtn" class="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-xs font-bold" style="background:#10B981; color:#022C22;">📧 Request License Key (business@seon.ai)</a>
+            </div>
+          </div>
+        </div>
+
         <!-- ② QUICK INTEGRATION GUIDE (3-STEP) -->
         <div class="mb-10">
           <p class="text-[11px] font-bold tracking-widest mb-4 text-center" style="color:#34D399;">QUICK INTEGRATION GUIDE</p>
@@ -914,28 +933,51 @@
         <div class="mb-10">
           <p class="text-[11px] font-bold tracking-widest mb-4 text-center" style="color:#34D399;">CODE INTEGRATION SNIPPETS</p>
           <div class="rounded-2xl overflow-hidden" style="background:#1E293B; border:1px solid rgba(148,163,184,.15);">
-            <div class="flex gap-1 px-3 pt-3" id="devCodeTabGroup">
-              <button type="button" class="dev-code-tab-btn rounded-t-lg px-3 py-2 text-xs font-bold" data-code-tab="html">Web Script Tag</button>
+            <div class="flex gap-1 px-3 pt-3 flex-wrap" id="devCodeTabGroup">
+              <button type="button" class="dev-code-tab-btn rounded-t-lg px-3 py-2 text-xs font-bold" data-code-tab="html">HTML Script Tag</button>
               <button type="button" class="dev-code-tab-btn rounded-t-lg px-3 py-2 text-xs font-bold" data-code-tab="react">React Component</button>
-              <button type="button" class="dev-code-tab-btn rounded-t-lg px-3 py-2 text-xs font-bold" data-code-tab="curl">RESTful API (curl)</button>
+              <button type="button" class="dev-code-tab-btn rounded-t-lg px-3 py-2 text-xs font-bold" data-code-tab="reactnative">React Native / Mobile</button>
+              <button type="button" class="dev-code-tab-btn rounded-t-lg px-3 py-2 text-xs font-bold" data-code-tab="curl">cURL API</button>
             </div>
-            <pre id="devCodeSnippetBox" class="p-4 text-[12px] overflow-x-auto" style="background:#020617; color:#6EE7B7; font-family:'SF Mono',Consolas,monospace; min-height:140px;"></pre>
+            <div class="relative">
+              <button type="button" class="dev-copy-btn absolute top-2 right-2 text-[10px] font-bold px-2.5 py-1 rounded-lg" data-copy-target="devCodeSnippetBox" style="background:rgba(148,163,184,.12); color:#CBD5E1;">📋 Copy</button>
+              <pre id="devCodeSnippetBox" class="p-4 pt-9 text-[12px] overflow-x-auto" style="background:#020617; color:#6EE7B7; font-family:'SF Mono',Consolas,monospace; min-height:140px;"></pre>
+            </div>
           </div>
         </div>
 
-        <!-- ④ INTERACTIVE WIDGET LIVE PREVIEW -->
+        <!-- ④ INTERACTIVE REQUEST/RESPONSE BUILDER (Interactive Sandbox Mode) -->
         <div class="mb-10">
-          <p class="text-[11px] font-bold tracking-widest mb-4 text-center" style="color:#34D399;">INTERACTIVE WIDGET LIVE PREVIEW</p>
+          <p class="text-[11px] font-bold tracking-widest mb-4 text-center" style="color:#34D399;">INTERACTIVE SANDBOX</p>
+          <div class="rounded-xl px-4 py-2.5 mb-4 text-xs font-bold flex flex-wrap items-center gap-2" style="background:rgba(52,211,153,.1); border:1px solid rgba(52,211,153,.3); color:#6EE7B7;">
+            🧪 Currently in Live Interactive Sandbox Mode. Use the demo key below to test integration, or apply for a Production License Key.
+          </div>
+
           <div class="rounded-2xl p-4 sm:p-6" style="background:#1E293B; border:1px solid rgba(148,163,184,.15);">
-            <div class="flex items-center gap-1.5 mb-4">
-              <span style="width:9px; height:9px; border-radius:50%; background:#F87171; display:inline-block;"></span>
-              <span style="width:9px; height:9px; border-radius:50%; background:#FBBF24; display:inline-block;"></span>
-              <span style="width:9px; height:9px; border-radius:50%; background:#34D399; display:inline-block;"></span>
-              <span class="text-[10px] ml-2" style="color:#64748B;">🛒 partner-petstore.com/cart — Preview</span>
+            <div class="flex items-center gap-2 mb-4">
+              <span class="text-[10px] font-bold" style="color:#64748B;">API Key:</span>
+              <code id="devSandboxApiKey" class="text-[11px] font-bold px-2 py-1 rounded-lg" style="background:#020617; color:#A5B4FC; font-family:'SF Mono',Consolas,monospace;">seon_demo_pk_sandbox_key</code>
+              <button type="button" class="dev-copy-btn text-[10px] font-bold px-2 py-1 rounded-lg" data-copy-target="devSandboxApiKey" style="background:rgba(148,163,184,.12); color:#CBD5E1;">📋 Copy</button>
             </div>
-            <div class="rounded-xl p-4 sm:p-6" style="background:#F8FAFC;">
-              <p class="text-xs font-bold mb-3" style="color:#334155;">장바구니 · 오메가3 캡슐 60정 외 2건</p>
-              <div id="devWidgetPreview"></div>
+
+            <div class="grid lg:grid-cols-2 gap-4">
+              <div>
+                <p class="text-[10px] font-bold mb-2" style="color:#64748B;">REQUEST (editable — try changing medication / supplement)</p>
+                <textarea id="devSandboxRequestInput" class="w-full rounded-xl p-3 text-[12px]" rows="10" spellcheck="false" style="background:#020617; color:#93C5FD; font-family:'SF Mono',Consolas,monospace; border:1px solid rgba(148,163,184,.2); resize:vertical;"></textarea>
+                <button type="button" id="devSandboxSendBtn" class="w-full mt-3 rounded-xl py-2.5 text-xs font-bold" style="background:#10B981; color:#022C22;">▶ Send Request / Test Call</button>
+                <p id="devSandboxRequestError" class="hidden text-[11px] mt-2" style="color:#F87171;"></p>
+              </div>
+              <div>
+                <p class="text-[10px] font-bold mb-2" style="color:#64748B;">RESPONSE</p>
+                <div class="relative mb-4">
+                  <button type="button" class="dev-copy-btn absolute top-2 right-2 text-[10px] font-bold px-2.5 py-1 rounded-lg" data-copy-target="devSandboxResponseBox" style="background:rgba(148,163,184,.12); color:#CBD5E1;">📋 Copy</button>
+                  <pre id="devSandboxResponseBox" class="rounded-xl p-3 pt-9 text-[12px] overflow-x-auto" style="background:#020617; color:#6EE7B7; font-family:'SF Mono',Consolas,monospace; min-height:200px; border:1px solid rgba(148,163,184,.2);"></pre>
+                </div>
+                <p class="text-[10px] font-bold mb-2" style="color:#64748B;">LIVE WIDGET PREVIEW</p>
+                <div class="rounded-xl p-3 sm:p-4" style="background:#F8FAFC;">
+                  <div id="devWidgetPreview"></div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -956,6 +998,61 @@
               <p class="text-sm font-bold mb-2" style="color:#F1F5F9;">🩺 Vet EMR</p>
               <p class="text-xs leading-relaxed" style="color:#94A3B8;">Real-Time Prescription Safety Alert Integration — 처방 입력 즉시 DNI 충돌을 감지해 진료 화면에 바로 경고해요.</p>
             </div>
+          </div>
+        </div>
+
+        <!-- ⑥ ERROR CODES & FALLBACK GUIDE -->
+        <div class="mb-10 mt-10">
+          <p class="text-[11px] font-bold tracking-widest mb-4 text-center" style="color:#34D399;">ERROR CODES &amp; FALLBACK GUIDE</p>
+          <div class="grid sm:grid-cols-3 gap-4">
+            <div class="rounded-2xl overflow-hidden" style="background:#1E293B; border:1px solid rgba(248,113,113,.3);">
+              <p class="text-xs font-bold px-4 pt-4 pb-2" style="color:#F87171;">400 Bad Request</p>
+              <div class="relative">
+                <button type="button" class="dev-copy-btn absolute top-1 right-2 text-[9px] font-bold px-2 py-1 rounded-lg" data-copy-target="devErr400Box" style="background:rgba(148,163,184,.12); color:#CBD5E1;">📋</button>
+                <pre id="devErr400Box" class="p-3 pt-6 text-[10px] overflow-x-auto" style="background:#020617; color:#FCA5A5; font-family:'SF Mono',Consolas,monospace;">{
+  "status": "ERROR",
+  "code": 400,
+  "message": "Missing required field: medication",
+  "fallback": "필수 파라미터 누락 시 위젯은 '데이터 부족' 상태로 표시돼요."
+}</pre>
+              </div>
+            </div>
+            <div class="rounded-2xl overflow-hidden" style="background:#1E293B; border:1px solid rgba(251,191,36,.3);">
+              <p class="text-xs font-bold px-4 pt-4 pb-2" style="color:#FBBF24;">422 Unprocessable</p>
+              <div class="relative">
+                <button type="button" class="dev-copy-btn absolute top-1 right-2 text-[9px] font-bold px-2 py-1 rounded-lg" data-copy-target="devErr422Box" style="background:rgba(148,163,184,.12); color:#CBD5E1;">📋</button>
+                <pre id="devErr422Box" class="p-3 pt-6 text-[10px] overflow-x-auto" style="background:#020617; color:#FDE68A; font-family:'SF Mono',Consolas,monospace;">{
+  "status": "ERROR",
+  "code": 422,
+  "message": "Unknown molecule name: 'Enrofloxacn'",
+  "fallback": "성분명을 인식하지 못하면 일반 주의 문구로 안전하게 폴백돼요."
+}</pre>
+              </div>
+            </div>
+            <div class="rounded-2xl overflow-hidden" style="background:#1E293B; border:1px solid rgba(99,102,241,.3);">
+              <p class="text-xs font-bold px-4 pt-4 pb-2" style="color:#A5B4FC;">429 Rate Limit</p>
+              <div class="relative">
+                <button type="button" class="dev-copy-btn absolute top-1 right-2 text-[9px] font-bold px-2 py-1 rounded-lg" data-copy-target="devErr429Box" style="background:rgba(148,163,184,.12); color:#CBD5E1;">📋</button>
+                <pre id="devErr429Box" class="p-3 pt-6 text-[10px] overflow-x-auto" style="background:#020617; color:#C7D2FE; font-family:'SF Mono',Consolas,monospace;">{
+  "status": "ERROR",
+  "code": 429,
+  "message": "Rate limit exceeded (60 req/min)",
+  "fallback": "직전 응답을 캐싱해 위젯이 끊기지 않고 유지되도록 하세요."
+}</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ⑦ ENTERPRISE COMPLIANCE -->
+        <div>
+          <p class="text-[11px] font-bold tracking-widest mb-4 text-center" style="color:#34D399;">ENTERPRISE COMPLIANCE</p>
+          <div class="rounded-2xl p-5 sm:p-6" style="background:#1E293B; border:1px solid rgba(148,163,184,.15);">
+            <div class="flex flex-wrap gap-2 mb-4">
+              <span class="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full" style="background:rgba(16,185,129,.14); border:1px solid rgba(16,185,129,.35); color:#6EE7B7;">✅ FDA/CVM Non-Diagnostic Decision-Support Framework Compliant</span>
+              <span class="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full" style="background:rgba(99,102,241,.14); border:1px solid rgba(99,102,241,.35); color:#A5B4FC;">🔒 TLS 1.3 / AES-256 Encrypted</span>
+            </div>
+            <p class="text-[11px] leading-relaxed" style="color:#64748B;">SEON API/SDK는 진단 또는 처방 행위를 대체하지 않는 비진단(Non-Diagnostic) 의사결정 보조 프레임워크로 설계되었으며, 모든 통신 구간은 TLS 1.3으로 암호화되고 저장 데이터는 AES-256으로 암호화돼요. 최종 진단·처방 판단은 반드시 수의사가 내려야 해요.</p>
           </div>
         </div>
 
@@ -11505,20 +11602,33 @@ function initDemoPage(){
 
 /* ============================================================
    🧑‍💻 SEON B2B SDK & API Developer Portal — 완전한 Mock/정적 콘텐츠로만
-   동작해요(실제 네트워크 요청 없음). 코드 스니펫 탭 전환 + 위젯 라이브 프리뷰만 제공해요.
+   동작해요(실제 네트워크 요청 없음). 단, DNI 상충 판정은 앱에 이미 있는
+   실제 DNI_MOLECULE_RULES 규칙을 그대로 재사용해서 '진짜에 가까운' 결과를 보여줘요.
 ============================================================ */
+const DEV_DEMO_API_KEY = 'seon_demo_pk_sandbox_key';
 const DEV_CODE_SNIPPETS = {
-  html: `<script src="https://seon-ivy.vercel.app/seon-sdk.js" data-api-key="YOUR_PARTNER_KEY"><\/script>
+  html: `<script src="https://seon-ivy.vercel.app/seon-sdk.js" data-api-key="${DEV_DEMO_API_KEY}"><\/script>
 <div id="seon-dni-widget" data-pet-id="PET_123"></div>`,
   react: `import { SeonDniWidget } from '@seon-ai/react-sdk';
 
 export default function CartPage() {
   return (
-    <SeonDniWidget apiKey="YOUR_KEY" petData={petProfile} theme="light" />
+    <SeonDniWidget apiKey="${DEV_DEMO_API_KEY}" petData={petProfile} theme="light" />
+  );
+}`,
+  reactnative: `import { SeonDniWidget } from '@seon-ai/react-native-sdk';
+
+export default function CartScreen() {
+  return (
+    <SeonDniWidget
+      apiKey="${DEV_DEMO_API_KEY}"
+      petData={petProfile}
+      theme="light"
+    />
   );
 }`,
   curl: `curl -X POST https://seon-ivy.vercel.app/api/v1/seon/analyze \\
-  -H "Authorization: Bearer YOUR_PARTNER_KEY" \\
+  -H "Authorization: Bearer ${DEV_DEMO_API_KEY}" \\
   -H "Content-Type: application/json" \\
   -d '{
     "pet": { "name": "초코", "breed": "말티즈", "weight_kg": 4.2 },
@@ -11538,18 +11648,100 @@ function bindDevCodeTabs(){
     btn.addEventListener('click', ()=>{ devActiveCodeTab = btn.dataset.codeTab; renderDevCodeTabs(); });
   });
 }
-/* 파트너 사이트(장바구니/EMR)에 임베드됐을 때 보이는 위젯의 정적 미리보기 — 실제 앱 상태와는
-   무관한, 데모용 고정 시나리오(칼슘 보충제 × 처방 항생제 상충)예요. */
-function renderDevWidgetPreview(){
+
+/* ---- Copy to Clipboard + 성공 토스트 (이 페이지 전용, 다른 영역에 영향 없음) ---- */
+function showDevToast(message){
+  let toast = document.getElementById('devCopyToast');
+  if(!toast){
+    toast = document.createElement('div');
+    toast.id = 'devCopyToast';
+    toast.className = 'fixed left-1/2 text-xs font-bold px-4 py-2.5 rounded-xl';
+    toast.style.cssText = 'bottom:24px; z-index:9999; transform:translateX(-50%) translateY(20px); background:#10B981; color:#022C22; opacity:0; transition:all .25s ease; pointer-events:none; box-shadow:0 8px 24px -6px rgba(0,0,0,.35);';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = message;
+  toast.style.opacity = '1';
+  toast.style.transform = 'translateX(-50%) translateY(0)';
+  clearTimeout(toast._hideTimer);
+  toast._hideTimer = setTimeout(()=>{
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(-50%) translateY(20px)';
+  }, 1800);
+}
+function fallbackCopyText(text){
+  try{
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  }catch(e){ /* 클립보드 접근이 막힌 환경에서도 조용히 무시해요 */ }
+}
+function bindDevCopyButtons(){
+  document.querySelectorAll('.dev-copy-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const targetEl = document.getElementById(btn.dataset.copyTarget);
+      if(!targetEl) return;
+      const text = targetEl.tagName === 'TEXTAREA' || targetEl.tagName === 'INPUT' ? targetEl.value : targetEl.textContent;
+      const announce = ()=>showDevToast('✅ 클립보드에 복사됐어요!');
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(announce).catch(()=>{ fallbackCopyText(text); announce(); });
+      } else {
+        fallbackCopyText(text); announce();
+      }
+    });
+  });
+}
+
+/* ---- Interactive Sandbox: 실제 DNI_MOLECULE_RULES를 그대로 재사용해서 Request의
+   medication/supplement 조합을 진짜 규칙으로 판정해요(완전히 지어낸 값이 아니에요). ---- */
+const DEV_SANDBOX_DEFAULT_REQUEST = {
+  pet: { name: "초코", breed: "말티즈", weight_kg: 4.2 },
+  medication: "Enrofloxacin",
+  supplement: "칼슘/킬레이트 칼슘",
+};
+function devNormalizeForMatch(s){
+  return String(s||'').replace(/[^\p{L}\p{N}]/gu, '').toLowerCase();
+}
+function devLookupDniConflict(medicationName, supplementName){
+  const medNorm = devNormalizeForMatch(medicationName);
+  const suppNorm = devNormalizeForMatch(supplementName);
+  if(!medNorm || !suppNorm) return null;
+  return DNI_MOLECULE_RULES.find(r=>{
+    if(r.type !== 'CONFLICT') return false;
+    const ruleMedNorm = devNormalizeForMatch(r.molecule);
+    const ruleSuppNorm = devNormalizeForMatch(r.nutrient);
+    const medMatch = ruleMedNorm.includes(medNorm) || medNorm.includes(ruleMedNorm);
+    const suppMatch = ruleSuppNorm.includes(suppNorm) || suppNorm.includes(ruleSuppNorm);
+    return medMatch && suppMatch;
+  }) || null;
+}
+/* 파트너 사이트(장바구니/EMR)에 임베드됐을 때 보이는 위젯 — Sandbox의 Request/Response에 따라
+   실시간으로 내용이 바뀌어요(더 이상 고정된 정적 시나리오가 아니에요). */
+function renderDevWidgetPreview(medicationName, supplementName, matchedRule){
   const wrap = document.getElementById('devWidgetPreview');
+  if(!matchedRule){
+    wrap.innerHTML = `
+      <div class="rounded-xl p-4" style="background:#fff; border:1.5px solid #A7F3D0; box-shadow:0 4px 14px -6px rgba(0,0,0,.1);">
+        <div class="flex items-center gap-2 mb-2 flex-wrap">
+          <span class="text-[10px] font-bold px-2 py-1 rounded-full" style="background:#0F172A; color:#34D399;">🧬 SEON Chrono-DNI</span>
+          <span class="text-[10px] font-bold px-2 py-1 rounded-full" style="background:#DCFCE7; color:#166534;">✅ 상충 없음</span>
+        </div>
+        <p class="text-xs font-bold" style="color:#0F172A;">${medicationName || '약물'}과(와) ${supplementName || '영양제'} 조합에서 감지된 위험이 없어요.</p>
+        <p class="text-[11px] mt-1" style="color:#64748B;">평소 급여 스케줄을 그대로 유지하셔도 안전해요.</p>
+      </div>`;
+    return;
+  }
   wrap.innerHTML = `
     <div class="rounded-xl p-4" style="background:#fff; border:1.5px solid #FBBF24; box-shadow:0 4px 14px -6px rgba(0,0,0,.12);">
       <div class="flex items-center gap-2 mb-2 flex-wrap">
         <span class="text-[10px] font-bold px-2 py-1 rounded-full" style="background:#0F172A; color:#34D399;">🧬 SEON Chrono-DNI</span>
         <span class="text-[10px] font-bold px-2 py-1 rounded-full" style="background:#FEF3C7; color:#B45309;">⚠️ 상호작용 주의</span>
       </div>
-      <p class="text-xs font-bold mb-1" style="color:#0F172A;">장바구니의 '칼슘 보충제'가 등록된 처방약(Enrofloxacin)과 상충할 수 있어요.</p>
-      <p class="text-[11px] mb-3" style="color:#64748B;">흡수 저해 방지를 위해 최소 2시간 간격을 두고 급여하거나, 아래 안전한 대체 상품을 확인해보세요.</p>
+      <p class="text-xs font-bold mb-1" style="color:#0F172A;">'${supplementName}'가 등록된 처방약(${medicationName})과 상충할 수 있어요.</p>
+      <p class="text-[11px] mb-3" style="color:#64748B;">${matchedRule.note} 최소 ${matchedRule.isolationHours}시간 간격을 두고 급여하거나, 아래 안전한 대체 상품을 확인해보세요.</p>
       <div class="rounded-lg p-2.5 flex items-center justify-between gap-2" style="background:#F0FDF4; border:1px solid #BBF7D0;">
         <div class="min-w-0">
           <p class="text-[11px] font-bold truncate" style="color:#166534;">✅ Renal-Safe Joint Collagen (Non-Mineral)</p>
@@ -11559,10 +11751,52 @@ function renderDevWidgetPreview(){
       </div>
     </div>`;
 }
+function runDevSandboxRequest(){
+  const input = document.getElementById('devSandboxRequestInput');
+  const errorEl = document.getElementById('devSandboxRequestError');
+  const responseBox = document.getElementById('devSandboxResponseBox');
+  errorEl.classList.add('hidden');
+  let req;
+  try{
+    req = JSON.parse(input.value);
+  }catch(e){
+    errorEl.textContent = '⚠️ JSON 형식이 올바르지 않아요. 콤마/따옴표를 확인해주세요.';
+    errorEl.classList.remove('hidden');
+    return;
+  }
+  const medicationName = req.medication || '';
+  const supplementName = req.supplement || '';
+  const matchedRule = devLookupDniConflict(medicationName, supplementName);
+  const response = matchedRule ? {
+    status: "SUCCESS",
+    dni_conflict_detected: true,
+    conflict: {
+      pair: `${medicationName} x ${supplementName}`,
+      isolation_hours: matchedRule.isolationHours,
+      mechanism: matchedRule.note,
+    },
+    recommended_schedule: `복용 직후 → 최소 ${matchedRule.isolationHours}시간 격리 후 급여`,
+  } : {
+    status: "SUCCESS",
+    dni_conflict_detected: false,
+    conflict: null,
+    recommended_schedule: "제약 없음 — 평소 급여 스케줄을 유지하세요.",
+  };
+  responseBox.textContent = JSON.stringify(response, null, 2);
+  renderDevWidgetPreview(medicationName, supplementName, matchedRule);
+}
+function initDevSandbox(){
+  const input = document.getElementById('devSandboxRequestInput');
+  input.value = JSON.stringify(DEV_SANDBOX_DEFAULT_REQUEST, null, 2);
+  document.getElementById('devSandboxSendBtn').addEventListener('click', runDevSandboxRequest);
+  runDevSandboxRequest(); // 첫 진입 시에도 기본 요청값 기준으로 바로 계산된 결과를 보여줘요.
+}
+
 function initDevelopersPage(){
   renderDevCodeTabs();
   bindDevCodeTabs();
-  renderDevWidgetPreview();
+  bindDevCopyButtons();
+  initDevSandbox();
 }
 
 
