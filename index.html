@@ -116,6 +116,10 @@
   /* ---- B2B API 샌드박스 RESPONSE 패널 전용 스타일 (다른 영역에 영향 없음) ---- */
   .demo-response-tab-btn{ background:transparent; color:rgba(255,255,255,.4); border-bottom:2px solid transparent; }
   .demo-response-tab-btn.active{ background:#132018; color:#5FE0BE; border-bottom:2px solid #5FE0BE; }
+
+  /* ---- Developer Portal 코드 탭 전용 스타일 (다른 영역에 영향 없음) ---- */
+  .dev-code-tab-btn{ background:transparent; color:#64748B; border-bottom:2px solid transparent; }
+  .dev-code-tab-btn.active{ background:#020617; color:#34D399; border-bottom:2px solid #34D399; }
   .demo-json-key{ color:#5FE0BE; }
   .demo-json-string{ color:#F2C14E; }
   .demo-json-number{ color:#8FE9CE; }
@@ -323,6 +327,7 @@
       <div class="inline-flex bg-primary-light rounded-full p-1 gap-1">
         <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="home">🏠 홈 / 진단</button>
         <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="demo">🧬 기술 & 데모</button>
+        <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="developers">🧑‍💻 Developers</button>
         <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="mixcalc">🥣 1g 믹스 계산기</button>
         <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="metaload">⚙️ 대사 부하 검문</button>
         <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="insurance">🛡️ 1일 안전 투약 타임라인</button>
@@ -862,6 +867,98 @@
         <div class="mt-4 pt-3 flex items-center gap-2 flex-wrap" style="border-top:1px solid rgba(95,224,190,.15);">
           <p class="text-[10px]" style="color:rgba(255,255,255,.4); font-family:'SF Mono',Consolas,monospace;">SEON Live B2B API Engine v1.0.4 | Latency: 14ms | Status: <span style="color:#4ADE80;">● Operational</span></p>
         </div>
+      </div>
+    </div>
+
+    <!-- ===================== DEVELOPERS PAGE: SEON B2B SDK & API Developer Portal ===================== -->
+    <div id="developersPage" class="hidden">
+      <div class="rounded-[28px] p-6 sm:p-10" style="background:#0F172A;">
+
+        <!-- ① HEADER -->
+        <div class="text-center mb-10">
+          <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full mb-4 text-xs font-bold" style="background:rgba(16,185,129,.14); color:#34D399;">
+            <span>🧑‍💻</span><span>SEON B2B SDK &amp; API</span>
+          </div>
+          <h1 class="font-display font-bold mb-3" style="font-size:clamp(1.3rem,4vw,2rem); line-height:1.35; color:#F1F5F9;">SEON Enterprise B2B SDK &amp; Live API Console</h1>
+          <p class="text-sm max-w-2xl mx-auto leading-relaxed mb-6" style="color:#94A3B8;">Embed Clinical-Grade Pet DNI Safety &amp; Metabolic Load Intelligence into Your App in 5 Minutes.</p>
+          <div class="flex flex-wrap items-center justify-center gap-2">
+            <span class="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full" style="background:#1E293B; border:1px solid rgba(99,102,241,.35); color:#A5B4FC;">⚡ Latency &lt;20ms</span>
+            <span class="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full" style="background:#1E293B; border:1px solid rgba(16,185,129,.35); color:#6EE7B7;">🧬 3,000+ Verified DNI Pairs</span>
+            <span class="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full" style="background:#1E293B; border:1px solid rgba(99,102,241,.35); color:#A5B4FC;">🧩 Plug-and-Play Widget</span>
+          </div>
+        </div>
+
+        <!-- ② QUICK INTEGRATION GUIDE (3-STEP) -->
+        <div class="mb-10">
+          <p class="text-[11px] font-bold tracking-widest mb-4 text-center" style="color:#34D399;">QUICK INTEGRATION GUIDE</p>
+          <div class="grid sm:grid-cols-3 gap-4">
+            <div class="rounded-2xl p-5" style="background:#1E293B; border:1px solid rgba(148,163,184,.15);">
+              <span class="inline-flex items-center justify-center rounded-full text-xs font-bold mb-3" style="width:26px; height:26px; background:rgba(16,185,129,.15); color:#34D399;">1</span>
+              <p class="text-sm font-bold mb-1" style="color:#F1F5F9;">Obtain Partner API Key</p>
+              <p class="text-xs leading-relaxed" style="color:#94A3B8;">파트너 콘솔에서 전용 API 키를 발급받아요. 요청당 인증 헤더로만 사용돼요.</p>
+            </div>
+            <div class="rounded-2xl p-5" style="background:#1E293B; border:1px solid rgba(148,163,184,.15);">
+              <span class="inline-flex items-center justify-center rounded-full text-xs font-bold mb-3" style="width:26px; height:26px; background:rgba(99,102,241,.15); color:#A5B4FC;">2</span>
+              <p class="text-sm font-bold mb-1" style="color:#F1F5F9;">Embed SEON Chrono-DNI Safety Widget SDK</p>
+              <p class="text-xs leading-relaxed" style="color:#94A3B8;">스크립트 태그 또는 React 컴포넌트 한 줄로 위젯을 페이지에 삽입해요.</p>
+            </div>
+            <div class="rounded-2xl p-5" style="background:#1E293B; border:1px solid rgba(148,163,184,.15);">
+              <span class="inline-flex items-center justify-center rounded-full text-xs font-bold mb-3" style="width:26px; height:26px; background:rgba(16,185,129,.15); color:#34D399;">3</span>
+              <p class="text-sm font-bold mb-1" style="color:#F1F5F9;">Stream Real-Time DNI Conflict Alerts &amp; Metabolic Load Indices</p>
+              <p class="text-xs leading-relaxed" style="color:#94A3B8;">실시간 웹훅/폴링으로 DNI 상충 경고와 대사 부하 지수를 받아 화면에 반영해요.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ③ CODE INTEGRATION SNIPPETS (TABBED) -->
+        <div class="mb-10">
+          <p class="text-[11px] font-bold tracking-widest mb-4 text-center" style="color:#34D399;">CODE INTEGRATION SNIPPETS</p>
+          <div class="rounded-2xl overflow-hidden" style="background:#1E293B; border:1px solid rgba(148,163,184,.15);">
+            <div class="flex gap-1 px-3 pt-3" id="devCodeTabGroup">
+              <button type="button" class="dev-code-tab-btn rounded-t-lg px-3 py-2 text-xs font-bold" data-code-tab="html">Web Script Tag</button>
+              <button type="button" class="dev-code-tab-btn rounded-t-lg px-3 py-2 text-xs font-bold" data-code-tab="react">React Component</button>
+              <button type="button" class="dev-code-tab-btn rounded-t-lg px-3 py-2 text-xs font-bold" data-code-tab="curl">RESTful API (curl)</button>
+            </div>
+            <pre id="devCodeSnippetBox" class="p-4 text-[12px] overflow-x-auto" style="background:#020617; color:#6EE7B7; font-family:'SF Mono',Consolas,monospace; min-height:140px;"></pre>
+          </div>
+        </div>
+
+        <!-- ④ INTERACTIVE WIDGET LIVE PREVIEW -->
+        <div class="mb-10">
+          <p class="text-[11px] font-bold tracking-widest mb-4 text-center" style="color:#34D399;">INTERACTIVE WIDGET LIVE PREVIEW</p>
+          <div class="rounded-2xl p-4 sm:p-6" style="background:#1E293B; border:1px solid rgba(148,163,184,.15);">
+            <div class="flex items-center gap-1.5 mb-4">
+              <span style="width:9px; height:9px; border-radius:50%; background:#F87171; display:inline-block;"></span>
+              <span style="width:9px; height:9px; border-radius:50%; background:#FBBF24; display:inline-block;"></span>
+              <span style="width:9px; height:9px; border-radius:50%; background:#34D399; display:inline-block;"></span>
+              <span class="text-[10px] ml-2" style="color:#64748B;">🛒 partner-petstore.com/cart — Preview</span>
+            </div>
+            <div class="rounded-xl p-4 sm:p-6" style="background:#F8FAFC;">
+              <p class="text-xs font-bold mb-3" style="color:#334155;">장바구니 · 오메가3 캡슐 60정 외 2건</p>
+              <div id="devWidgetPreview"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ⑤ TARGET INDUSTRY SOLUTIONS -->
+        <div>
+          <p class="text-[11px] font-bold tracking-widest mb-4 text-center" style="color:#34D399;">TARGET INDUSTRY SOLUTIONS</p>
+          <div class="grid sm:grid-cols-3 gap-4">
+            <div class="rounded-2xl p-5" style="background:#1E293B; border:1px solid rgba(16,185,129,.25);">
+              <p class="text-sm font-bold mb-2" style="color:#F1F5F9;">🛒 Pet E-Commerce</p>
+              <p class="text-xs leading-relaxed" style="color:#94A3B8;">Safe Cross-Selling &amp; Reduced Return Rates — 위험 조합 상품은 차단하고, 안전한 대체 상품으로 자동 유도해요.</p>
+            </div>
+            <div class="rounded-2xl p-5" style="background:#1E293B; border:1px solid rgba(99,102,241,.25);">
+              <p class="text-sm font-bold mb-2" style="color:#F1F5F9;">🛡️ Pet Insurance</p>
+              <p class="text-xs leading-relaxed" style="color:#94A3B8;">Underwriting Loss-Ratio Reduction via Preventable Toxicity Blocking — 예방 가능한 약물-영양소 사고를 사전에 차단해 손해율을 낮춰요.</p>
+            </div>
+            <div class="rounded-2xl p-5" style="background:#1E293B; border:1px solid rgba(16,185,129,.25);">
+              <p class="text-sm font-bold mb-2" style="color:#F1F5F9;">🩺 Vet EMR</p>
+              <p class="text-xs leading-relaxed" style="color:#94A3B8;">Real-Time Prescription Safety Alert Integration — 처방 입력 즉시 DNI 충돌을 감지해 진료 화면에 바로 경고해요.</p>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -6221,12 +6318,45 @@ const STUDIO_TAB_HTML = {
 
               <p class="text-[10px] font-bold text-muted mb-1">📅 1일 안전 투약 타임라인</p>
               <div class="grid grid-cols-4 gap-1">
-                ${(Array.isArray(rec.daily_chrono_schedule) ? rec.daily_chrono_schedule : []).map(slot=>`
-                  <div class="rounded-lg p-1.5 text-center surface">
-                    <p class="text-[9px] text-muted">${slot.label} ${slot.time}</p>
-                    <p class="text-[11px] font-bold">${slot.foodG}g</p>
+                ${(Array.isArray(rec.daily_chrono_schedule) ? rec.daily_chrono_schedule : []).map(slot=>{
+                  if(slot.type === 'isolated'){
+                    return `
+                  <div class="rounded-lg p-1.5 text-center surface" style="border:1px solid #C084FC55;">
+                    <p class="text-[9px]" style="color:#7E22CE;">${slot.time}</p>
+                    <span class="text-[8px] font-bold px-1 rounded" style="background:#DC2626; color:#fff;">⚠️${slot.isolationHours}h</span>
+                    <p class="text-[8px] text-muted truncate">${slot.label||''}</p>
+                  </div>`;
+                  }
+                  if(slot.type === 'medication'){
+                    return `
+                  <div class="rounded-lg p-1.5 text-center surface" style="border:1px solid #05966933;">
+                    <p class="text-[9px]" style="color:#047857;">💊 ${slot.time}</p>
                     ${(slot.items||[]).map(it=>`<p class="text-[8px] text-muted truncate">${it}</p>`).join('')}
-                  </div>`).join('') || `<p class="text-[10px] text-muted col-span-4">타임라인 데이터 없음</p>`}
+                  </div>`;
+                  }
+                  if(slot.type === 'supplement'){
+                    return `
+                  <div class="rounded-lg p-1.5 text-center surface" style="border:1px solid #C084FC55;">
+                    <p class="text-[9px]" style="color:#7E22CE;">🧪 ${slot.time}</p>
+                    ${(slot.items||[]).map(it=>`<p class="text-[8px] text-muted truncate">${it}</p>`).join('')}
+                  </div>`;
+                  }
+                  if(slot.type === 'primary'){
+                    // 구버전(처방약/영양제 통합) 저장분 호환용 — 신규 데이터는 더 이상 이 타입을 쓰지 않아요.
+                    return `
+                  <div class="rounded-lg p-1.5 text-center surface">
+                    <p class="text-[9px] text-muted">💊 ${slot.time}</p>
+                    ${(slot.items||[]).map(it=>`<p class="text-[8px] text-muted truncate">${it}</p>`).join('')}
+                  </div>`;
+                  }
+                  // meal (또는 예전 저장분의 구형 슬롯 — label/foodG/items가 함께 있던 구조도 안전하게 표시)
+                  return `
+                  <div class="rounded-lg p-1.5 text-center surface" style="border:1px solid #FBBF2455;">
+                    <p class="text-[9px]" style="color:#B45309;">${slot.label||''} ${slot.time}</p>
+                    <p class="text-[11px] font-bold">${slot.foodG != null ? slot.foodG+'g' : ''}</p>
+                    ${(slot.items||[]).map(it=>`<p class="text-[8px] text-muted truncate">${it}</p>`).join('')}
+                  </div>`;
+                }).join('') || `<p class="text-[10px] text-muted col-span-4">타임라인 데이터 없음</p>`}
               </div>
             </div>
           `).join('') : `<div class="py-6 text-center text-muted text-xs">${dniDbStatus==='error' ? 'DB 조회에 실패했어요. 위 오류 메시지를 확인해주세요.' : dniDbStatus==='loading' ? '불러오는 중이에요...' : '아직 제출된 데이터가 없어요.'}</div>`}
@@ -6412,6 +6542,7 @@ function switchMainTab(tab){
   document.querySelectorAll('.main-tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
   document.getElementById('homePage').classList.toggle('hidden', tab!=='home');
   document.getElementById('demoPage').classList.toggle('hidden', tab!=='demo');
+  document.getElementById('developersPage').classList.toggle('hidden', tab!=='developers');
   document.getElementById('mixCalcPage').classList.toggle('hidden', tab!=='mixcalc');
   document.getElementById('metaLoadPage').classList.toggle('hidden', tab!=='metaload');
   document.getElementById('insurancePage').classList.toggle('hidden', tab!=='insurance');
@@ -9267,6 +9398,21 @@ function renderDniWarningBanner(warnings){
     </div>`).join('');
 }
 
+/* 격리 사유를 짧고 구체적인 한 문장으로 만들어요 — 미네랄(칼슘/철분/마그네슘 등)은 '흡수 저해',
+   유산균/프로바이오틱스는 '생균 사멸'로 원인이 달라서 문구를 분기해요. */
+function buildIsolationReasonSentence(moleculeName, medCategoryLabel, nutrientLabel, isoHours){
+  const isProbiotic = /유산균|프로바이오틱스/.test(nutrientLabel);
+  if(isProbiotic){
+    return `${medCategoryLabel}에 의한 생균 사멸 방지를 위해 ${isoHours}시간 간격을 두고 급여합니다.`;
+  }
+  return `${moleculeName} 흡수 저해 방지를 위해 ${isoHours}시간 간격을 두고 급여합니다.`;
+}
+/* ⚠️ 이전에는 DNI 격리가 필요한 영양제도 '가장 가까운 끼니 슬롯'에 억지로 합쳐서 보여줬어요
+   (예: 안전 격리 시각이 11:00으로 계산돼도, 끼니가 08:00/18:00뿐이면 08:00 카드에 끼어 들어갔어요).
+   그러면 사료·처방약·영양제·격리 항목이 한 카드에 뒤섞여서 몇 시에 뭘 격리해서 줘야 하는지
+   한눈에 안 보였어요. 이제 세 가지 카드를 독립적으로 만들어서 시간순으로 합쳐요:
+   ① 사료 급여 카드(오직 사료), ② 기본 복용 카드(끼니와 함께 먹는 약물/영양제),
+   ③ DNI 격리 카드(실제 계산된 안전 시각에 단독 배치, 격리 사유 포함) */
 function buildDniChronoSchedule(warnings){
   const freq = Math.max(1, Math.min(6, metaFoodInput.freqPerDay || 1));
   const mealMinutes = computeChronoMealTimesMinutes();
@@ -9274,11 +9420,12 @@ function buildDniChronoSchedule(warnings){
   const fmt = m => { const h = Math.floor(m/60)%24; const mm = m%60; return `${String(h).padStart(2,'0')}:${String(mm).padStart(2,'0')}`; };
   const MEAL_LABELS = ['오전','점심','오후','저녁','야식','새벽'];
 
-  const slots = mealMinutes.map((m,i)=>({ time: fmt(m), label: MEAL_LABELS[i] || `${i+1}번째`, minutes: m, foodG: perMealG, items: [] }));
+  // ① 사료 급여 카드 — 오직 시간 + 그램수만
+  const mealCards = mealMinutes.map((m,i)=>({
+    type:'meal', time: fmt(m), label: MEAL_LABELS[i] || `${i+1}번째`, minutes: m, foodG: perMealG,
+  }));
 
   const conflictedSuppCategories = new Set(warnings.map(w=>w.suppCategory));
-  // 카테고리별로 '가장 긴 격리시간'뿐 아니라, 실제 상충을 일으킨 약물 엔트리(medEntryId)들도 함께 모아둬요
-  // — 이래야 그 약물의 '오늘 실제 모든 복용 시각'을 정확히 추적해서 격리 시각을 계산할 수 있어요.
   const isolationByCategory = {};
   const conflictMedIdsByCategory = {};
   warnings.forEach(w=>{
@@ -9289,63 +9436,116 @@ function buildDniChronoSchedule(warnings){
     }
   });
 
+  // ② 처방약 카드용 버킷 & ③ 영양제(비격리) 카드용 버킷 — 이제 서로 다른 컬러 테마를 쓰기 위해
+  // '기본 복용'을 하나로 뭉치지 않고 처방약/영양제를 끼니 인덱스별로 각각 따로 모아둬요.
+  const medByMealIdx = mealMinutes.map(()=>[]);
+  const safeSuppByMealIdx = mealMinutes.map(()=>[]);
+
   dniMatrix.medicationEntries.forEach(e=>{
     const molecule = resolveEntryMolecule(e);
     const rt = routeInfo(e.route);
     const doseTimes = computeEntryDoseTimesMinutes(e);
     doseTimes.forEach(dt=>{
-      const closestSlot = slots.reduce((best,s)=> Math.abs(s.minutes-dt) < Math.abs(best.minutes-dt) ? s : best, slots[0]);
-      closestSlot.items.push(`${rt.icon} ${molecule}${e.dosage ? ` (${e.dosage})` : ''}`);
+      let closestIdx = 0, closestDist = Infinity;
+      mealMinutes.forEach((mm,idx)=>{ const d = Math.abs(mm-dt); if(d < closestDist){ closestDist = d; closestIdx = idx; } });
+      medByMealIdx[closestIdx].push(`${rt.icon} ${molecule}${e.dosage ? ` (${e.dosage})` : ''}`);
     });
   });
+
+  // ④ DNI 격리 카드 — 끼니에 합치지 않고, 실제 계산된 안전 시각에 독립 카드로 생성
+  const isolatedCards = [];
   dniMatrix.supplements.filter(s=>s!=='none').forEach(cat=>{
     const ingredient = resolveSupplementIngredient(cat);
     const productName = dniMatrix.supplementDetails[cat] && dniMatrix.supplementDetails[cat].productName;
     const label = `${ingredient}${productName ? ` - ${productName}` : ''}`;
     if(conflictedSuppCategories.has(cat)){
-      // ⚠️ 이전에는 '첫 끼 시각' 하나만 기준으로 계산해서, 약물이 하루 2회 이상 복용되거나
-      // 첫 끼와 다른 시각에 투약되는 경우를 놓쳤어요. 이제 실제 상충 약물의 '오늘 모든 복용 시각'을
-      // 모아서, 그 전부로부터 안전 거리를 만족하는 시각을 찾아요.
       const conflictIds = conflictMedIdsByCategory[cat];
       const relevantEntries = conflictIds && conflictIds.size
         ? dniMatrix.medicationEntries.filter(e=>conflictIds.has(e.id))
         : dniMatrix.medicationEntries; // medEntryId 추적이 안 되는 예외 상황에 대한 안전 폴백
       const allDoseMinutes = relevantEntries.flatMap(e=>computeEntryDoseTimesMinutes(e));
-      const targetMinutes = findSafeIsolatedMinutes(allDoseMinutes, isolationByCategory[cat], mealMinutes[0]);
-      const targetSlot = slots.reduce((best,s)=> Math.abs(s.minutes-targetMinutes) < Math.abs(best.minutes-targetMinutes) ? s : best, slots[0]);
-      targetSlot.items.push(`💊(격리) ${label}`);
+      const isoHours = isolationByCategory[cat];
+      const targetMinutes = findSafeIsolatedMinutes(allDoseMinutes, isoHours, mealMinutes[0]);
+      const relevantWarning = warnings.find(w=>w.suppCategory===cat && w.interaction_type==='CONFLICT');
+      const medCategoryLabel = relevantWarning ? (MEDICATIONS.find(m=>m.id===relevantWarning.medCategory)||{}).label || '처방약' : '처방약';
+      isolatedCards.push({
+        type:'isolated',
+        time: fmt(targetMinutes),
+        minutes: targetMinutes,
+        isolationHours: isoHours,
+        label,
+        reason: relevantWarning ? buildIsolationReasonSentence(relevantWarning.molecule, medCategoryLabel, ingredient, isoHours) : `${isoHours}시간 간격을 두고 급여합니다.`,
+      });
     } else {
-      slots[slots.length-1].items.push(`💊 ${label}`);
+      safeSuppByMealIdx[safeSuppByMealIdx.length-1].push(`🧪 ${label}`);
     }
   });
 
-  return slots;
+  const medicationCards = mealMinutes
+    .map((m,i)=> medByMealIdx[i].length ? { type:'medication', time: fmt(m), minutes: m, items: medByMealIdx[i] } : null)
+    .filter(Boolean);
+  const supplementCards = mealMinutes
+    .map((m,i)=> safeSuppByMealIdx[i].length ? { type:'supplement', time: fmt(m), minutes: m, items: safeSuppByMealIdx[i] } : null)
+    .filter(Boolean);
+
+  // 사료/처방약/영양제/격리 카드를 전부 시간순으로 합쳐요(같은 시각이면 사료 → 처방약 → 영양제 순서 유지)
+  return [...mealCards, ...medicationCards, ...supplementCards, ...isolatedCards].sort((a,b)=> a.minutes - b.minutes);
 }
 
-function renderDniChronoTimeline(slots){
+function renderDniChronoTimeline(cards){
   const wrap = document.getElementById('dniChronoTimeline');
-  const SLOT_STYLE = {
-    '오전': { emoji:'🌅', accent:'#F2C14E' },
-    '점심': { emoji:'🌞', accent:'#3A5A40' },
-    '오후': { emoji:'☀️', accent:'#2FBF9F' },
-    '저녁': { emoji:'🌆', accent:'#D89A1E' },
-    '야식': { emoji:'🌙', accent:'#5B6B7A' },
-    '새벽': { emoji:'🌌', accent:'#5B6B7A' },
-    '야간': { emoji:'🌙', accent:'#5B6B7A' },
-  };
-  wrap.innerHTML = slots.map(s=>{
-    const style = SLOT_STYLE[s.label] || { emoji:'⏰', accent:'#3A5A40' };
+  // 🎨 카테고리별 컬러 시스템 — 사료=호박색(Amber), 처방약=에메랄드(Emerald), 영양제/DNI격리=보라(Purple).
+  // DNI 격리 카드는 카드 전체는 보라 테마를 유지하고, "N시간 격리 적용" 배지만 빨간색(Red-600) 포인트로 남겨요.
+  const AMBER = { border:'#FBBF2455', accent:'#D97706', tint:'#FFFBEB', text:'#B45309' };
+  const EMERALD = { border:'#05966933', accent:'#059669', tint:'#ECFDF5', text:'#047857' };
+  const PURPLE = { border:'#C084FC55', accent:'#9333EA', tint:'#FAF5FF', text:'#7E22CE' };
+  const RED = { bg:'#DC2626', text:'#fff' };
+  const MEAL_LABEL_EMOJI = { '오전':'🌅', '점심':'🌞', '오후':'☀️', '저녁':'🌆', '야식':'🌙', '새벽':'🌌', '야간':'🌙' };
+
+  wrap.innerHTML = cards.map(c=>{
+    if(c.type === 'meal'){
+      // ① 사료 급여 카드 — 호박색(Amber) 테마, 오직 시간 + 그램수만
+      const emoji = MEAL_LABEL_EMOJI[c.label] || '⏰';
+      return `
+      <div class="rounded-2xl p-4 relative overflow-hidden" style="background:${AMBER.tint}; border:1.5px solid ${AMBER.border};">
+        <div style="position:absolute; top:0; left:0; right:0; height:4px; background:${AMBER.accent};"></div>
+        <p class="text-xs font-bold mb-1 mt-1" style="color:${AMBER.text};">${emoji} ${c.label} · ${c.time}</p>
+        <p class="font-display font-bold text-2xl" style="color:#2C241F;">${c.foodG}g<span class="text-[11px] font-medium ml-1" style="color:#6b6259;">사료</span></p>
+        <span class="inline-block mt-2 text-[10px] font-bold px-2 py-1 rounded-full" style="background:#FBBF241A; color:${AMBER.text};">🥣 사료 급여</span>
+      </div>`;
+    }
+    if(c.type === 'medication'){
+      // ② 처방약 카드 — 에메랄드(Emerald) 테마
+      return `
+      <div class="rounded-2xl p-4 relative overflow-hidden" style="background:${EMERALD.tint}; border:1.5px solid ${EMERALD.border};">
+        <div style="position:absolute; top:0; left:0; right:0; height:4px; background:${EMERALD.accent};"></div>
+        <p class="text-xs font-bold mb-2 mt-1" style="color:${EMERALD.text};">💊 처방약 · ${c.time}</p>
+        <div class="flex flex-col items-start gap-1.5">
+          ${c.items.map(it=>`<span class="inline-flex items-center text-[11px] font-semibold px-2.5 py-1.5 rounded-full leading-tight" style="background:#0596690d; color:${EMERALD.text}; border:1px solid ${EMERALD.border};">${it}</span>`).join('')}
+        </div>
+      </div>`;
+    }
+    if(c.type === 'supplement'){
+      // ③ 영양제 카드(비격리) — 보라(Purple) 테마
+      return `
+      <div class="rounded-2xl p-4 relative overflow-hidden" style="background:${PURPLE.tint}; border:1.5px solid ${PURPLE.border};">
+        <div style="position:absolute; top:0; left:0; right:0; height:4px; background:${PURPLE.accent};"></div>
+        <p class="text-xs font-bold mb-2 mt-1" style="color:${PURPLE.text};">🧪 영양제 · ${c.time}</p>
+        <div class="flex flex-col items-start gap-1.5">
+          ${c.items.map(it=>`<span class="inline-flex items-center text-[11px] font-semibold px-2.5 py-1.5 rounded-full leading-tight" style="background:#9333ea0d; color:${PURPLE.text}; border:1px solid ${PURPLE.border};">${it}</span>`).join('')}
+        </div>
+      </div>`;
+    }
+    // ④ DNI 격리 카드 — 카드 전체는 보라(Purple) 테마 유지, "N시간 격리 적용" 배지만 빨간색 포인트
     return `
-    <div class="rounded-2xl p-4 relative overflow-hidden" style="background:#FFFFFF; border:1px solid #3A5A401f; box-shadow:0 3px 10px -4px rgba(44,36,31,.08), 0 14px 30px -18px rgba(44,36,31,.14);">
-      <div style="position:absolute; top:0; left:0; right:0; height:4px; background:${style.accent};"></div>
-      <p class="text-xs font-bold mb-1 mt-1" style="color:${style.accent};">${style.emoji} ${s.label} · ${s.time}</p>
-      <p class="font-display font-bold text-2xl mb-2.5" style="color:#2C241F;">${s.foodG}g<span class="text-[11px] font-medium ml-1" style="color:#6b6259;">사료</span></p>
-      <div class="flex flex-col items-start gap-1.5">
-        ${s.items.length ? s.items.map(it=>{
-          const isIsolated = it.includes('(격리)');
-          return `<span class="inline-flex items-center text-[11px] font-semibold px-2.5 py-1.5 rounded-full leading-tight" style="background:${isIsolated ? '#C0473A12' : '#3A5A400d'}; color:${isIsolated ? '#C0473A' : '#2C241F'}; border:1px solid ${isIsolated ? '#C0473A2e' : '#3A5A401f'};">${it}</span>`;
-        }).join('') : `<span class="inline-flex items-center text-[11px] font-medium px-2.5 py-1.5 rounded-full" style="background:#F0EEE7; color:#9a958d;">일반 급여</span>`}
+    <div class="rounded-2xl p-4 relative overflow-hidden" style="background:${PURPLE.tint}; border:1.5px solid ${PURPLE.border};">
+      <div style="position:absolute; top:0; left:0; right:0; height:4px; background:${PURPLE.accent};"></div>
+      <div class="flex items-center justify-between mb-2 mt-1">
+        <p class="text-xs font-bold" style="color:${PURPLE.text};">⏰ ${c.time}</p>
+        <span class="text-[10px] font-bold px-2 py-1 rounded-full" style="background:${RED.bg}; color:${RED.text};">⚠️ ${c.isolationHours}시간 격리 적용</span>
       </div>
+      <span class="inline-flex items-center text-[11px] font-semibold px-2.5 py-1.5 rounded-full leading-tight mb-2" style="background:#9333ea0d; color:${PURPLE.text}; border:1px solid ${PURPLE.border};">🧪 ${c.label}</span>
+      <p class="text-[10px] leading-relaxed pt-2" style="color:#7E22CEaa; border-top:1px dashed ${PURPLE.border};">💡 안내: ${c.reason}</p>
     </div>`;
   }).join('');
 }
@@ -10708,8 +10908,8 @@ function openChronoDniReport(){
 ============================================================ */
 /* '1일 안전 투약 타임라인'의 정식 경로는 #/safe-timeline이에요. 예전 링크(#/chrono)로 들어와도
    깨지지 않도록 과거 경로도 계속 인식하되, 화면에는 항상 새 경로로 자동 리다이렉트해요. */
-const ROUTE_TO_TAB = { '': 'home', 'main': 'home', 'safe-timeline': 'insurance', 'chrono': 'insurance', 'mix-calc': 'mixcalc', 'metabolic-load': 'metaload', 'demo': 'demo' };
-const TAB_TO_ROUTE = { home: '', insurance: 'safe-timeline', mixcalc: 'mix-calc', metaload: 'metabolic-load', demo: 'demo' };
+const ROUTE_TO_TAB = { '': 'home', 'main': 'home', 'safe-timeline': 'insurance', 'chrono': 'insurance', 'mix-calc': 'mixcalc', 'metabolic-load': 'metaload', 'demo': 'demo', 'developers': 'developers', 'sdk': 'developers' };
+const TAB_TO_ROUTE = { home: '', insurance: 'safe-timeline', mixcalc: 'mix-calc', metaload: 'metabolic-load', demo: 'demo', developers: 'developers' };
 const LEGACY_ROUTES = { 'chrono': 'safe-timeline' }; // 구 경로 → 신 경로 매핑 (자동 리다이렉트용)
 
 function getTabFromCurrentHash(){
@@ -11304,6 +11504,69 @@ function initDemoPage(){
 }
 
 /* ============================================================
+   🧑‍💻 SEON B2B SDK & API Developer Portal — 완전한 Mock/정적 콘텐츠로만
+   동작해요(실제 네트워크 요청 없음). 코드 스니펫 탭 전환 + 위젯 라이브 프리뷰만 제공해요.
+============================================================ */
+const DEV_CODE_SNIPPETS = {
+  html: `<script src="https://seon-ivy.vercel.app/seon-sdk.js" data-api-key="YOUR_PARTNER_KEY"><\/script>
+<div id="seon-dni-widget" data-pet-id="PET_123"></div>`,
+  react: `import { SeonDniWidget } from '@seon-ai/react-sdk';
+
+export default function CartPage() {
+  return (
+    <SeonDniWidget apiKey="YOUR_KEY" petData={petProfile} theme="light" />
+  );
+}`,
+  curl: `curl -X POST https://seon-ivy.vercel.app/api/v1/seon/analyze \\
+  -H "Authorization: Bearer YOUR_PARTNER_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "pet": { "name": "초코", "breed": "말티즈", "weight_kg": 4.2 },
+    "medication": "Enrofloxacin",
+    "supplement": "칼슘/킬레이트 칼슘"
+  }'`,
+};
+let devActiveCodeTab = 'html';
+function renderDevCodeTabs(){
+  document.querySelectorAll('.dev-code-tab-btn').forEach(btn=>{
+    btn.classList.toggle('active', btn.dataset.codeTab === devActiveCodeTab);
+  });
+  document.getElementById('devCodeSnippetBox').textContent = DEV_CODE_SNIPPETS[devActiveCodeTab];
+}
+function bindDevCodeTabs(){
+  document.querySelectorAll('.dev-code-tab-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{ devActiveCodeTab = btn.dataset.codeTab; renderDevCodeTabs(); });
+  });
+}
+/* 파트너 사이트(장바구니/EMR)에 임베드됐을 때 보이는 위젯의 정적 미리보기 — 실제 앱 상태와는
+   무관한, 데모용 고정 시나리오(칼슘 보충제 × 처방 항생제 상충)예요. */
+function renderDevWidgetPreview(){
+  const wrap = document.getElementById('devWidgetPreview');
+  wrap.innerHTML = `
+    <div class="rounded-xl p-4" style="background:#fff; border:1.5px solid #FBBF24; box-shadow:0 4px 14px -6px rgba(0,0,0,.12);">
+      <div class="flex items-center gap-2 mb-2 flex-wrap">
+        <span class="text-[10px] font-bold px-2 py-1 rounded-full" style="background:#0F172A; color:#34D399;">🧬 SEON Chrono-DNI</span>
+        <span class="text-[10px] font-bold px-2 py-1 rounded-full" style="background:#FEF3C7; color:#B45309;">⚠️ 상호작용 주의</span>
+      </div>
+      <p class="text-xs font-bold mb-1" style="color:#0F172A;">장바구니의 '칼슘 보충제'가 등록된 처방약(Enrofloxacin)과 상충할 수 있어요.</p>
+      <p class="text-[11px] mb-3" style="color:#64748B;">흡수 저해 방지를 위해 최소 2시간 간격을 두고 급여하거나, 아래 안전한 대체 상품을 확인해보세요.</p>
+      <div class="rounded-lg p-2.5 flex items-center justify-between gap-2" style="background:#F0FDF4; border:1px solid #BBF7D0;">
+        <div class="min-w-0">
+          <p class="text-[11px] font-bold truncate" style="color:#166534;">✅ Renal-Safe Joint Collagen (Non-Mineral)</p>
+          <p class="text-[10px]" style="color:#65A30D;">SEON 인증 안전 대체 상품</p>
+        </div>
+        <button type="button" class="text-[10px] font-bold px-3 py-1.5 rounded-lg shrink-0" style="background:#059669; color:#fff;">담기</button>
+      </div>
+    </div>`;
+}
+function initDevelopersPage(){
+  renderDevCodeTabs();
+  bindDevCodeTabs();
+  renderDevWidgetPreview();
+}
+
+
+/* ============================================================
    INIT
 ============================================================ */
 restoreAppStateSnapshot(); // 다른 init 함수들이 state를 읽어 DOM을 그리기 전에 가장 먼저 복원해요.
@@ -11313,6 +11576,7 @@ restoreAppStateSnapshot(); // 다른 init 함수들이 state를 읽어 DOM을 �
 init();
 initMixCalcPage();
 initDemoPage();
+initDevelopersPage();
 initMetaLoadPage();
 initInsurancePage();
 redirectLegacyRouteIfNeeded(); // #/chrono로 딥링크 접속해도 조용히 #/safe-timeline으로 갱신
