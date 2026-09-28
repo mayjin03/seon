@@ -818,7 +818,7 @@
       <div class="text-center mb-6">
         <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full mb-4 text-xs font-bold" style="background:rgba(16,185,129,.14); color:#34D399;"><span>⚡</span><span>LIVE API SANDBOX</span></div>
         <h1 class="font-display font-bold mb-2" style="font-size:clamp(1.4rem,4vw,2rem); color:#F8FAFC;">Live API Sandbox</h1>
-        <p class="text-sm max-w-2xl mx-auto leading-relaxed" style="color:#94A3B8;">3대 코어 엔진 통합 테스트 &amp; B2B JSON Response Playground — 서온 앱이 실제로 사용하는 연산 엔진(건강 스코어 · 대사 부하 · Chrono-DNI)을 그대로 호출해요.</p>
+        <p class="text-sm max-w-2xl mx-auto leading-relaxed" style="color:#94A3B8;">3대 코어 엔진 통합 테스트 &amp; B2B JSON Response Playground — [Send Request]는 배포된 SEON API 서버(POST /v1/analyze)를 실제로 호출하고, 응답 RAW JSON을 그대로 보여줘요.</p>
       </div>
 
       <div class="rounded-xl px-4 py-2.5 mb-4 text-xs font-bold flex flex-wrap items-center gap-2" style="background:rgba(52,211,153,.1); border:1px solid rgba(52,211,153,.3); color:#6EE7B7;">
@@ -838,6 +838,7 @@
         <div class="grid lg:grid-cols-2 gap-4">
           <div class="rounded-2xl p-4 sm:p-5" style="background:#1E293B; border:1px solid rgba(148,163,184,.15);">
             <p class="text-[11px] font-bold tracking-widest mb-3" style="color:#34D399;">INTERACTIVE REQUEST</p>
+            <p class="text-[10px] mb-3 break-all leading-relaxed" style="color:#94A3B8;"><code id="sbxEndpointLabel" class="sbx-mono"></code> · 서버가 유휴 상태였다면 첫 요청은 수십 초 걸릴 수 있어요.</p>
             <div class="flex items-center gap-2 mb-2">
               <span class="text-[10px] font-bold shrink-0" style="color:#94A3B8;">API Key</span>
               <input id="sbxApiKeyInput" class="sbx-input" value="seon_demo_pk_sandbox_key" spellcheck="false" autocomplete="off">
@@ -1421,8 +1422,9 @@
             <p class="text-xs font-bold mb-2" style="color:#F1F5F9;">Request</p>
             <table class="api-table w-full" id="apiSpecRequestTable">
               <tbody>
-                <tr><th>Base URL</th><td><code>https://seon-ivy.vercel.app/api/v1</code></td></tr>
-                <tr><th>Endpoint</th><td><code>POST /seon/analyze</code></td></tr>
+                <tr><th>Base URL</th><td><code>https://seon-api-orb2.onrender.com</code></td></tr>
+                <tr><th>Endpoint</th><td><code>POST /v1/analyze</code></td></tr>
+                <tr><th>Request Body</th><td><code>pet_bio</code> (breed, weight_kg, age_years, bcs, conditions) · <code>prescriptions</code> · <code>supplements</code></td></tr>
                 <tr><th>Auth Header</th><td><code>X-SEON-API-KEY: &lt;YOUR_PARTNER_KEY&gt;</code></td></tr>
                 <tr><th>Content-Type</th><td><code>application/json</code></td></tr>
                 <tr><th>Latency SLA</th><td>Sub-20ms target (server-side compute, p50)</td></tr>
@@ -1459,7 +1461,7 @@
               </tbody>
             </table>
           </div>
-          <p class="text-[11px] leading-relaxed" style="color:#94A3B8;">※ 프로덕션 엔드포인트는 License Key 발급 후 활성화돼요. Live API Sandbox 탭은 동일한 연산 엔진을 브라우저에서 직접 실행해요. Sandbox의 <code style="color:#6EE7B7;">ndc_code</code>는 데모용 매핑이며, 프로덕션에서는 공인 NDC 디렉터리와 매칭돼요.</p>
+          <p class="text-[11px] leading-relaxed" style="color:#94A3B8;">※ Live API Sandbox 탭은 위 엔드포인트를 실제로 호출해요(서버가 유휴 상태였다면 첫 응답은 수십 초 걸릴 수 있어요). Sandbox의 <code style="color:#6EE7B7;">ndc_code</code>는 데모용 매핑이며, 프로덕션에서는 공인 NDC 디렉터리와 매칭돼요.</p>
         </div>
       </div>
 
@@ -1574,7 +1576,7 @@
         <div class="lg:col-span-2 rounded-2xl p-5 sm:p-6" style="background:#1E293B; border:1px solid rgba(148,163,184,.15);">
           <p class="text-sm font-bold mb-3" style="color:#F1F5F9;">🔑 Sandbox vs Production License Key</p>
           <ul class="space-y-2 text-xs leading-relaxed mb-4" style="color:#94A3B8;">
-            <li><b style="color:#6EE7B7;">Sandbox Key</b> — 신청 즉시 발급, Live API Sandbox에서 실제 연산 엔진을 호출해볼 수 있어요.</li>
+            <li><b style="color:#6EE7B7;">Sandbox Key</b> — 신청 즉시 발급, Live API Sandbox에서 실제 SEON API 서버를 호출해볼 수 있어요.</li>
             <li><b style="color:#A5B4FC;">Production License Key</b> — PoC 협의 및 계약(LOI) 후 SEON이 별도 발급해요.</li>
           </ul>
           <p class="text-[11px] font-bold mb-2" style="color:#CBD5E1;">문의 시 함께 알려주세요</p>
@@ -10863,9 +10865,9 @@ window.addEventListener('beforeunload', saveAppStateSnapshot);
 /* ============================================================
    🧑‍💻 SEON B2B Developer Portal
    — Overview 5-Node 파이프라인 · Live API Sandbox · Developer Docs · Enterprise PoC
-   Live API Sandbox는 앱에 이미 있는 실제 연산 엔진(computeHealthScore / computeOrganBurden /
-   DNI_MOLECULE_RULES)을 그대로 호출해요. 엔진이 읽는 전역 입력 상태는 호출 전에 저장했다가
-   호출 직후 '같은 객체 그대로' 복원하므로, 대사 부하·Chrono-DNI 화면의 유저 입력은 절대 변하지 않아요.
+   Live API Sandbox의 [Send Request]는 배포된 SEON API 서버(POST /v1/analyze)로 실제 fetch() 요청을 보내고,
+   서버가 돌려준 B2B RAW JSON을 그대로 우측 패널에 출력해요(브라우저 안의 Mock 연산은 없어요).
+   [2. Metabolic Load] / [3. Chrono-DNI] 하위 뷰의 API Response 패널은 각 모듈 화면의 현재 입력값을 그대로 보여줘요.
 
    -- Supabase SQL (Enterprise PoC 문의 저장용. 테이블이 없으면 화면은 이메일 전송 안내로 안전하게 폴백해요)
    create table if not exists public.b2b_poc_requests (
@@ -10949,11 +10951,11 @@ export default function CartScreen({ petId }) {
   );
 }
 // iOS: cd ios && pod install`,
-  curl: `curl -X POST https://seon-ivy.vercel.app/api/v1/seon/analyze \\
+  curl: `curl -X POST https://seon-api-orb2.onrender.com/v1/analyze \\
   -H "X-SEON-API-KEY: ${DEV_DEMO_API_KEY}" \\
   -H "Content-Type: application/json" \\
   -d '{
-    "pet": { "breed": "말티즈", "weight_kg": 4.2, "age_years": 10, "bcs": 5, "conditions": ["kidney"] },
+    "pet_bio": { "breed": "말티즈", "weight_kg": 4.2, "age_years": 10, "bcs": 5, "conditions": ["kidney"] },
     "prescriptions": [{ "name": "Enrofloxacin", "frequency_per_day": 2 }],
     "supplements": ["칼슘/킬레이트 칼슘"]
   }'`,
@@ -11011,73 +11013,15 @@ function bindDevCopyButtons(){
 const SBX_SUPPLEMENT_OPTIONS = ['칼슘/킬레이트 칼슘','프로바이오틱스(유산균)','마그네슘','철분/구리/아연 미네랄','오메가3(EPA/DHA)','글루코사민','비타민K','비타민D3'];
 const SBX_CONDITION_OPTIONS = [{id:'kidney',label:'신장 질환'},{id:'liver',label:'간 질환'},{id:'heart',label:'심장 질환'},{id:'joint',label:'관절 질환'}];
 const SBX_DEFAULT_REQUEST = {
-  pet: { breed:'말티즈', weight_kg:4.2, age_years:10, bcs:5, conditions:['kidney'] },
+  pet_bio: { breed:'말티즈', weight_kg:4.2, age_years:10, bcs:5, conditions:['kidney'] },
   prescriptions: [{ name:'Enrofloxacin', frequency_per_day:2 }],
   supplements: ['칼슘/킬레이트 칼슘'],
-};
-/* Sandbox 전용 데모 NDC 매핑 — 단일 데모 labeler prefix(50320)만 사용해요. 프로덕션은 공인 NDC 디렉터리와 매칭돼요. */
-const SBX_NDC_MAP = {
-  enrofloxacin:'NDC 50320-012-10', amoxicillin:'NDC 50320-021-30', cephalexin:'NDC 50320-033-20', metronidazole:'NDC 50320-047-15',
-  prednisolone:'NDC 50320-058-10', furosemide:'NDC 50320-064-25', pimobendan:'NDC 50320-072-10', benazepril:'NDC 50320-081-30',
-  clopidogrel:'NDC 50320-095-30', warfarin:'NDC 50320-103-10', levothyroxine:'NDC 50320-118-20', meloxicam:'NDC 50320-126-10',
-  carprofen:'NDC 50320-137-10', phenobarbital:'NDC 50320-149-10',
 };
 let sbxView = 'full';
 let sbxSyncLock = false;
 let sbxReady = false;
-let sbxLastSig = ''; // 마지막으로 실행한 요청의 서명(뷰|키|JSON) — 같은 요청이면 재실행하지 않아 응답이 안정적으로 유지돼요.
-function sbxCurrentSig(){ return sbxView + '|' + document.getElementById('sbxApiKeyInput').value.trim() + '|' + document.getElementById('sbxRequestJson').value; }
-
-function sbxNorm(s){ return String(s||'').replace(/[^\p{L}\p{N}]/gu, '').toLowerCase(); }
 function sbxAllMolecules(){
   return Object.keys(DRUG_MOLECULES_BY_CATEGORY).flatMap(cat=>DRUG_MOLECULES_BY_CATEGORY[cat].map(name=>({ name, category:cat })));
-}
-function sbxFindMolecule(input){
-  const n = sbxNorm(input);
-  if(!n) return null;
-  const all = sbxAllMolecules();
-  return all.find(m=>sbxNorm(m.name)===n) || all.find(m=>{ const mn = sbxNorm(m.name); return mn.includes(n) || n.includes(mn); }) || null;
-}
-function sbxLevenshtein(a,b){
-  const m=a.length, n=b.length, d=[];
-  for(let i=0;i<=m;i++){ d[i]=[i]; }
-  for(let j=1;j<=n;j++){ d[0][j]=j; }
-  for(let i=1;i<=m;i++) for(let j=1;j<=n;j++) d[i][j]=Math.min(d[i-1][j]+1, d[i][j-1]+1, d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));
-  return d[m][n];
-}
-function sbxDidYouMean(input){
-  const n = sbxNorm(input);
-  let best = null, bestD = 99;
-  sbxAllMolecules().forEach(m=>{ const d = sbxLevenshtein(n, sbxNorm(m.name)); if(d < bestD){ bestD = d; best = m.name; } });
-  return bestD <= 3 ? best : null;
-}
-function sbxLookupConflict(medName, suppName){
-  const mn = sbxNorm(medName), sn = sbxNorm(suppName);
-  if(!mn || !sn) return null;
-  return DNI_MOLECULE_RULES.find(r=>{
-    if(r.type !== 'CONFLICT') return false;
-    const rm = sbxNorm(r.molecule), rs = sbxNorm(r.nutrient);
-    return (rm.includes(mn) || mn.includes(rm)) && (rs.includes(sn) || sn.includes(rs));
-  }) || null;
-}
-function sbxMetaBreedId(label){
-  if(label === '토이/미니어처 푸들') return 'poodle_toy';
-  const hit = META_BREED_DB.find(b=>b.label === label);
-  return hit ? hit.id : 'other';
-}
-function sbxMetaMedCategory(dniCategory){
-  return META_MEDICATION_CATEGORIES.some(c=>c.id === dniCategory) ? dniCategory : 'other';
-}
-function sbxSuppToMetaCategory(name){
-  const s = String(name||'');
-  if(/오메가|EPA|DHA/i.test(s)) return 'omega3';
-  if(/유산균|프로바이오/.test(s)) return 'probiotic_standard';
-  if(/글루코사민|콘드로|관절/.test(s)) return 'joint';
-  if(/콜라겐/.test(s)) return 'collagen';
-  if(/신장|방광|크랜베리/.test(s)) return 'kidney_bladder';
-  if(/눈|루테인/.test(s)) return 'eye';
-  if(/피부/.test(s)) return 'skin';
-  return 'multivit_standard';
 }
 function sbxZone(pct, kind){
   if(pct > 100) return 'CRITICAL';
@@ -11086,143 +11030,7 @@ function sbxZone(pct, kind){
 }
 
 /* 엔진이 읽는 전역 상태를 '같은 객체 그대로' 저장/복원해요(대사 부하·Chrono-DNI 화면의 입력·이벤트 핸들러가 잡고 있는 참조를 깨지 않기 위해). */
-function sbxSnapshotEngineState(){
-  const pick = (o, keys)=>{ const s = {}; keys.forEach(k=>{ s[k] = o[k]; }); return s; };
-  return {
-    dog: pick(dog, ['bcs','conditions','ageYear','breed','plan']),
-    hp: pick(metaHealthProfile, ['breed','breedOtherSize','weight','ageGroup','activityLevel']),
-    hpConds: Object.assign({}, metaHealthProfile.conditions),
-    fi: pick(metaFoodInput, ['dailyG','freqPerDay','treatQuantity']),
-    mix: Object.keys(metaFoodInput.mixins).reduce((a,k)=>{ a[k] = metaFoodInput.mixins[k].active; return a; }, {}),
-    li: pick(metaLoadInput, ['medicationInputMode']),
-    liEntries: metaLoadInput.medicationEntries.slice(),
-    liInferred: Object.assign({}, metaLoadInput.inferredConditions),
-    ss: Object.keys(metaSupplementState).reduce((a,k)=>{ a[k] = metaSupplementState[k].active; return a; }, {}),
-  };
-}
-function sbxRestoreEngineState(sn){
-  Object.assign(dog, sn.dog);
-  Object.assign(metaHealthProfile, sn.hp);
-  Object.keys(metaHealthProfile.conditions).forEach(k=>{ delete metaHealthProfile.conditions[k]; });
-  Object.assign(metaHealthProfile.conditions, sn.hpConds);
-  Object.assign(metaFoodInput, sn.fi);
-  Object.keys(sn.mix).forEach(k=>{ metaFoodInput.mixins[k].active = sn.mix[k]; });
-  Object.assign(metaLoadInput, sn.li);
-  metaLoadInput.medicationEntries.length = 0;
-  sn.liEntries.forEach(e=>metaLoadInput.medicationEntries.push(e));
-  Object.keys(metaLoadInput.inferredConditions).forEach(k=>{ delete metaLoadInput.inferredConditions[k]; });
-  Object.assign(metaLoadInput.inferredConditions, sn.liInferred);
-  Object.keys(sn.ss).forEach(k=>{ metaSupplementState[k].active = sn.ss[k]; });
-}
-function sbxRunEngines(pet, rxList, suppNames){
-  const sn = sbxSnapshotEngineState();
-  try{
-    const conds = Array.isArray(pet.conditions) ? pet.conditions : [];
-    // ① 건강 스코어 (실제 computeHealthScore)
-    dog.bcs = pet.bcs; dog.conditions = conds.slice(); dog.ageYear = pet.age_years; dog.breed = pet.breed; dog.plan = 'general';
-    const health = computeHealthScore({ allocation:{ snackRatio:0.05, supplementRatio:Math.min(0.15, 0.03*suppNames.length) } });
-    // ② 간·신장 대사 부하 (실제 computeOrganBurden)
-    const w = pet.weight_kg;
-    metaHealthProfile.breed = sbxMetaBreedId(pet.breed);
-    metaHealthProfile.breedOtherSize = w < 7 ? '소형' : w < 15 ? '중형' : w < 30 ? '대형' : '초대형';
-    metaHealthProfile.weight = w;
-    metaHealthProfile.ageGroup = pet.age_years < 1 ? 'young' : pet.age_years >= 7 ? 'senior' : 'adult';
-    metaHealthProfile.activityLevel = 'normal';
-    Object.keys(metaHealthProfile.conditions).forEach(k=>{ delete metaHealthProfile.conditions[k]; });
-    conds.forEach(c=>{
-      if(!META_CONDITIONS.some(mc=>mc.id === c)) return;
-      const sev = META_CONDITION_SEVERITY[c] || [];
-      metaHealthProfile.conditions[c] = { active:true, severity:(sev[1] || sev[0] || {}).id };
-    });
-    const kcalPerG = (metaFoodInput.kcalPerKg || 3650) / 1000;
-    metaFoodInput.dailyG = Math.round((1.6 * 70 * Math.pow(w, 0.75)) / kcalPerG);
-    metaFoodInput.freqPerDay = 2; metaFoodInput.treatQuantity = 0;
-    Object.keys(metaFoodInput.mixins).forEach(k=>{ metaFoodInput.mixins[k].active = false; });
-    metaLoadInput.medicationInputMode = 'manual';
-    Object.keys(metaLoadInput.inferredConditions).forEach(k=>{ delete metaLoadInput.inferredConditions[k]; });
-    metaLoadInput.medicationEntries.length = 0;
-    rxList.forEach(r=>metaLoadInput.medicationEntries.push(metaNewMedicationEntry({ category:sbxMetaMedCategory(r.category), freqPerDay:r.frequency_per_day })));
-    Object.keys(metaSupplementState).forEach(k=>{ metaSupplementState[k].active = false; });
-    suppNames.forEach(name=>{ const c = sbxSuppToMetaCategory(name); if(metaSupplementState[c]) metaSupplementState[c].active = true; });
-    const burden = computeOrganBurden();
-    return { health, burden };
-  } finally {
-    sbxRestoreEngineState(sn);
-  }
-}
-function sbxRequestId(){ return 'req_sbx_' + Math.random().toString(36).slice(2, 10); }
-function sbxError(http, message, extra){
-  return { http, body: Object.assign({ status:'ERROR', code:http, message, request_id:sbxRequestId() }, extra || {}) };
-}
 /* 요청 JSON → 응답 JSON. view: 'full' | 'health' */
-function sbxProcessRequest(req, view, key){
-  const t0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
-  if(!key || !String(key).startsWith(SEON_DEMO_KEY_PREFIX)) return sbxError(401, 'Invalid or missing X-SEON-API-KEY', { fallback:'Sandbox 키는 seon_demo_pk_ 로 시작해야 해요. Enterprise PoC 탭에서 발급받을 수 있어요.' });
-  if(!req || typeof req !== 'object' || !req.pet || typeof req.pet !== 'object') return sbxError(400, 'Missing required field: pet');
-  const w = Number(req.pet.weight_kg);
-  if(!(w >= 0.5 && w <= 100)) return sbxError(422, 'pet.weight_kg must be a number between 0.5 and 100');
-  const age = req.pet.age_years == null ? 5 : Number(req.pet.age_years);
-  if(!(age >= 0 && age <= 30)) return sbxError(422, 'pet.age_years must be a number between 0 and 30');
-  const bcsRaw = req.pet.bcs == null ? 5 : Number(req.pet.bcs);
-  if(!(bcsRaw >= 1 && bcsRaw <= 9)) return sbxError(422, 'pet.bcs must be a number between 1 and 9');
-  const pet = { breed:String(req.pet.breed || '믹스견'), weight_kg:w, age_years:age, bcs:Math.round(bcsRaw), conditions:Array.isArray(req.pet.conditions) ? req.pet.conditions.map(String) : [] };
-
-  const rx = [];
-  const suppNames = Array.isArray(req.supplements) ? req.supplements.map(String).filter(Boolean) : [];
-  if(view === 'full'){
-    const list = Array.isArray(req.prescriptions) ? req.prescriptions : [];
-    for(const item of list){
-      const rawName = typeof item === 'string' ? item : (item && item.name);
-      const freq = Math.max(1, Math.min(4, parseInt(item && item.frequency_per_day) || 1));
-      const found = sbxFindMolecule(rawName);
-      if(!found) return sbxError(422, `Unknown molecule name: '${rawName}'`, { did_you_mean: sbxDidYouMean(rawName), fallback:'성분명을 인식하지 못하면 일반 주의 문구로 안전하게 폴백돼요.' });
-      rx.push({ name:found.name, category:found.category, frequency_per_day:freq, ndc_code: SBX_NDC_MAP[found.name.toLowerCase().split(' ')[0]] || null });
-    }
-  }
-  let engines;
-  try{ engines = sbxRunEngines(pet, rx, view === 'full' ? suppNames : []); }
-  catch(e){ return sbxError(500, 'Engine error: ' + (e && e.message ? e.message : e)); }
-  const { health, burden } = engines;
-  const latency = Math.max(1, Math.round(((typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now()) - t0));
-  const meta = { mode:'sandbox', engine:'seon-engine (computeHealthScore · computeOrganBurden · DNI rules)', ndc_mapping:'sandbox-illustrative (production maps to a licensed NDC directory)' };
-
-  if(view === 'health'){
-    return { http:200, body:{
-      status:'SUCCESS', request_id:sbxRequestId(), latency_ms:latency,
-      health_score:health.score, health_light:health.light, verdict:health.verdict,
-      inputs:{ breed:pet.breed, age_years:pet.age_years, bcs:pet.bcs, conditions_count:pet.conditions.length },
-      fhir_compatible:true, meta,
-    }};
-  }
-  const conflicts = [];
-  rx.forEach(r=>suppNames.forEach(s=>{
-    const rule = sbxLookupConflict(r.name, s);
-    if(rule) conflicts.push({ pair:`${r.name} x ${s}`, medication:r.name, supplement:s, isolation_hours:rule.isolationHours, mechanism:rule.note, reference:rule.reference });
-  }));
-  const isolationHours = conflicts.reduce((m,c)=>Math.max(m, c.isolation_hours), 0);
-  const hepatic = burden.liverPct, renal = burden.kidneyPct;
-  const first = conflicts[0];
-  const schedule = first
-    ? `08:00 ${first.medication} | ${String(8 + first.isolation_hours).padStart(2,'0')}:00 ${first.supplement}`
-    : (rx.length ? '제약 없음 — 평소 급여 스케줄을 유지하세요.' : '처방약 미입력 — 스케줄 산출 대상 없음');
-  return { http:200, body:{
-    status:'SUCCESS', request_id:sbxRequestId(), latency_ms:latency,
-    ndc_code: rx.length ? rx[0].ndc_code : null,
-    health_score:health.score,
-    hepatic_strain_index:hepatic,
-    renal_clearance_burden:renal,
-    isolation_hours:isolationHours,
-    fhir_compatible:true,
-    health_light:health.light,
-    organ_strain_zones:{ hepatic:sbxZone(hepatic,'hepatic'), renal:sbxZone(renal,'renal') },
-    dni_conflict_detected:conflicts.length > 0,
-    conflicts,
-    recommended_schedule:schedule,
-    prescriptions:rx.map(r=>({ name:r.name, ndc_code:r.ndc_code, category:r.category, frequency_per_day:r.frequency_per_day })),
-    meta,
-  }};
-}
-
 /* --- Widget 렌더 (API 응답 → 파트너 앱에 이식되는 카드) --- */
 function sbxBar(label, pct, zone){
   const color = zone === 'CRITICAL' ? '#DC2626' : (zone === 'ELEVATED' || zone === 'HIGH_RISK') ? '#D97706' : '#059669';
@@ -11235,7 +11043,7 @@ function renderSbxWidget(result, view){
   const b = result.body;
   if(b.status !== 'SUCCESS'){
     wrap.innerHTML = `<div class="rounded-xl p-4" style="background:#fff; border:1.5px solid #FCA5A5;">
-      <div class="flex items-center gap-2 mb-2"><span class="text-[10px] font-bold px-2 py-1 rounded-full" style="background:#0F172A; color:#34D399;">🧬 SEON Chrono-DNI</span><span class="text-[10px] font-bold px-2 py-1 rounded-full" style="background:#FEE2E2; color:#B91C1C;">${sbxEsc(b.code)} ERROR</span></div>
+      <div class="flex items-center gap-2 mb-2"><span class="text-[10px] font-bold px-2 py-1 rounded-full" style="background:#0F172A; color:#34D399;">🧬 SEON Chrono-DNI</span><span class="text-[10px] font-bold px-2 py-1 rounded-full" style="background:#FEE2E2; color:#B91C1C;">${b.source === 'client' ? 'CONNECTION ERROR' : sbxEsc(b.code) + ' ERROR'}</span></div>
       <p class="text-xs font-bold" style="color:#0F172A;">${sbxEsc(b.message)}</p>
       <p class="text-[11px] mt-1" style="color:#64748B;">${sbxEsc(b.fallback || '위젯은 안전하게 기본 화면으로 폴백돼요.')}</p></div>`;
     return;
@@ -11245,7 +11053,7 @@ function renderSbxWidget(result, view){
     wrap.innerHTML = `<div class="rounded-xl p-4" style="background:#fff; border:1.5px solid ${c}55;">
       <div class="flex items-center gap-2 mb-3"><span class="text-[10px] font-bold px-2 py-1 rounded-full" style="background:#0F172A; color:#34D399;">🧬 SEON Health Score</span></div>
       <div class="flex items-center gap-4"><p class="font-display font-bold" style="font-size:2.4rem; color:${c};">${b.health_score}</p>
-      <div><p class="text-xs font-bold" style="color:#0F172A;">${sbxEsc(b.verdict)}</p><p class="text-[11px]" style="color:#64748B;">목표 기반 종합 건강 스코어 (0–100)</p></div></div></div>`;
+      <div><p class="text-xs font-bold" style="color:#0F172A;">${sbxEsc(SBX_LIGHT_LABEL[b.health_light] || '평가 완료')}</p><p class="text-[11px]" style="color:#64748B;">목표 기반 종합 건강 스코어 (0–100)</p></div></div></div>`;
     return;
   }
   const conflict = b.conflicts[0];
@@ -11288,7 +11096,7 @@ function sbxAddRxRow(name, freq){
 function sbxReadForm(){
   const num = id=>parseFloat(document.getElementById(id).value);
   return {
-    pet: {
+    pet_bio: {
       breed: document.getElementById('sbxBreed').value,
       weight_kg: num('sbxWeight'),
       age_years: num('sbxAge'),
@@ -11308,7 +11116,7 @@ function sbxWriteJson(){
 function sbxApplyToForm(req){
   sbxSyncLock = true;
   try{
-    const pet = (req && req.pet) || {};
+    const pet = (req && (req.pet_bio || req.pet)) || {};
     const breedSel = document.getElementById('sbxBreed');
     if([...breedSel.options].some(o=>o.value === pet.breed)) breedSel.value = pet.breed;
     if(pet.weight_kg != null) document.getElementById('sbxWeight').value = pet.weight_kg;
@@ -11324,25 +11132,110 @@ function sbxApplyToForm(req){
     });
   } finally { sbxSyncLock = false; }
 }
-function sbxSendCurrent(){
-  if(!sbxReady) return;
+/* --- 실제 백엔드 API 호출 (배포된 SEON API 서버) --- */
+const SEON_API_BASE = 'https://seon-api-orb2.onrender.com';
+const SEON_API_ANALYZE_URL = SEON_API_BASE + '/v1/analyze';
+const SBX_TIMEOUT_MS = 60000; // 유휴 상태였던 서버의 첫 요청(cold start)은 수십 초 걸릴 수 있어요.
+const SBX_HTTP_TEXT = { 200:'OK', 400:'Bad Request', 401:'Unauthorized', 404:'Not Found', 405:'Method Not Allowed', 413:'Payload Too Large', 415:'Unsupported Media Type', 422:'Unprocessable Entity', 429:'Too Many Requests', 500:'Server Error', 502:'Bad Gateway', 503:'Service Unavailable', 504:'Gateway Timeout' };
+const SBX_LIGHT_LABEL = { green:'양호', yellow:'주의', red:'주의 필요 · 수의사 상담 권장' };
+let sbxInFlight = false;
+const sbxResults = { full:null, health:null }; // 뷰별 마지막 서버 응답
+
+/* 요청이 서버까지 가지 못한 경우(네트워크/타임아웃/잘못된 키 등)를 서버 오류와 구분되게 표시해요. */
+function sbxClientError(message, fallback, label){
+  return { http:0, kind:'client', label, ms:null, body:{ status:'ERROR', code:0, source:'client', message, fallback } };
+}
+async function sbxCallApi(payload, key){
+  if(!/^[\x20-\x7E]*$/.test(key)) return sbxClientError('API Key에 사용할 수 없는 문자가 있어요 (영문/숫자/기호만 가능해요).', 'API Key를 다시 확인해주세요.', 'Invalid API Key');
+  const controller = new AbortController();
+  const timer = setTimeout(()=>controller.abort(), SBX_TIMEOUT_MS);
+  const t0 = performance.now();
+  try{
+    const res = await fetch(SEON_API_ANALYZE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'X-SEON-API-KEY': key },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+    const raw = await res.text();
+    const ms = Math.round(performance.now() - t0);
+    let body = null;
+    try{ body = JSON.parse(raw); }catch(e){ /* JSON이 아닌 응답(프록시 오류 페이지 등) */ }
+    if(!body || typeof body !== 'object' || Array.isArray(body)){
+      return Object.assign(sbxClientError(`Non-JSON response from API (HTTP ${res.status})`, '서버가 배포/재시작 중이거나 프록시 오류일 수 있어요. 잠시 후 다시 시도해주세요.', 'Bad Response'), { http:res.status, ms });
+    }
+    return { http:res.status, kind:'server', ms, body };
+  }catch(e){
+    const ms = Math.round(performance.now() - t0);
+    if(e && e.name === 'AbortError') return Object.assign(sbxClientError(`Request timed out after ${SBX_TIMEOUT_MS / 1000}s`, '서버가 깨어나는 중일 수 있어요. 잠시 후 다시 시도해주세요.', 'Timed Out'), { ms });
+    return Object.assign(sbxClientError(`Network error: could not reach ${SEON_API_ANALYZE_URL}`, '네트워크 연결과 서버 상태, 그리고 서버의 CORS_ORIGIN 설정에 이 사이트 주소가 포함돼 있는지 확인해주세요.', 'Network Error'), { ms });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+/* 에디터 JSON을 서버 표준 필드명(pet_bio)으로 맞춰 보내요. 레거시 'pet'만 있으면 이름만 바꿔요. Goal Health Scoring 뷰는 pet_bio만 보내요. */
+function sbxBuildPayload(req, view){
+  const payload = (req && typeof req === 'object' && !Array.isArray(req)) ? Object.assign({}, req) : req;
+  if(payload && typeof payload === 'object' && !Array.isArray(payload) && payload.pet_bio === undefined && payload.pet !== undefined){
+    payload.pet_bio = payload.pet;
+  }
+  if(payload && typeof payload === 'object' && !Array.isArray(payload)) delete payload.pet;
+  if(view === 'health' && payload && typeof payload === 'object' && !Array.isArray(payload)) return payload.pet_bio === undefined ? {} : { pet_bio: payload.pet_bio };
+  return payload;
+}
+function sbxSetBusy(on){
+  sbxInFlight = on;
+  const btn = document.getElementById('sbxSendBtn');
+  btn.disabled = on;
+  btn.style.opacity = on ? '.6' : '1';
+  btn.textContent = on ? '⏳ Calling API…' : '▶ Send Request / Test Call';
+  if(on){
+    document.getElementById('sbxStatusBar').classList.remove('hidden');
+    document.getElementById('sbxStatusDot').style.color = '#FBBF24';
+    document.getElementById('sbxStatusText').textContent = 'Waiting for API… (유휴 서버의 첫 요청은 최대 1분 걸릴 수 있어요)';
+  }
+}
+function sbxShowPlaceholder(){
+  document.getElementById('sbxResponseBox').textContent = `// [Send Request]를 누르면 배포된 API를 실제로 호출해요.\n// POST ${SEON_API_ANALYZE_URL}`;
+  document.getElementById('sbxStatusBar').classList.add('hidden');
+  document.getElementById('sbxWidgetPreview').innerHTML = '<p class="text-xs" style="color:#475569;">요청을 보내면 서버 응답을 바탕으로 이 위젯이 렌더링돼요.</p>';
+}
+function sbxRenderResult(result, view){
+  document.getElementById('sbxResponseBox').innerHTML = syntaxHighlightJson(JSON.stringify(result.body, null, 2));
+  document.getElementById('sbxStatusBar').classList.remove('hidden');
+  const ok = result.kind === 'server' && result.http === 200 && result.body.status === 'SUCCESS';
+  let text;
+  if(!result.http) text = result.label + (result.ms != null ? ` | ${result.ms}ms` : '');
+  else text = `${result.http} ${SBX_HTTP_TEXT[result.http] || ''} | ${result.ms}ms round-trip` + (result.body.latency_ms != null ? ` (server compute ${result.body.latency_ms}ms)` : '');
+  document.getElementById('sbxStatusText').textContent = text;
+  document.getElementById('sbxStatusDot').style.color = ok ? '#4ADE80' : '#F87171';
+  try{ renderSbxWidget(result, view); }
+  catch(e){ // 서버 버전이 어긋나 예상 필드가 없어도 RAW JSON은 그대로 보여줘요.
+    document.getElementById('sbxWidgetPreview').innerHTML = '<p class="text-xs" style="color:#475569;">응답 형식이 예상과 달라 위젯을 그릴 수 없어요. 우측 RAW JSON 패널을 확인해주세요.</p>';
+  }
+}
+function sbxRenderCurrentView(){
+  const view = sbxView === 'health' ? 'health' : 'full';
+  const r = sbxResults[view];
+  if(r) sbxRenderResult(r, view); else sbxShowPlaceholder();
+}
+async function sbxSendCurrent(){
+  if(!sbxReady || sbxInFlight) return;
   const errEl = document.getElementById('sbxRequestError');
   errEl.classList.add('hidden');
   let req;
   try{ req = JSON.parse(document.getElementById('sbxRequestJson').value); }
   catch(e){ errEl.textContent = '⚠️ JSON 형식이 올바르지 않아요. 콤마/따옴표를 확인해주세요.'; errEl.classList.remove('hidden'); return; }
   const view = sbxView === 'health' ? 'health' : 'full';
-  sbxLastSig = sbxCurrentSig();
-  const result = sbxProcessRequest(req, view, document.getElementById('sbxApiKeyInput').value.trim());
-  const ok = result.http === 200;
-  const names = { 200:'OK', 400:'Bad Request', 401:'Unauthorized', 422:'Unprocessable Entity', 500:'Server Error' };
-  const ms = result.body.latency_ms != null ? ` | ${result.body.latency_ms}ms` : '';
-  document.getElementById('sbxResponseBox').innerHTML = syntaxHighlightJson(JSON.stringify(result.body, null, 2));
-  const bar = document.getElementById('sbxStatusBar');
-  bar.classList.remove('hidden');
-  document.getElementById('sbxStatusText').textContent = `${result.http} ${names[result.http] || ''}${ms}`;
-  document.getElementById('sbxStatusDot').style.color = ok ? '#4ADE80' : '#F87171';
-  renderSbxWidget(result, view);
+  const payload = sbxBuildPayload(req, view);
+  const key = document.getElementById('sbxApiKeyInput').value.trim();
+  sbxSetBusy(true);
+  let result;
+  try{ result = await sbxCallApi(payload, key); }
+  catch(e){ result = sbxClientError('Unexpected client error: ' + (e && e.message ? e.message : e), '페이지를 새로고침한 뒤 다시 시도해주세요.', 'Client Error'); }
+  finally{ sbxSetBusy(false); }
+  sbxResults[view] = result;
+  sbxRenderCurrentView(); // 응답을 보내는 동안 뷰를 바꿨다면, 지금 보고 있는 뷰의 결과를 그려요.
 }
 
 /* --- Sub-module(대사 부하 / Chrono-DNI) 실시간 API Response --- */
@@ -11389,7 +11282,7 @@ function applySandboxView(sub, hideOnly){
   document.getElementById('sbxRxGroup').classList.toggle('hidden', sbxView === 'health');
   document.getElementById('sbxSuppGroup').classList.toggle('hidden', sbxView === 'health');
   document.getElementById('sbxOpenDiagnosticBtn').classList.toggle('hidden', sbxView !== 'health');
-  if(isPlay && sbxCurrentSig() !== sbxLastSig) sbxSendCurrent();
+  if(isPlay) sbxRenderCurrentView(); // 서버 호출은 [Send Request]를 눌렀을 때만 해요.
   if(sbxView === 'metaload') sbxRefreshModuleApi('meta');
   if(sbxView === 'chrono') sbxRefreshModuleApi('chrono');
 }
@@ -11421,7 +11314,8 @@ function initApiSandbox(){
   document.getElementById('insurancePage').addEventListener('click', scheduleRefresh('chrono'));
   const issued = getIssuedSandboxKey();
   if(issued) document.getElementById('sbxApiKeyInput').value = issued;
-  sbxSendCurrent();
+  document.getElementById('sbxEndpointLabel').textContent = 'POST ' + SEON_API_ANALYZE_URL;
+  sbxShowPlaceholder();
 }
 
 /* ---------------- Enterprise PoC ---------------- */
