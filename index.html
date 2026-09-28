@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0F172A">
 <title>서온 · seon</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,6 +19,13 @@
 
     --c-surface-light:#F7F5F0;
     --c-surface-dark:#161A16;
+
+    /* ---- Dark Slate 캔버스: 페이지 전체 배경을 랜딩의 다크 슬레이트 카드 톤(#0F172A)과 통일해요.
+       카드(.surface 등)는 기존 --bg/--surface/--text 토큰을 그대로 쓰므로, 카드 내부 로직은 안 바뀌어요. ---- */
+    --canvas:#0F172A;
+    --canvas-text:#E2E8F0;
+    --canvas-muted:#94A3B8;
+    --canvas-border:#334155;
 
     --c-primary:#2F4A34;
     --c-mint:#2FBF9F;
@@ -55,11 +63,11 @@
   }
 
   *{box-sizing:border-box;}
-  html,body{background:var(--bg);}
+  html,body{background:var(--canvas);}
   html{ font-size:calc(var(--base-font,16px) * var(--scale,1)); transition:font-size .2s ease; }
   body{
     font-family:var(--font-body);
-    color:var(--text);
+    color:var(--canvas-text);
     -webkit-font-smoothing:antialiased;
     padding-top:env(safe-area-inset-top,0px);
     padding-bottom:env(safe-area-inset-bottom,0px);
@@ -106,7 +114,6 @@
   .chip.active{ border-color:var(--c-primary); background:var(--c-primary); color:#fff; font-weight:700; box-shadow:0 6px 16px -8px color-mix(in srgb, var(--c-primary) 45%, transparent); }
 
   /* ---- 메인 탭 라우팅 ---- */
-  .main-tab-btn{ color:var(--c-primary-dark); transition:all .18s ease; opacity:.6; }
 
   /* ---- Customized Roll-up Wizard: Step 펼침 아코디언 모션 ---- */
   .demo-wizard-step-active{ animation:demoWizardFadeIn .35s ease; }
@@ -127,7 +134,6 @@
   .demo-json-number{ color:#8FE9CE; }
   .demo-json-boolean{ color:#E8604C; font-weight:700; }
   .demo-json-null{ color:rgba(255,255,255,.35); }
-  .main-tab-btn.active{ background:var(--c-primary); color:#fff; opacity:1; }
   .sticker-palette-btn.is-text{ font-size:11px; font-weight:700; padding:8px 10px; white-space:nowrap; }
 
   /* ---- 1일 안전 투약 타임라인 테마: Forest Sage & Warm Cream ---- */
@@ -283,9 +289,104 @@
   .side-link:hover{ background:var(--c-primary-light); }
   .side-link.dim{ opacity:.4; }
 
+
+  /* ============================================================
+     🌌 Dark Slate 캔버스 테마 (TTCare SDK 스타일 B2B 엔터프라이즈 포털)
+     — 페이지 배경은 다크 슬레이트로 통일하되, 카드 내부는 기존 텍스트 토큰을 그대로 써서
+       입력폼·리포트·대시보드 등 기존 화면의 가독성/로직이 깨지지 않게 했어요.
+  ============================================================ */
+
+  /* (1) 카드류: body가 밝은 글자색이 되었으므로, 밝은 배경 카드 안에서는 어두운 글자색을 명시적으로 복원해요.
+         .surface 계열은 테마 토큰(--text)을 따르고(다크 테마면 자동으로 밝은 글자),
+         인라인으로 밝은 배경을 깐 카드는 테마와 무관하게 항상 어두운 글자로 고정해요. */
+  .surface, .surface-2, .tooltip-box, .bg-primary-light, .bg-mint-light{ color:var(--text); }
+  [style*="background:#FFFFFF" i], [style*="background: #FFFFFF" i], [style*="background:#fff;" i],
+  [style*="background:#FAF9F5" i], [style*="background:#F8FAFC" i], [style*="background:#F0EEE7" i],
+  [style*="background:#F5F4F0" i], [style*="background:#FFF9F7" i], [style*="background:#F0FDF4" i],
+  [style*="background:#FFFBEB" i], [style*="background:#ECFDF5" i], [style*="background:#FAF5FF" i],
+  [style*="background:#FEF3C7" i], [style*="background:#DCFCE7" i]{ color:#2C241F; }
+
+  /* (2) 상단 GNB: 글래스모피즘 + 활성 탭 에메랄드 하이라이트 */
+  .main-tab-bar{
+    background:rgba(30,41,59,.6); border:1px solid rgba(51,65,85,.5);
+    backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+  }
+  .main-tab-btn{
+    color:#94A3B8; background:transparent; border:1px solid transparent; opacity:1;
+    transition:color .18s ease, background .18s ease, border-color .18s ease, box-shadow .18s ease;
+  }
+  .main-tab-btn:hover{ color:#E2E8F0; background:rgba(51,65,85,.45); }
+  .main-tab-btn.active{
+    background:rgba(16,185,129,.2); color:#34D399; border-color:rgba(16,185,129,.5);
+    box-shadow:0 6px 18px -10px rgba(16,185,129,.6);
+  }
+  .main-tab-btn:focus-visible{ outline:2px solid #34D399; outline-offset:2px; }
+
+  /* (3) 헤더 / 사이드바: 다크 캔버스 기준 경계선·버튼 */
+  #topHeader, #sidebarNav{ border-color:var(--canvas-border); }
+  #topHeader .btn-ghost, #sidebarNav .btn-ghost{
+    background:rgba(30,41,59,.6); border:1.5px solid var(--canvas-border); color:#CBD5E1;
+  }
+  #topHeader .btn-ghost:hover, #sidebarNav .btn-ghost:hover{
+    color:#34D399; border-color:rgba(16,185,129,.5); background:rgba(16,185,129,.12);
+  }
+  #sidebarNav .text-muted{ color:var(--canvas-muted); }
+  .side-link:hover{ background:rgba(16,185,129,.12); }
+  #sidebarNav #sidebarActions{ border-color:var(--canvas-border); }
+
+  /* (4) 하단 푸터 & Admin 진입 버튼: 다크 배경에서도 또렷한 콘트라스트 */
+  #appFooter .footer-divider{ border-color:var(--canvas-border); }
+  .footer-admin-btn{
+    color:#CBD5E1; border:1px solid #334155; border-radius:9999px; padding:6px 12px;
+    background:rgba(30,41,59,.5); transition:color .18s ease, border-color .18s ease, background .18s ease;
+  }
+  .footer-admin-btn:hover, .footer-admin-btn:focus-visible{
+    color:#34D399; border-color:rgba(16,185,129,.55); background:rgba(16,185,129,.1);
+  }
+  .footer-admin-icon{ background:#059669; }
+  .footer-tagline{ color:#94A3B8; }
+
+  /* (5) 고정 위젯: 관리자 스튜디오 FAB / 방문자 뷰포트 컨트롤 */
+  #studioFabBtn{ background:#10B981; color:#022C22; box-shadow:0 10px 28px -10px rgba(16,185,129,.6); }
+  #studioFabBtn:hover{ background:#34D399; }
+  #userWidget{
+    background:rgba(30,41,59,.85); border:1px solid #334155; color:#CBD5E1;
+    backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+  }
+  #userWidget button:hover{ background:rgba(16,185,129,.16); color:#34D399; }
+  #userWidget #fontScaleLabel{ color:#94A3B8; }
+  #userWidget .border-token, #userWidget span.w-px{ border-color:#334155; }
+
+  /* (6) 인쇄(PDF)는 예전처럼 밝은 종이 배경으로 — 다크 캔버스가 리포트에 찍히지 않게 복원 */
+  @media print{
+    html, body{ background:var(--bg) !important; color:var(--text) !important; }
+  }
+
   /* ---- 유저 뷰포트 컨트롤 위젯 ---- */
   #userWidget{ transition:transform .2s ease; }
   #userWidget button{ transition:background .15s ease; }
+
+  /* ---- B2B Developer Portal: Live API Sandbox / Docs / Enterprise PoC ---- */
+  .sandbox-view-btn{ background:rgba(30,41,59,.6); color:#94A3B8; border:1px solid rgba(51,65,85,.6); transition:all .18s ease; }
+  .sandbox-view-btn:hover{ color:#E2E8F0; background:rgba(51,65,85,.45); }
+  .sandbox-view-btn.active{ background:rgba(16,185,129,.2); color:#34D399; border-color:rgba(16,185,129,.5); }
+  .sbx-input{ width:100%; background:#020617; color:#E2E8F0; border:1px solid rgba(148,163,184,.25); border-radius:10px; padding:8px 10px; font-size:12px; }
+  .sbx-input:focus{ outline:none; border-color:rgba(52,211,153,.6); }
+  .sbx-mono{ font-family:'SF Mono',Consolas,monospace; color:#93C5FD; }
+  .sbx-label{ display:block; font-size:10px; font-weight:700; color:#94A3B8; margin-bottom:4px; }
+  .sbx-sub{ font-size:11px; font-weight:700; color:#CBD5E1; margin:14px 0 6px; }
+  .sbx-chip input{ position:absolute; opacity:0; pointer-events:none; }
+  .sbx-chip span{ display:inline-block; font-size:11px; font-weight:600; padding:5px 10px; border-radius:9999px; cursor:pointer; background:#0F172A; color:#94A3B8; border:1px solid rgba(148,163,184,.25); transition:all .15s ease; }
+  .sbx-chip input:checked + span{ background:rgba(16,185,129,.18); color:#34D399; border-color:rgba(16,185,129,.5); }
+  .sbx-chip{ position:relative; }
+  .poc-vertical input{ position:absolute; opacity:0; pointer-events:none; }
+  .poc-vertical{ position:relative; }
+  .poc-vertical span{ display:block; text-align:center; font-size:12px; font-weight:700; padding:10px 8px; border-radius:12px; cursor:pointer; background:#0F172A; color:#94A3B8; border:1px solid rgba(148,163,184,.25); transition:all .15s ease; }
+  .poc-vertical input:checked + span{ background:rgba(16,185,129,.18); color:#34D399; border-color:rgba(16,185,129,.55); }
+  .api-table td, .api-table th{ padding:8px 10px; text-align:left; vertical-align:top; border-bottom:1px solid rgba(148,163,184,.12); font-size:11px; }
+  .api-table th{ color:#94A3B8; font-weight:700; }
+  .api-table td{ color:#CBD5E1; }
+  .api-table code{ color:#6EE7B7; font-family:'SF Mono',Consolas,monospace; }
 </style>
 </head>
 <body>
@@ -295,7 +396,7 @@
   <div id="layoutRow" class="flex items-stretch">
 
     <!-- ============ SIDEBAR (좌측 사이드바 헤더 모드 전용) ============ -->
-    <aside id="sidebarNav" class="hidden shrink-0 border-r border-token glass-side flex-col gap-1 p-4 sticky top-0 self-start overflow-y-auto" style="background:color-mix(in srgb, var(--bg) 92%, transparent); max-height:100vh;">
+    <aside id="sidebarNav" class="hidden shrink-0 border-r border-token glass-side flex-col gap-1 p-4 sticky top-0 self-start overflow-y-auto" style="background:color-mix(in srgb, var(--canvas) 92%, transparent); max-height:100vh;">
       <div id="logoSlotSidebar" class="mb-4"></div>
       <p class="text-[11px] font-bold text-muted uppercase tracking-wide mb-1 mt-2">바로가기</p>
       <div id="sidebarLinks" class="flex flex-col gap-0.5"></div>
@@ -306,7 +407,7 @@
     <div class="flex-1 min-w-0">
 
   <!-- ===================== HEADER ===================== -->
-  <header id="topHeader" class="sticky top-0 z-30 border-b border-token" style="background:color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter:blur(8px);">
+  <header id="topHeader" class="sticky top-0 z-30 border-b border-slate-700/50" style="background:color-mix(in srgb, var(--canvas) 85%, transparent); backdrop-filter:blur(10px);">
     <div class="mx-auto container-px px-4 py-3 grid items-center gap-2" style="grid-template-columns:1fr auto 1fr; max-width:var(--max-w-site);">
       <div id="logoSlotLeft" class="flex items-center"></div>
       <div id="logoSlotCenter" class="flex items-center justify-center"></div>
@@ -325,12 +426,11 @@
 
     <!-- ===================== 메인 탭 라우팅 ===================== -->
     <div class="flex justify-center mb-6">
-      <div class="inline-flex bg-primary-light rounded-full p-1 gap-1">
-        <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="home">🏠 홈 / 진단</button>
-        <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="demo">🧬 기술 & 데모</button>
-        <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="developers">🧑‍💻 Developers</button>
-        <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="metaload">⚙️ 대사 부하 검문</button>
-        <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="insurance">🛡️ 1일 안전 투약 타임라인</button>
+      <div class="main-tab-bar inline-flex flex-wrap justify-center max-w-full rounded-2xl sm:rounded-full p-1 gap-1 bg-slate-800/60 border border-slate-700/50 backdrop-blur">
+        <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="home">🏠 Overview</button>
+        <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="sandbox">⚡ Live API Sandbox</button>
+        <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="docs">👨‍💻 Developer Docs</button>
+        <button type="button" class="main-tab-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-tab="poc">🤝 Enterprise PoC</button>
       </div>
     </div>
 
@@ -347,7 +447,8 @@
           <div class="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full mb-5" style="background:rgba(16,185,129,.14); color:#34D399;">
             <span>🧬</span><span>B2B Pharmacological Intelligence Platform</span>
           </div>
-          <h1 class="font-display font-bold mb-4 max-w-3xl mx-auto" style="font-size:clamp(1.4rem,4.2vw,2.4rem); line-height:1.35; color:#F1F5F9;">B2B Pharmacological Intelligence &amp; Organ Strain Analytics Layer for Pet Enterprise</h1>
+          <h1 id="homeHeroHeadline" class="font-display font-extrabold mb-5 max-w-4xl mx-auto" style="font-size:clamp(1.9rem,5.6vw,3.5rem); line-height:1.15; letter-spacing:-0.02em; color:#F8FAFC;">The Standard for Veterinary Pharmacological Intelligence,<br><span id="homeHeroAccent" style="color:#34D399; text-shadow:0 0 42px rgba(52,211,153,.35);">SEON API &amp; SDK</span></h1>
+          <p id="homeHeroSubheadline" class="text-sm sm:text-lg max-w-2xl mx-auto mb-8 leading-relaxed" style="color:#94A3B8;">Empower your enterprise platform with real-time Drug-Nutrient Interaction (DNI) safety and organ metabolic load analytics.</p>
           <div class="flex flex-wrap items-center justify-center gap-2 mb-8">
             <span class="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full" style="background:#1E293B; border:1px solid rgba(16,185,129,.35); color:#6EE7B7;">⚡ 1-Click Widget SDK Integration</span>
             <span class="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full" style="background:#1E293B; border:1px solid rgba(99,102,241,.35); color:#A5B4FC;">🚀 Sub-20ms Ultra-Low Latency RESTful API</span>
@@ -364,108 +465,51 @@
           <p class="text-[11px] font-bold tracking-widest mb-4 text-center" style="color:#34D399;">B2B ENTERPRISE TARGET VERTICALS</p>
           <div class="grid sm:grid-cols-3 gap-4">
             <div class="rounded-2xl p-5" style="background:#1E293B; border:1px solid rgba(99,102,241,.25);">
-              <p class="text-sm font-bold mb-2" style="color:#F1F5F9;">🛡️ Pet Insurers</p>
-              <p class="text-xs leading-relaxed" style="color:#94A3B8;">DNI(약물-영양소 충돌) 및 장기 대사 부하 위험도를 정량화해, 언더라이팅 리스크와 손해율(Loss-Ratio)을 감소시켜요.</p>
+              <p class="text-sm font-bold mb-1" style="color:#F1F5F9;">🛡️ Pet Insurers</p>
+              <p class="text-[11px] font-bold mb-2" style="color:#A5B4FC;">Loss-Ratio Control &amp; Risk-Tiered Underwriting</p>
+              <p class="text-xs leading-relaxed mb-3" style="color:#94A3B8;">DNI(약물-영양소 충돌) 및 장기 대사 부하를 정량화해 손해율(Loss-Ratio)을 낮추고, 언더라이팅 리스크를 차등화해요.</p>
+              <ul class="space-y-1 text-[11px]" style="color:#CBD5E1;">
+                <li>• 예방 가능한 약물-영양소 사고를 사전에 차단</li>
+                <li>• 간·신장 부하 지수 기반 계약 리스크 등급화</li>
+              </ul>
             </div>
             <div class="rounded-2xl p-5" style="background:#1E293B; border:1px solid rgba(16,185,129,.25);">
-              <p class="text-sm font-bold mb-2" style="color:#F1F5F9;">🛒 Pet E-Commerce</p>
-              <p class="text-xs leading-relaxed" style="color:#94A3B8;">영양제 결제 단계에서 실시간 DNI 충돌을 체크하고, 안전한 대체 상품으로 Cross-selling해요.</p>
+              <p class="text-sm font-bold mb-1" style="color:#F1F5F9;">🛒 Pet E-Commerce</p>
+              <p class="text-[11px] font-bold mb-2" style="color:#6EE7B7;">Safe Cross-Selling &amp; Higher Basket Value</p>
+              <p class="text-xs leading-relaxed mb-3" style="color:#94A3B8;">결제/장바구니 단계에서 실시간 DNI 충돌을 체크하고, 안전한 대체 영양소 Cross-selling(교차 판매)으로 객단가를 높여요.</p>
+              <ul class="space-y-1 text-[11px]" style="color:#CBD5E1;">
+                <li>• 위험 조합 상품은 차단, 안전 대체 상품으로 자동 유도</li>
+                <li>• 위험 조합 구매로 인한 반품·클레임 감소</li>
+              </ul>
             </div>
             <div class="rounded-2xl p-5" style="background:#1E293B; border:1px solid rgba(16,185,129,.25);">
-              <p class="text-sm font-bold mb-2" style="color:#F1F5F9;">🩺 Veterinary EMRs</p>
-              <p class="text-xs leading-relaxed" style="color:#94A3B8;">처방 시스템 내부에 실시간 Chrono-DNI 알림 모듈을 그대로 이식해요.</p>
+              <p class="text-sm font-bold mb-1" style="color:#F1F5F9;">🩺 Veterinary EMRs</p>
+              <p class="text-[11px] font-bold mb-2" style="color:#6EE7B7;">Prescription Safety &amp; Polypharmacy Alerts</p>
+              <p class="text-xs leading-relaxed mb-3" style="color:#94A3B8;">전자처방 시스템 내부에 실시간 Chrono-DNI 알림과 다약제(Polypharmacy) 장기 부담 경고 모듈을 그대로 이식해요.</p>
+              <ul class="space-y-1 text-[11px]" style="color:#CBD5E1;">
+                <li>• 처방 입력 즉시 상극 조합·격리 시간 경고</li>
+                <li>• 다약제 복용 시 간·신장 누적 부담 표시</li>
+              </ul>
             </div>
           </div>
         </div>
 
-        <!-- ③ LIVE DEVELOPER SANDBOX & CODE INTEGRATION PREVIEW -->
-        <div class="mb-10">
-          <p class="text-[11px] font-bold tracking-widest mb-4 text-center" style="color:#34D399;">LIVE DEVELOPER SANDBOX &amp; CODE INTEGRATION PREVIEW</p>
-          <div class="rounded-2xl overflow-hidden mb-4" style="background:#1E293B; border:1px solid rgba(148,163,184,.15);">
-            <div class="flex gap-1 px-3 pt-3 flex-wrap" id="homeCodeTabGroup">
-              <button type="button" class="home-code-tab-btn rounded-t-lg px-3 py-2 text-xs font-bold" data-code-tab="html">HTML Script Tag</button>
-              <button type="button" class="home-code-tab-btn rounded-t-lg px-3 py-2 text-xs font-bold" data-code-tab="react">React Component</button>
-              <button type="button" class="home-code-tab-btn rounded-t-lg px-3 py-2 text-xs font-bold" data-code-tab="reactnative">React Native / Mobile</button>
-              <button type="button" class="home-code-tab-btn rounded-t-lg px-3 py-2 text-xs font-bold" data-code-tab="curl">cURL API</button>
-            </div>
-            <pre id="homeCodeSnippetBox" class="p-4 text-[11px] overflow-x-auto" style="background:#020617; color:#6EE7B7; font-family:'SF Mono',Consolas,monospace; min-height:110px;"></pre>
-          </div>
-
-          <div class="grid lg:grid-cols-2 gap-4">
-            <div class="rounded-2xl p-4" style="background:#1E293B; border:1px solid rgba(148,163,184,.15);">
-              <p class="text-[10px] font-bold mb-2" style="color:#64748B;">JSON REQUEST (Pet Bio · Prescribed Drugs · Supplement Stack)</p>
-              <pre class="rounded-xl p-3 text-[11px] overflow-x-auto" style="background:#020617; color:#93C5FD; font-family:'SF Mono',Consolas,monospace;">{
-  "pet": { "name": "초코", "breed": "말티즈", "weight_kg": 4.2 },
-  "medication": "Enrofloxacin",
-  "supplement": "칼슘/킬레이트 칼슘"
-}</pre>
-            </div>
-            <div class="rounded-2xl p-4" style="background:#1E293B; border:1px solid rgba(148,163,184,.15);">
-              <p class="text-[10px] font-bold mb-2" style="color:#64748B;">JSON RESPONSE</p>
-              <pre class="rounded-xl p-3 text-[11px] overflow-x-auto" style="background:#020617; color:#6EE7B7; font-family:'SF Mono',Consolas,monospace;">{
-  "status": "SUCCESS",
-  "dni_conflict_detected": true,
-  "conflict_pair": "Enrofloxacin x 칼슘/킬레이트 칼슘",
-  "isolation_hours": 2,
-  "organ_stress_index": { "hepatic": "75%", "renal": "92%" },
-  "recommended_schedule": "복용 직후 → 최소 2시간 격리 후 급여"
-}</pre>
-            </div>
-          </div>
-
-          <div class="rounded-2xl p-4 sm:p-5 mt-4" style="background:#1E293B; border:1px solid rgba(148,163,184,.15);">
-            <p class="text-[10px] font-bold mb-3" style="color:#64748B;">LIVE WIDGET PREVIEW — 파트너 앱/웹에 그대로 렌더링될 위젯</p>
-            <div class="rounded-xl p-4 max-w-md" style="background:#F8FAFC;">
-              <div class="rounded-xl p-4" style="background:#fff; border:1.5px solid #FBBF24; box-shadow:0 4px 14px -6px rgba(0,0,0,.12);">
-                <div class="flex items-center gap-2 mb-2 flex-wrap">
-                  <span class="text-[10px] font-bold px-2 py-1 rounded-full" style="background:#0F172A; color:#34D399;">🧬 SEON Chrono-DNI</span>
-                  <span class="text-[10px] font-bold px-2 py-1 rounded-full" style="background:#FEF3C7; color:#B45309;">⚠️ 상호작용 주의</span>
-                </div>
-                <p class="text-xs font-bold mb-1" style="color:#0F172A;">'칼슘/킬레이트 칼슘'이 등록된 처방약(Enrofloxacin)과 상충할 수 있어요.</p>
-                <p class="text-[11px]" style="color:#64748B;">흡수 저해 방지를 위해 최소 2시간 간격을 두고 급여해주세요.</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="text-center mt-5">
-            <button type="button" id="homeGoFullSandboxBtn" class="rounded-xl px-6 py-2.5 text-xs font-bold" style="background:transparent; border:1.5px solid rgba(52,211,153,.4); color:#34D399;">Explore Full Interactive Sandbox →</button>
-          </div>
-        </div>
-
-        <!-- ④ 3대 코어 진단 엔진 아키텍처 (Engine Pipeline Flow) -->
+        <!-- ③ 5-NODE ENGINE PIPELINE -->
         <div>
-          <p class="text-[11px] font-bold tracking-widest mb-4 text-center" style="color:#34D399;">ENGINE PIPELINE FLOW</p>
-          <div class="flex flex-col sm:flex-row items-stretch gap-1.5" id="homePipelineWrap">
-            <div class="flex-1 rounded-2xl p-3 text-center" style="background:#1E293B; border:1.5px solid rgba(148,163,184,.2);">
-              <p class="text-[9px] font-bold" style="color:#34D399;">NODE 1</p>
-              <p class="text-[11px] font-bold" style="color:#F1F5F9;">Data Ingestion</p>
-              <p class="text-[9px] mt-0.5" style="color:#64748B;">Pet Bio &amp; Prescriptions</p>
-            </div>
-            <div class="hidden sm:flex items-center justify-center text-sm" style="color:#475569;">➜</div>
-            <div class="flex-1 rounded-2xl p-3 text-center" style="background:#1E293B; border:1.5px solid rgba(148,163,184,.2);">
-              <p class="text-[9px] font-bold" style="color:#34D399;">NODE 2</p>
-              <p class="text-[11px] font-bold" style="color:#F1F5F9;">Goal-Oriented Health Scoring Engine</p>
-            </div>
-            <div class="hidden sm:flex items-center justify-center text-sm" style="color:#475569;">➜</div>
-            <div class="flex-1 rounded-2xl p-3 text-center" style="background:#1E293B; border:1.5px solid rgba(148,163,184,.2);">
-              <p class="text-[9px] font-bold" style="color:#34D399;">NODE 3</p>
-              <p class="text-[11px] font-bold" style="color:#F1F5F9;">Organ Metabolic Load Calculator</p>
-              <p class="text-[9px] mt-0.5" style="color:#64748B;">Hepatic &amp; Renal Filtration Stress</p>
-            </div>
-            <div class="hidden sm:flex items-center justify-center text-sm" style="color:#475569;">➜</div>
-            <div class="flex-1 rounded-2xl p-3 text-center" style="background:#1E293B; border:1.5px solid rgba(148,163,184,.2);">
-              <p class="text-[9px] font-bold" style="color:#34D399;">NODE 4</p>
-              <p class="text-[11px] font-bold" style="color:#F1F5F9;">Chrono-DNI Matrix Analysis</p>
-              <p class="text-[9px] mt-0.5" style="color:#64748B;">CYP450 &amp; Mineral Chelation Rules</p>
-            </div>
-            <div class="hidden sm:flex items-center justify-center text-sm" style="color:#475569;">➜</div>
-            <div class="flex-1 rounded-2xl p-3 text-center" style="background:#1E293B; border:1.5px solid rgba(148,163,184,.2);">
-              <p class="text-[9px] font-bold" style="color:#34D399;">NODE 5</p>
-              <p class="text-[11px] font-bold" style="color:#F1F5F9;">Integrated API Output Stream</p>
-            </div>
+          <p class="text-[11px] font-bold tracking-widest mb-4 text-center" style="color:#34D399;">5-NODE ENGINE PIPELINE</p>
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-0 mb-3" id="overviewPipelineWrap"></div>
+          <div id="overviewNodeTooltip" class="hidden rounded-2xl p-4 text-xs leading-relaxed" style="background:#1E293B; border:1px solid rgba(52,211,153,.3); color:#CBD5E1;"></div>
+          <div class="text-center mt-5">
+            <button type="button" id="homeGoFullSandboxBtn" class="rounded-xl px-6 py-2.5 text-xs font-bold" style="background:transparent; border:1.5px solid rgba(52,211,153,.4); color:#34D399;">Explore Live API Sandbox →</button>
           </div>
         </div>
 
+      </div>
+
+      <!-- 🔬 B2C 진단 연산 흐름 보존 (Proof-of-Technology) -->
+      <div class="text-center mb-6">
+        <p class="text-[11px] sm:text-xs font-bold tracking-widest" style="color:#34D399;">🔬 Powered by our production-grade B2C diagnostic engine</p>
+        <p class="text-xs mt-1 max-w-xl mx-auto leading-relaxed" style="color:#94A3B8;">아래 모듈은 실제 소비자 진단 서비스와 동일한 엔진·DB로 동작하는 Proof-of-Technology예요. 진단 폼을 직접 작성하고 실시간 DB 연산 리포트까지 확인해보세요.</p>
       </div>
 
       <!-- ============ [MIDDLE] B2B ENGINE MODULES — LIVE DEMO
@@ -524,7 +568,7 @@
         <p class="font-display font-bold text-lg sm:text-2xl mb-3 leading-relaxed" style="color:#F1F5F9;">서온의 약학 지능 API를 귀사 서비스에 이식해보세요.</p>
         <p class="text-xs sm:text-sm max-w-xl mx-auto mb-8 leading-relaxed" style="color:#94A3B8;">PoC(Proof of Concept) 또는 정식 계약(LOI) 문의부터 개발자 문서까지, 필요한 모든 자료를 안내해 드려요.</p>
         <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
-          <a href="mailto:seon.forivy@gmail.com?subject=SEON%20Enterprise%20PoC%2FLOI%20Inquiry&body=Company%2FOrganization%3A%0AName%20(role)%3A%0AIntended%20use%3A%20" id="homeGoEnterpriseLoiBtn" class="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-bold" style="background:#10B981; color:#022C22;">📧 Enterprise PoC / LOI 문의하기</a>
+          <button type="button" id="homeGoEnterpriseLoiBtn" class="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-bold" style="background:#10B981; color:#022C22;">🤝 Enterprise PoC / LOI 신청하기</button>
           <button type="button" id="homeGoDevDocsBtn2" class="rounded-xl px-6 py-3 text-sm font-bold" style="background:transparent; border:1.5px solid rgba(148,163,184,.35); color:#F1F5F9;">View Developer Documentation</button>
         </div>
       </div>
@@ -769,310 +813,104 @@
 
     </div><!-- /homePage -->
 
-    <!-- ===================== DEMO PAGE: 기술 & 데모 (Tech & Demo Showcase) ===================== -->
-    <div id="demoPage" class="hidden">
-
-      <!-- ① HERO & ALGORITHM PIPELINE VISUALIZER -->
-      <div class="rounded-[28px] p-6 sm:p-10 mb-8" style="background:linear-gradient(160deg,#0F1B14,#1C2E22); color:#fff;">
-        <div class="text-center mb-8">
-          <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full mb-4 text-xs font-bold" style="background:rgba(47,191,159,.18); color:#5FE0BE;">
-            <span>🧬</span><span>TECH &amp; DEMO SHOWCASE</span>
-          </div>
-          <h1 class="font-display font-bold mb-3" style="font-size:clamp(1.4rem,4.5vw,2.2rem); line-height:1.35;">Seon DNI &amp; Metabolic Load<br class="hidden sm:block"> Engine Pipeline</h1>
-          <p class="text-sm max-w-xl mx-auto leading-relaxed" style="color:rgba(255,255,255,.6);">Interactive Visualization of Data Ingestion, AI Health Reporting, Metabolic Load Calculation, and DNI Matrix Analysis</p>
-        </div>
-
-        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-0 mb-3" id="demoPipelineWrap">
-          <!-- 5 nodes rendered by JS -->
-        </div>
-        <div id="demoNodeTooltip" class="hidden rounded-2xl p-4 text-xs leading-relaxed" style="background:rgba(255,255,255,.06); border:1px solid rgba(95,224,190,.3); color:rgba(255,255,255,.85);"></div>
+    <!-- ===================== ⚡ LIVE API SANDBOX (3대 코어 엔진 통합 테스트 & B2B JSON Response Playground) ===================== -->
+    <div id="sandboxPage" class="hidden">
+      <div class="text-center mb-6">
+        <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full mb-4 text-xs font-bold" style="background:rgba(16,185,129,.14); color:#34D399;"><span>⚡</span><span>LIVE API SANDBOX</span></div>
+        <h1 class="font-display font-bold mb-2" style="font-size:clamp(1.4rem,4vw,2rem); color:#F8FAFC;">Live API Sandbox</h1>
+        <p class="text-sm max-w-2xl mx-auto leading-relaxed" style="color:#94A3B8;">3대 코어 엔진 통합 테스트 &amp; B2B JSON Response Playground — 서온 앱이 실제로 사용하는 연산 엔진(건강 스코어 · 대사 부하 · Chrono-DNI)을 그대로 호출해요.</p>
       </div>
 
-      <!-- ② LIVE B2C DEMO -->
-      <div class="rounded-[28px] p-6 sm:p-8 mb-8" style="background:#FFFFFF; border:1px solid #3A5A401f;">
-        <div class="mb-6">
-          <p class="text-[11px] font-bold tracking-widest mb-1" style="color:#3A5A40;">LIVE B2C DEMO</p>
-          <h2 class="font-display font-bold" style="font-size:clamp(1.1rem,3vw,1.5rem);">서온의 3대 핵심 기능, 지금 바로 체험해보세요</h2>
-        </div>
-
-        <p class="text-xs font-bold text-muted mb-2">프리셋 선택 (클릭해보세요)</p>
-        <div class="grid sm:grid-cols-3 gap-3 mb-5" id="demoPresetGroup"></div>
-
-        <div class="rounded-2xl p-4 mb-6" style="background:#F5F4EF; border:1px solid #3A5A401f;">
-          <p class="text-xs font-bold text-muted mb-2">🧩 Customized Roll-up Wizard <span class="font-normal">(선택한 프리셋에 맞춰 자동으로 채워져요)</span></p>
-          <div class="grid grid-cols-3 gap-2 mb-3" id="demoWizardTabGroup"></div>
-          <div class="space-y-2" id="demoWizardStepsWrap"></div>
-        </div>
-
-        <button type="button" id="runSeonAnalysisBtn" class="btn-primary w-full sm:w-auto rounded-xl px-8 py-3.5 text-sm font-bold mb-6">▶ Run Seon Analysis</button>
-        <p id="demoProcessingNote" class="hidden text-xs font-bold mb-4" style="color:#3A5A40;">⏳ 서온 엔진이 데이터를 분석하고 있어요...</p>
-
-        <div class="rounded-2xl p-4 mb-5" style="background:#F2C14E14; border:1.5px solid #F2C14E44;">
-          <p class="text-xs leading-relaxed" style="color:#2C241F;">
-            💡 <b>Note:</b> This live demo highlights key general features of Seon. The official Seon B2C/B2B Report includes complete pharmaceutical DNI DB analysis, custom meal portion calculations, multi-organ clearance metrics, and downloadable doctor-certified PDF health records.
-          </p>
-          <p class="text-[11px] mt-1.5 leading-relaxed" style="color:#6b6259;">
-            (본 데모는 서온의 핵심 주요 기능만을 시연한 요약본입니다. 서온의 실제 정식 리포트는 전 수의약학 DNI DB 매칭, 맞춤형 사료/영양제 정량 칼로리 연산, 장기별 상세 대사 부하 지수 및 수의사 제출용 영문/한글 PDF 정밀 리포트를 제공합니다.)
-          </p>
-        </div>
-
-        <div class="space-y-5" id="demoOutputWrap">
-          <!-- ① Integrated Health Report -->
-          <div id="demoHealthReportCard" class="demo-output-card hidden rounded-2xl p-5" style="background:#FAF9F5; border:1.5px solid #3A5A4022;">
-            <p class="text-xs font-bold mb-3" style="color:#3A5A40;">📑 ① AI Comprehensive Pet Health Assessment</p>
-            <div id="demoHealthReportBody"></div>
-          </div>
-
-          <!-- ② Metabolic Load Indicator -->
-          <div id="demoMetabolicLoadCard" class="demo-output-card hidden rounded-2xl p-5" style="background:#FAF9F5; border:1.5px solid #3A5A4022;">
-            <p class="text-xs font-bold mb-3" style="color:#3A5A40;">🫀 ② Hepatic &amp; Renal Metabolic Load Rate</p>
-            <div id="demoMetabolicLoadBody"></div>
-          </div>
-
-          <!-- ③ DNI Matrix Analysis -->
-          <div id="demoDniMatrixCard" class="demo-output-card hidden rounded-2xl p-5" style="background:#FAF9F5; border:1.5px solid #3A5A4022;">
-            <p class="text-xs font-bold mb-3" style="color:#3A5A40;">🧬 ③ Drug-Nutrient Interaction &amp; 24-Hour Safety Timeline</p>
-            <div id="demoDniMatrixBody"></div>
-          </div>
-        </div>
+      <div class="rounded-xl px-4 py-2.5 mb-4 text-xs font-bold flex flex-wrap items-center gap-2" style="background:rgba(52,211,153,.1); border:1px solid rgba(52,211,153,.3); color:#6EE7B7;">
+        <span>🧪 Currently in Live Interactive Sandbox Mode. Use the demo key below to test integration, or apply for a Production License Key.</span>
+        <button type="button" id="sbxGoPocBtn" class="ml-auto rounded-lg px-3 py-1 text-[11px] font-bold" style="background:#10B981; color:#022C22;">Enterprise PoC →</button>
       </div>
 
-      <!-- ③ INTERACTIVE B2B API SANDBOX -->
-      <div class="rounded-[28px] p-6 sm:p-8" style="background:#0F1B14; color:#fff;">
-        <p class="text-[11px] font-bold tracking-widest mb-1" style="color:#5FE0BE;">INTERACTIVE B2B API SANDBOX</p>
-        <h2 class="font-display font-bold mb-1" style="font-size:clamp(1.1rem,3vw,1.5rem);">POST /api/v1/seon/analyze</h2>
-        <p class="text-xs mb-6" style="color:rgba(255,255,255,.55);">선택한 프리셋을 그대로 요청 JSON에 담아, 서온 엔진이 실시간으로 계산한 응답을 콘솔로 확인해보세요.</p>
-
-        <div class="grid lg:grid-cols-2 gap-5">
-          <div>
-            <p class="text-[10px] font-bold mb-2" style="color:rgba(255,255,255,.5);">REQUEST</p>
-            <pre id="demoApiRequestJson" class="rounded-xl p-4 text-[11px] overflow-x-auto" style="background:#050B08; border:1px solid rgba(95,224,190,.25); color:#8FE9CE; font-family:'SF Mono',Consolas,monospace; max-height:420px;"></pre>
-          </div>
-          <div>
-            <div class="flex items-center justify-between mb-2">
-              <p class="text-[10px] font-bold" style="color:rgba(255,255,255,.5);">RESPONSE</p>
-              <button type="button" id="demoExecuteSandboxBtn" class="rounded-lg px-4 py-2 text-xs font-bold" style="background:#5FE0BE; color:#0F1B14;">⚡ Execute Sandbox</button>
-            </div>
-
-            <div class="flex gap-1" id="demoResponseTabGroup">
-              <button type="button" class="demo-response-tab-btn rounded-t-lg px-3 py-1.5 text-[10px] font-bold transition" data-response-tab="raw">Raw JSON</button>
-              <button type="button" class="demo-response-tab-btn rounded-t-lg px-3 py-1.5 text-[10px] font-bold transition" data-response-tab="b2b">B2B Value Impact</button>
-            </div>
-
-            <div id="demoResponseRawPanel">
-              <div id="demoResponseStatusBar" class="hidden px-3 py-1.5 text-[10px] font-bold flex items-center gap-1.5" style="background:#132018; border:1px solid rgba(95,224,190,.25); border-bottom:none;">
-                <span style="color:#4ADE80;">●</span><span id="demoResponseStatusText" style="color:#5FE0BE;">200 OK | 14ms</span>
-              </div>
-              <pre id="demoApiResponseJson" class="p-4 text-[11px] overflow-x-auto" style="background:#050B08; border:1px solid rgba(95,224,190,.25); color:#8FE9CE; font-family:'SF Mono',Consolas,monospace; max-height:420px; min-height:120px; border-radius:0 0 12px 12px;">// [Execute Sandbox]를 눌러 실행해보세요</pre>
-            </div>
-
-            <div id="demoResponseB2BPanel" class="hidden space-y-3 rounded-xl p-3" style="background:#050B08; border:1px solid rgba(95,224,190,.25); max-height:420px; overflow-y:auto;"></div>
-          </div>
-        </div>
-        <div class="mt-4 pt-3 flex items-center gap-2 flex-wrap" style="border-top:1px solid rgba(95,224,190,.15);">
-          <p class="text-[10px]" style="color:rgba(255,255,255,.4); font-family:'SF Mono',Consolas,monospace;">SEON Live B2B API Engine v1.0.4 | Latency: 14ms | Status: <span style="color:#4ADE80;">● Operational</span></p>
-        </div>
+      <div class="flex flex-wrap justify-center gap-2 mb-6" id="sandboxViewSwitcher">
+        <button type="button" class="sandbox-view-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-sandbox-view="full">통합 API 연동 (Full Engine)</button>
+        <button type="button" class="sandbox-view-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-sandbox-view="health">1. Goal Health Scoring</button>
+        <button type="button" class="sandbox-view-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-sandbox-view="metaload">2. Metabolic Load</button>
+        <button type="button" class="sandbox-view-btn rounded-full px-4 py-2 text-xs sm:text-sm font-bold" data-sandbox-view="chrono">3. Chrono-DNI Timeline</button>
       </div>
-    </div>
 
-    <!-- ===================== DEVELOPERS PAGE: SEON B2B SDK & API Developer Portal ===================== -->
-    <div id="developersPage" class="hidden">
-      <div class="rounded-[28px] p-6 sm:p-10" style="background:#0F172A;">
-
-        <!-- ① HEADER -->
-        <div class="text-center mb-10">
-          <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full mb-4 text-xs font-bold" style="background:rgba(16,185,129,.14); color:#34D399;">
-            <span>🧑‍💻</span><span>SEON B2B SDK &amp; API</span>
-          </div>
-          <h1 class="font-display font-bold mb-3" style="font-size:clamp(1.3rem,4vw,2rem); line-height:1.35; color:#F1F5F9;">SEON Enterprise B2B SDK &amp; Live API Console</h1>
-          <p class="text-sm max-w-2xl mx-auto leading-relaxed mb-6" style="color:#94A3B8;">Embed Clinical-Grade Pet DNI Safety &amp; Metabolic Load Intelligence into Your App in 5 Minutes.</p>
-          <div class="flex flex-wrap items-center justify-center gap-2">
-            <span class="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full" style="background:#1E293B; border:1px solid rgba(99,102,241,.35); color:#A5B4FC;">⚡ Latency &lt;20ms</span>
-            <span class="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full" style="background:#1E293B; border:1px solid rgba(16,185,129,.35); color:#6EE7B7;">🧬 3,000+ Verified DNI Pairs</span>
-            <span class="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full" style="background:#1E293B; border:1px solid rgba(99,102,241,.35); color:#A5B4FC;">🧩 Plug-and-Play Widget</span>
-          </div>
-        </div>
-
-        <!-- ② LICENSE KEY APPLICATION (TTCare SDK B2B 스타일 벤치마킹) -->
-        <div class="mb-10">
-          <div class="rounded-2xl p-5 sm:p-6" style="background:#1E293B; border:1px solid rgba(99,102,241,.3);">
-            <p class="text-sm font-bold mb-2" style="color:#F1F5F9;">🔑 SEON SDK License Key Application Guide</p>
-            <p class="text-xs leading-relaxed mb-4" style="color:#94A3B8;">To use the SEON SDK or RESTful API in your production environment, you need to obtain a License Key issued by SEON.</p>
-
-            <div class="rounded-xl p-4" style="background:#0F172A; border:1px solid rgba(148,163,184,.15);">
-              <p class="text-xs leading-relaxed mb-3" style="color:#CBD5E1;">To receive a License Key for PoC or commercial integration, please contact <b style="color:#6EE7B7;">seon.forivy@gmail.com</b> with the following details:</p>
-              <div class="flex flex-wrap gap-2 mb-4">
-                <span class="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full" style="background:rgba(99,102,241,.14); border:1px solid rgba(99,102,241,.35); color:#A5B4FC;">👤 Name <span class="font-normal" style="color:#94A3B8;">(Your name &amp; role)</span></span>
-                <span class="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full" style="background:rgba(99,102,241,.14); border:1px solid rgba(99,102,241,.35); color:#A5B4FC;">🏢 Company <span class="font-normal" style="color:#94A3B8;">(Company / Organization name)</span></span>
-                <span class="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full" style="background:rgba(99,102,241,.14); border:1px solid rgba(99,102,241,.35); color:#A5B4FC;">🎯 Purpose <span class="font-normal" style="color:#94A3B8;">(Intended use: e.g., Pet Insurance, Vet EMR, E-Commerce)</span></span>
-              </div>
-              <p class="text-[11px] leading-relaxed mb-4" style="color:#64748B;">💡 For technical specifications or SDK integration support, reach out to <b style="color:#6EE7B7;">seon.forivy@gmail.com</b>.</p>
-              <a href="mailto:seon.forivy@gmail.com?subject=SEON%20SDK%20License%20Key%20Request&body=Name%20(role)%3A%0ACompany%2FOrganization%3A%0AIntended%20use%3A%20" id="devLicenseRequestBtn" class="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-xs font-bold" style="background:#10B981; color:#022C22;">📧 Request License Key (seon.forivy@gmail.com)</a>
+      <!-- Playground: Full Engine / Goal Health Scoring 공용 -->
+      <div id="sandboxPlayground">
+        <div class="grid lg:grid-cols-2 gap-4">
+          <div class="rounded-2xl p-4 sm:p-5" style="background:#1E293B; border:1px solid rgba(148,163,184,.15);">
+            <p class="text-[11px] font-bold tracking-widest mb-3" style="color:#34D399;">INTERACTIVE REQUEST</p>
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-[10px] font-bold shrink-0" style="color:#94A3B8;">API Key</span>
+              <input id="sbxApiKeyInput" class="sbx-input" value="seon_demo_pk_sandbox_key" spellcheck="false" autocomplete="off">
+              <button type="button" class="dev-copy-btn text-[10px] font-bold px-2 py-1.5 rounded-lg shrink-0" data-copy-target="sbxApiKeyInput" style="background:rgba(148,163,184,.12); color:#CBD5E1;">📋 Copy</button>
             </div>
-          </div>
-        </div>
 
-        <!-- ② QUICK INTEGRATION GUIDE (3-STEP) -->
-        <div class="mb-10">
-          <p class="text-[11px] font-bold tracking-widest mb-4 text-center" style="color:#34D399;">QUICK INTEGRATION GUIDE</p>
-          <div class="grid sm:grid-cols-3 gap-4">
-            <div class="rounded-2xl p-5" style="background:#1E293B; border:1px solid rgba(148,163,184,.15);">
-              <span class="inline-flex items-center justify-center rounded-full text-xs font-bold mb-3" style="width:26px; height:26px; background:rgba(16,185,129,.15); color:#34D399;">1</span>
-              <p class="text-sm font-bold mb-1" style="color:#F1F5F9;">Obtain Partner API Key</p>
-              <p class="text-xs leading-relaxed" style="color:#94A3B8;">파트너 콘솔에서 전용 API 키를 발급받아요. 요청당 인증 헤더로만 사용돼요.</p>
+            <p class="sbx-sub">👤 Pet Bio</p>
+            <div class="grid grid-cols-2 gap-2">
+              <div class="col-span-2"><label class="sbx-label" for="sbxBreed">품종</label><select id="sbxBreed" class="sbx-input"></select></div>
+              <div><label class="sbx-label" for="sbxWeight">체중 (kg)</label><input id="sbxWeight" type="number" step="0.1" min="0.5" max="100" class="sbx-input"></div>
+              <div><label class="sbx-label" for="sbxAge">나이 (years)</label><input id="sbxAge" type="number" step="0.5" min="0" max="30" class="sbx-input"></div>
+              <div><label class="sbx-label" for="sbxBcs">BCS (1–9)</label><select id="sbxBcs" class="sbx-input"></select></div>
             </div>
-            <div class="rounded-2xl p-5" style="background:#1E293B; border:1px solid rgba(148,163,184,.15);">
-              <span class="inline-flex items-center justify-center rounded-full text-xs font-bold mb-3" style="width:26px; height:26px; background:rgba(99,102,241,.15); color:#A5B4FC;">2</span>
-              <p class="text-sm font-bold mb-1" style="color:#F1F5F9;">Embed SEON Chrono-DNI Safety Widget SDK</p>
-              <p class="text-xs leading-relaxed" style="color:#94A3B8;">스크립트 태그 또는 React 컴포넌트 한 줄로 위젯을 페이지에 삽입해요.</p>
-            </div>
-            <div class="rounded-2xl p-5" style="background:#1E293B; border:1px solid rgba(148,163,184,.15);">
-              <span class="inline-flex items-center justify-center rounded-full text-xs font-bold mb-3" style="width:26px; height:26px; background:rgba(16,185,129,.15); color:#34D399;">3</span>
-              <p class="text-sm font-bold mb-1" style="color:#F1F5F9;">Stream Real-Time DNI Conflict Alerts &amp; Metabolic Load Indices</p>
-              <p class="text-xs leading-relaxed" style="color:#94A3B8;">실시간 웹훅/폴링으로 DNI 상충 경고와 대사 부하 지수를 받아 화면에 반영해요.</p>
-            </div>
-          </div>
-        </div>
+            <div id="sbxCondGroup" class="flex flex-wrap gap-2 mt-3"></div>
 
-        <!-- ③ CODE INTEGRATION SNIPPETS (TABBED) -->
-        <div class="mb-10">
-          <p class="text-[11px] font-bold tracking-widest mb-4 text-center" style="color:#34D399;">CODE INTEGRATION SNIPPETS</p>
-          <div class="rounded-2xl overflow-hidden" style="background:#1E293B; border:1px solid rgba(148,163,184,.15);">
-            <div class="flex gap-1 px-3 pt-3 flex-wrap" id="devCodeTabGroup">
-              <button type="button" class="dev-code-tab-btn rounded-t-lg px-3 py-2 text-xs font-bold" data-code-tab="html">HTML Script Tag</button>
-              <button type="button" class="dev-code-tab-btn rounded-t-lg px-3 py-2 text-xs font-bold" data-code-tab="react">React Component</button>
-              <button type="button" class="dev-code-tab-btn rounded-t-lg px-3 py-2 text-xs font-bold" data-code-tab="reactnative">React Native / Mobile</button>
-              <button type="button" class="dev-code-tab-btn rounded-t-lg px-3 py-2 text-xs font-bold" data-code-tab="curl">cURL API</button>
+            <div id="sbxRxGroup">
+              <p class="sbx-sub">💊 Prescriptions</p>
+              <div id="sbxRxList" class="space-y-2 mb-2"></div>
+              <datalist id="sbxMoleculeList"></datalist>
+              <button type="button" id="sbxAddRxBtn" class="rounded-lg px-3 py-1.5 text-[11px] font-bold" style="background:rgba(148,163,184,.12); color:#CBD5E1;">+ 처방약 추가</button>
+            </div>
+            <div id="sbxSuppGroup">
+              <p class="sbx-sub">🧪 Supplements</p>
+              <div id="sbxSuppChips" class="flex flex-wrap gap-2"></div>
+            </div>
+
+            <p class="sbx-sub">{ } Live JSON Editor</p>
+            <textarea id="sbxRequestJson" rows="12" spellcheck="false" class="sbx-input sbx-mono" style="resize:vertical;"></textarea>
+            <p id="sbxRequestError" class="hidden text-[11px] mt-2" style="color:#F87171;"></p>
+            <button type="button" id="sbxSendBtn" class="w-full mt-3 rounded-xl py-2.5 text-xs font-bold" style="background:#10B981; color:#022C22;">▶ Send Request / Test Call</button>
+            <button type="button" id="sbxOpenDiagnosticBtn" class="hidden w-full mt-2 rounded-xl py-2.5 text-xs font-bold" style="background:transparent; border:1.5px solid rgba(52,211,153,.4); color:#34D399;">🐾 실제 5단계 진단 폼 열기 (Proof-of-Technology) →</button>
+          </div>
+
+          <div class="rounded-2xl p-4 sm:p-5" style="background:#1E293B; border:1px solid rgba(148,163,184,.15);">
+            <p class="text-[11px] font-bold tracking-widest mb-3" style="color:#34D399;">REAL-TIME RAW JSON RESPONSE</p>
+            <div id="sbxStatusBar" class="hidden px-3 py-1.5 text-[10px] font-bold flex items-center gap-1.5" style="background:#0F172A; border:1px solid rgba(148,163,184,.2); border-bottom:none; border-radius:10px 10px 0 0;">
+              <span id="sbxStatusDot" style="color:#4ADE80;">●</span><span id="sbxStatusText" style="color:#6EE7B7;"></span>
             </div>
             <div class="relative">
-              <button type="button" class="dev-copy-btn absolute top-2 right-2 text-[10px] font-bold px-2.5 py-1 rounded-lg" data-copy-target="devCodeSnippetBox" style="background:rgba(148,163,184,.12); color:#CBD5E1;">📋 Copy</button>
-              <pre id="devCodeSnippetBox" class="p-4 pt-9 text-[12px] overflow-x-auto" style="background:#020617; color:#6EE7B7; font-family:'SF Mono',Consolas,monospace; min-height:140px;"></pre>
+              <button type="button" class="dev-copy-btn absolute top-2 right-2 text-[10px] font-bold px-2.5 py-1 rounded-lg" data-copy-target="sbxResponseBox" style="background:rgba(148,163,184,.12); color:#CBD5E1;">📋 Copy</button>
+              <pre id="sbxResponseBox" class="p-3 pt-9 text-[12px] overflow-x-auto" style="background:#020617; color:#6EE7B7; font-family:'SF Mono',Consolas,monospace; min-height:320px; max-height:560px; border:1px solid rgba(148,163,184,.2); border-radius:0 0 10px 10px;"></pre>
             </div>
           </div>
         </div>
 
-        <!-- ④ INTERACTIVE REQUEST/RESPONSE BUILDER (Interactive Sandbox Mode) -->
-        <div class="mb-10">
-          <p class="text-[11px] font-bold tracking-widest mb-4 text-center" style="color:#34D399;">INTERACTIVE SANDBOX</p>
-          <div class="rounded-xl px-4 py-2.5 mb-4 text-xs font-bold flex flex-wrap items-center gap-2" style="background:rgba(52,211,153,.1); border:1px solid rgba(52,211,153,.3); color:#6EE7B7;">
-            🧪 Currently in Live Interactive Sandbox Mode. Use the demo key below to test integration, or apply for a Production License Key.
-          </div>
-
-          <div class="rounded-2xl p-4 sm:p-6" style="background:#1E293B; border:1px solid rgba(148,163,184,.15);">
-            <div class="flex items-center gap-2 mb-4">
-              <span class="text-[10px] font-bold" style="color:#64748B;">API Key:</span>
-              <code id="devSandboxApiKey" class="text-[11px] font-bold px-2 py-1 rounded-lg" style="background:#020617; color:#A5B4FC; font-family:'SF Mono',Consolas,monospace;">seon_demo_pk_sandbox_key</code>
-              <button type="button" class="dev-copy-btn text-[10px] font-bold px-2 py-1 rounded-lg" data-copy-target="devSandboxApiKey" style="background:rgba(148,163,184,.12); color:#CBD5E1;">📋 Copy</button>
-            </div>
-
-            <div class="grid lg:grid-cols-2 gap-4">
-              <div>
-                <p class="text-[10px] font-bold mb-2" style="color:#64748B;">REQUEST (editable — try changing medication / supplement)</p>
-                <textarea id="devSandboxRequestInput" class="w-full rounded-xl p-3 text-[12px]" rows="10" spellcheck="false" style="background:#020617; color:#93C5FD; font-family:'SF Mono',Consolas,monospace; border:1px solid rgba(148,163,184,.2); resize:vertical;"></textarea>
-                <button type="button" id="devSandboxSendBtn" class="w-full mt-3 rounded-xl py-2.5 text-xs font-bold" style="background:#10B981; color:#022C22;">▶ Send Request / Test Call</button>
-                <p id="devSandboxRequestError" class="hidden text-[11px] mt-2" style="color:#F87171;"></p>
-              </div>
-              <div>
-                <p class="text-[10px] font-bold mb-2" style="color:#64748B;">RESPONSE</p>
-                <div class="relative mb-4">
-                  <button type="button" class="dev-copy-btn absolute top-2 right-2 text-[10px] font-bold px-2.5 py-1 rounded-lg" data-copy-target="devSandboxResponseBox" style="background:rgba(148,163,184,.12); color:#CBD5E1;">📋 Copy</button>
-                  <pre id="devSandboxResponseBox" class="rounded-xl p-3 pt-9 text-[12px] overflow-x-auto" style="background:#020617; color:#6EE7B7; font-family:'SF Mono',Consolas,monospace; min-height:200px; border:1px solid rgba(148,163,184,.2);"></pre>
-                </div>
-                <p class="text-[10px] font-bold mb-2" style="color:#64748B;">LIVE WIDGET PREVIEW</p>
-                <div class="rounded-xl p-3 sm:p-4" style="background:#F8FAFC;">
-                  <div id="devWidgetPreview"></div>
-                </div>
-              </div>
-            </div>
-          </div>
+        <div class="rounded-2xl p-4 sm:p-5 mt-4" style="background:#1E293B; border:1px solid rgba(148,163,184,.15);">
+          <p class="text-[11px] font-bold tracking-widest mb-1" style="color:#34D399;">LIVE WIDGET PREVIEW</p>
+          <p class="text-[11px] mb-3" style="color:#94A3B8;">API 응답 결과가 파트너(e-commerce / 보험사 / EMR) 앱에 이식됐을 때 실시간으로 렌더링되는 Chrono-DNI 안전 경고 위젯이에요.</p>
+          <div class="rounded-xl p-3 sm:p-4" style="background:#F8FAFC;"><div id="sbxWidgetPreview"></div></div>
         </div>
-
-        <!-- ⑤ TARGET INDUSTRY SOLUTIONS -->
-        <div>
-          <p class="text-[11px] font-bold tracking-widest mb-4 text-center" style="color:#34D399;">TARGET INDUSTRY SOLUTIONS</p>
-          <div class="grid sm:grid-cols-3 gap-4">
-            <div class="rounded-2xl p-5" style="background:#1E293B; border:1px solid rgba(99,102,241,.25);">
-              <p class="text-sm font-bold mb-2" style="color:#F1F5F9;">🛡️ Pet Insurance</p>
-              <p class="text-xs leading-relaxed" style="color:#94A3B8;">Underwriting Loss-Ratio Reduction via Preventable Toxicity Blocking — 예방 가능한 약물-영양소 사고를 사전에 차단해 손해율을 낮춰요.</p>
-            </div>
-            <div class="rounded-2xl p-5" style="background:#1E293B; border:1px solid rgba(16,185,129,.25);">
-              <p class="text-sm font-bold mb-2" style="color:#F1F5F9;">🛒 Pet E-Commerce</p>
-              <p class="text-xs leading-relaxed" style="color:#94A3B8;">Safe Cross-Selling &amp; Reduced Return Rates — 위험 조합 상품은 차단하고, 안전한 대체 상품으로 자동 유도해요.</p>
-            </div>
-            <div class="rounded-2xl p-5" style="background:#1E293B; border:1px solid rgba(16,185,129,.25);">
-              <p class="text-sm font-bold mb-2" style="color:#F1F5F9;">🩺 Vet EMR</p>
-              <p class="text-xs leading-relaxed" style="color:#94A3B8;">Real-Time Prescription Safety Alert Integration — 처방 입력 즉시 DNI 충돌을 감지해 진료 화면에 바로 경고해요.</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- ⑥ ERROR CODES & FALLBACK GUIDE -->
-        <div class="mb-10 mt-10">
-          <p class="text-[11px] font-bold tracking-widest mb-4 text-center" style="color:#34D399;">ERROR CODES &amp; FALLBACK GUIDE</p>
-          <div class="grid sm:grid-cols-3 gap-4">
-            <div class="rounded-2xl overflow-hidden" style="background:#1E293B; border:1px solid rgba(248,113,113,.3);">
-              <p class="text-xs font-bold px-4 pt-4 pb-2" style="color:#F87171;">400 Bad Request</p>
-              <div class="relative">
-                <button type="button" class="dev-copy-btn absolute top-1 right-2 text-[9px] font-bold px-2 py-1 rounded-lg" data-copy-target="devErr400Box" style="background:rgba(148,163,184,.12); color:#CBD5E1;">📋</button>
-                <pre id="devErr400Box" class="p-3 pt-6 text-[10px] overflow-x-auto" style="background:#020617; color:#FCA5A5; font-family:'SF Mono',Consolas,monospace;">{
-  "status": "ERROR",
-  "code": 400,
-  "message": "Missing required field: medication",
-  "fallback": "필수 파라미터 누락 시 위젯은 '데이터 부족' 상태로 표시돼요."
-}</pre>
-              </div>
-            </div>
-            <div class="rounded-2xl overflow-hidden" style="background:#1E293B; border:1px solid rgba(251,191,36,.3);">
-              <p class="text-xs font-bold px-4 pt-4 pb-2" style="color:#FBBF24;">422 Unprocessable</p>
-              <div class="relative">
-                <button type="button" class="dev-copy-btn absolute top-1 right-2 text-[9px] font-bold px-2 py-1 rounded-lg" data-copy-target="devErr422Box" style="background:rgba(148,163,184,.12); color:#CBD5E1;">📋</button>
-                <pre id="devErr422Box" class="p-3 pt-6 text-[10px] overflow-x-auto" style="background:#020617; color:#FDE68A; font-family:'SF Mono',Consolas,monospace;">{
-  "status": "ERROR",
-  "code": 422,
-  "message": "Unknown molecule name: 'Enrofloxacn'",
-  "fallback": "성분명을 인식하지 못하면 일반 주의 문구로 안전하게 폴백돼요."
-}</pre>
-              </div>
-            </div>
-            <div class="rounded-2xl overflow-hidden" style="background:#1E293B; border:1px solid rgba(99,102,241,.3);">
-              <p class="text-xs font-bold px-4 pt-4 pb-2" style="color:#A5B4FC;">429 Rate Limit</p>
-              <div class="relative">
-                <button type="button" class="dev-copy-btn absolute top-1 right-2 text-[9px] font-bold px-2 py-1 rounded-lg" data-copy-target="devErr429Box" style="background:rgba(148,163,184,.12); color:#CBD5E1;">📋</button>
-                <pre id="devErr429Box" class="p-3 pt-6 text-[10px] overflow-x-auto" style="background:#020617; color:#C7D2FE; font-family:'SF Mono',Consolas,monospace;">{
-  "status": "ERROR",
-  "code": 429,
-  "message": "Rate limit exceeded (60 req/min)",
-  "fallback": "직전 응답을 캐싱해 위젯이 끊기지 않고 유지되도록 하세요."
-}</pre>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- ⑦ ENTERPRISE COMPLIANCE -->
-        <div>
-          <p class="text-[11px] font-bold tracking-widest mb-4 text-center" style="color:#34D399;">ENTERPRISE COMPLIANCE</p>
-          <div class="rounded-2xl p-5 sm:p-6" style="background:#1E293B; border:1px solid rgba(148,163,184,.15);">
-            <div class="flex flex-wrap gap-2 mb-4">
-              <span class="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full" style="background:rgba(16,185,129,.14); border:1px solid rgba(16,185,129,.35); color:#6EE7B7;">✅ FDA/CVM Non-Diagnostic Decision-Support Framework Compliant</span>
-              <span class="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full" style="background:rgba(99,102,241,.14); border:1px solid rgba(99,102,241,.35); color:#A5B4FC;">🔒 TLS 1.3 / AES-256 Encrypted</span>
-            </div>
-            <p class="text-[11px] leading-relaxed" style="color:#64748B;">SEON API/SDK는 진단 또는 처방 행위를 대체하지 않는 비진단(Non-Diagnostic) 의사결정 보조 프레임워크로 설계되었으며, 모든 통신 구간은 TLS 1.3으로 암호화되고 저장 데이터는 AES-256으로 암호화돼요. 최종 진단·처방 판단은 반드시 수의사가 내려야 해요.</p>
-          </div>
-        </div>
-
       </div>
-    </div>
 
-
+      <!-- Sub-module 2: Metabolic Load (실제 엔진 UI 그대로) -->
+      <div id="sandboxSubMeta" class="hidden mb-4">
+        <details id="sbxMetaApiDetails" open class="rounded-2xl" style="background:#1E293B; border:1px solid rgba(148,163,184,.15);">
+          <summary class="px-4 py-3 text-xs font-bold cursor-pointer" style="color:#6EE7B7;">⚡ API Response (JSON) — 아래 모듈의 현재 입력값으로 실시간 산출돼요</summary>
+          <div class="px-4 pb-4">
+            <div class="relative">
+              <button type="button" class="dev-copy-btn absolute top-2 right-2 text-[10px] font-bold px-2.5 py-1 rounded-lg" data-copy-target="sbxMetaApiBox" style="background:rgba(148,163,184,.12); color:#CBD5E1;">📋 Copy</button>
+              <pre id="sbxMetaApiBox" class="p-3 pt-9 text-[12px] overflow-x-auto" style="background:#020617; color:#6EE7B7; font-family:'SF Mono',Consolas,monospace; max-height:280px; border-radius:10px;"></pre>
+            </div>
+            <button type="button" id="sbxMetaApiRefreshBtn" class="mt-2 rounded-lg px-3 py-1.5 text-[11px] font-bold" style="background:rgba(148,163,184,.12); color:#CBD5E1;">↻ Refresh</button>
+          </div>
+        </details>
+      </div>
     <!-- ===================== 대사 부하 검문 PAGE: 장기별 대사 부하 게이지 & 1-Click 교정 & 목표 음수량 ===================== -->
     <div id="metaLoadPage" class="hidden">
       <div class="text-center mb-8">
-        <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full mb-4" style="background:#3A5A401A; color:#3A5A40;">
+        <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full mb-4" style="background:rgba(16,185,129,.14); color:#34D399;">
           <span>⚙️</span><span class="text-xs font-bold">Metabolic Load Screening</span>
         </div>
-        <h1 class="font-display font-bold mb-2" style="font-size:clamp(1.4rem,4vw,2rem); color:#2C241F;">대사 부하 검문</h1>
-        <p class="text-sm" style="color:#6b6259;">개체 생체 정보와 오늘 먹인 사료·간식·영양제·처방약을 정밀 입력해 간·신장 대사 부하를 임상 수준으로 확인해요.</p>
+        <h1 class="font-display font-bold mb-2" style="font-size:clamp(1.4rem,4vw,2rem); color:#F8FAFC;">대사 부하 검문</h1>
+        <p class="text-sm" style="color:#94A3B8;">개체 생체 정보와 오늘 먹인 사료·간식·영양제·처방약을 정밀 입력해 간·신장 대사 부하를 임상 수준으로 확인해요.</p>
       </div>
 
       <div class="max-w-5xl mx-auto space-y-5">
@@ -1278,14 +1116,27 @@
       </div>
     </div>
 
+      <!-- Sub-module 3: Chrono-DNI Timeline (실제 엔진 UI 그대로) -->
+      <div id="sandboxSubChrono" class="hidden mb-4">
+        <details id="sbxChronoApiDetails" open class="rounded-2xl" style="background:#1E293B; border:1px solid rgba(148,163,184,.15);">
+          <summary class="px-4 py-3 text-xs font-bold cursor-pointer" style="color:#6EE7B7;">⚡ API Response (JSON) — 아래 모듈의 현재 입력값으로 실시간 산출돼요</summary>
+          <div class="px-4 pb-4">
+            <div class="relative">
+              <button type="button" class="dev-copy-btn absolute top-2 right-2 text-[10px] font-bold px-2.5 py-1 rounded-lg" data-copy-target="sbxChronoApiBox" style="background:rgba(148,163,184,.12); color:#CBD5E1;">📋 Copy</button>
+              <pre id="sbxChronoApiBox" class="p-3 pt-9 text-[12px] overflow-x-auto" style="background:#020617; color:#6EE7B7; font-family:'SF Mono',Consolas,monospace; max-height:280px; border-radius:10px;"></pre>
+            </div>
+            <button type="button" id="sbxChronoApiRefreshBtn" class="mt-2 rounded-lg px-3 py-1.5 text-[11px] font-bold" style="background:rgba(148,163,184,.12); color:#CBD5E1;">↻ Refresh</button>
+          </div>
+        </details>
+      </div>
     <!-- ===================== 1일 안전 투약 타임라인 PAGE: 약물-영양소 상극 감지 & 시간대별 1g 스케줄러 ===================== -->
     <div id="insurancePage" class="hidden">
       <div class="text-center mb-8">
-        <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full mb-4" style="background:#3A5A401A; color:#3A5A40;">
+        <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full mb-4" style="background:rgba(16,185,129,.14); color:#34D399;">
           <span>🛡️</span><span class="text-xs font-bold">안전 투약 스케줄링</span>
         </div>
-        <h1 class="font-display font-bold mb-2" style="font-size:clamp(1.4rem,4vw,2rem); color:#2C241F;">1일 안전 투약 타임라인</h1>
-        <p class="text-sm" style="color:#6b6259;">아이의 약과 영양제가 서로 충돌하지 않는 안전한 복용 시각과 식사 스케줄을 자동으로 계산해 드려요.</p>
+        <h1 class="font-display font-bold mb-2" style="font-size:clamp(1.4rem,4vw,2rem); color:#F8FAFC;">1일 안전 투약 타임라인</h1>
+        <p class="text-sm" style="color:#94A3B8;">아이의 약과 영양제가 서로 충돌하지 않는 안전한 복용 시각과 식사 스케줄을 자동으로 계산해 드려요.</p>
       </div>
 
       <div class="max-w-5xl mx-auto space-y-5">
@@ -1516,19 +1367,242 @@
       </div>
     </div>
 
+    </div>
+
+    <!-- ===================== 👨‍💻 DEVELOPER DOCS ===================== -->
+    <div id="docsPage" class="hidden">
+      <div class="text-center mb-8">
+        <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full mb-4 text-xs font-bold" style="background:rgba(16,185,129,.14); color:#34D399;"><span>👨‍💻</span><span>DEVELOPER DOCS</span></div>
+        <h1 class="font-display font-bold mb-2" style="font-size:clamp(1.4rem,4vw,2rem); color:#F8FAFC;">SEON SDK &amp; RESTful API Reference</h1>
+        <p class="text-sm max-w-2xl mx-auto leading-relaxed" style="color:#94A3B8;">5분 안에 위젯을 이식하고, 서버 간 REST API로 실시간 DNI 충돌 · 대사 부하 지수를 받아보세요.</p>
+      </div>
+
+      <div class="mb-10">
+        <p class="text-[11px] font-bold tracking-widest mb-4 text-center" style="color:#34D399;">3-STEP QUICK INTEGRATION GUIDE</p>
+        <div class="grid sm:grid-cols-3 gap-4">
+          <div class="rounded-2xl p-5" style="background:#1E293B; border:1px solid rgba(148,163,184,.15);">
+            <span class="inline-flex items-center justify-center rounded-full text-xs font-bold mb-3" style="width:26px; height:26px; background:rgba(16,185,129,.15); color:#34D399;">1</span>
+            <p class="text-sm font-bold mb-1" style="color:#F1F5F9;">Obtain Partner API Key</p>
+            <p class="text-xs leading-relaxed" style="color:#94A3B8;">Enterprise PoC 탭에서 신청하면 Sandbox API Key가 즉시 발급돼요. 프로덕션 키는 별도 계약 후 발급돼요.</p>
+          </div>
+          <div class="rounded-2xl p-5" style="background:#1E293B; border:1px solid rgba(148,163,184,.15);">
+            <span class="inline-flex items-center justify-center rounded-full text-xs font-bold mb-3" style="width:26px; height:26px; background:rgba(99,102,241,.15); color:#A5B4FC;">2</span>
+            <p class="text-sm font-bold mb-1" style="color:#F1F5F9;">Embed SEON Chrono-DNI Widget SDK</p>
+            <p class="text-xs leading-relaxed" style="color:#94A3B8;">스크립트 태그, React, React Native 중 한 줄로 안전 투약 위젯을 삽입해요.</p>
+          </div>
+          <div class="rounded-2xl p-5" style="background:#1E293B; border:1px solid rgba(148,163,184,.15);">
+            <span class="inline-flex items-center justify-center rounded-full text-xs font-bold mb-3" style="width:26px; height:26px; background:rgba(16,185,129,.15); color:#34D399;">3</span>
+            <p class="text-sm font-bold mb-1" style="color:#F1F5F9;">Stream Real-Time DNI Conflict &amp; Metabolic Load Indices</p>
+            <p class="text-xs leading-relaxed" style="color:#94A3B8;">REST 응답의 충돌 경고·격리 시간·간/신장 부하 지수를 자사 화면과 로직에 반영해요.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-10">
+        <p class="text-[11px] font-bold tracking-widest mb-4 text-center" style="color:#34D399;">CODE SNIPPETS</p>
+        <div class="rounded-2xl overflow-hidden" style="background:#1E293B; border:1px solid rgba(148,163,184,.15);">
+          <div class="flex gap-1 px-3 pt-3 flex-wrap" id="devCodeTabGroup">
+            <button type="button" class="dev-code-tab-btn rounded-t-lg px-3 py-2 text-xs font-bold" data-code-tab="html">HTML Script Tag</button>
+            <button type="button" class="dev-code-tab-btn rounded-t-lg px-3 py-2 text-xs font-bold" data-code-tab="react">React Component</button>
+            <button type="button" class="dev-code-tab-btn rounded-t-lg px-3 py-2 text-xs font-bold" data-code-tab="reactnative">React Native / Mobile</button>
+            <button type="button" class="dev-code-tab-btn rounded-t-lg px-3 py-2 text-xs font-bold" data-code-tab="curl">cURL API</button>
+          </div>
+          <div class="relative">
+            <button type="button" class="dev-copy-btn absolute top-2 right-2 text-[10px] font-bold px-2.5 py-1 rounded-lg" data-copy-target="devCodeSnippetBox" style="background:rgba(148,163,184,.12); color:#CBD5E1;">📋 Copy</button>
+            <pre id="devCodeSnippetBox" class="p-4 pt-9 text-[12px] overflow-x-auto" style="background:#020617; color:#6EE7B7; font-family:'SF Mono',Consolas,monospace; min-height:150px;"></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-10">
+        <p class="text-[11px] font-bold tracking-widest mb-4 text-center" style="color:#34D399;">API SPECIFICATION</p>
+        <div class="rounded-2xl p-4 sm:p-5 space-y-6" style="background:#1E293B; border:1px solid rgba(148,163,184,.15);">
+          <div class="overflow-x-auto">
+            <p class="text-xs font-bold mb-2" style="color:#F1F5F9;">Request</p>
+            <table class="api-table w-full" id="apiSpecRequestTable">
+              <tbody>
+                <tr><th>Base URL</th><td><code>https://seon-ivy.vercel.app/api/v1</code></td></tr>
+                <tr><th>Endpoint</th><td><code>POST /seon/analyze</code></td></tr>
+                <tr><th>Auth Header</th><td><code>X-SEON-API-KEY: &lt;YOUR_PARTNER_KEY&gt;</code></td></tr>
+                <tr><th>Content-Type</th><td><code>application/json</code></td></tr>
+                <tr><th>Latency SLA</th><td>Sub-20ms target (server-side compute, p50)</td></tr>
+                <tr><th>Rate Limit</th><td>60 req/min (Sandbox) · Production은 계약 조건에 따라 조정</td></tr>
+                <tr><th>Interoperability</th><td>HL7/FHIR 호환 응답 매핑 (<code>fhir_compatible: true</code>)</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="overflow-x-auto">
+            <p class="text-xs font-bold mb-2" style="color:#F1F5F9;">Response Codes</p>
+            <table class="api-table w-full" id="apiSpecCodesTable">
+              <thead><tr><th>Code</th><th>Meaning</th></tr></thead>
+              <tbody>
+                <tr><td><code>200</code></td><td>OK — 분석 성공</td></tr>
+                <tr><td><code>400</code></td><td>Bad Request — 필수 파라미터 누락</td></tr>
+                <tr><td><code>401</code></td><td>Unauthorized — API Key 누락 또는 유효하지 않음</td></tr>
+                <tr><td><code>422</code></td><td>Unprocessable — 성분명·수치를 인식할 수 없음</td></tr>
+                <tr><td><code>429</code></td><td>Rate Limit — 요청 한도 초과</td></tr>
+                <tr><td><code>500</code></td><td>Server Error — 일시적 오류 (재시도 권장)</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="overflow-x-auto">
+            <p class="text-xs font-bold mb-2" style="color:#F1F5F9;">Response Fields</p>
+            <table class="api-table w-full" id="apiSpecFieldsTable">
+              <thead><tr><th>Field</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td><code>ndc_code</code></td><td>U.S. National Drug Code 식별자 매핑 (예: <code>NDC 50320-012-10</code>)</td></tr>
+                <tr><td><code>health_score</code></td><td>목표 건강 스코어 (0–100)</td></tr>
+                <tr><td><code>hepatic_strain_index</code></td><td>간 대사 부하 지수 (%)</td></tr>
+                <tr><td><code>renal_clearance_burden</code></td><td>신장 여과 부담 지수 (%)</td></tr>
+                <tr><td><code>isolation_hours</code></td><td>DNI 상극 회피를 위한 격리 복용 시간 (h)</td></tr>
+                <tr><td><code>fhir_compatible</code></td><td>HL7/FHIR 수의 EMR 포맷 연동 호환 여부</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="text-[11px] leading-relaxed" style="color:#94A3B8;">※ 프로덕션 엔드포인트는 License Key 발급 후 활성화돼요. Live API Sandbox 탭은 동일한 연산 엔진을 브라우저에서 직접 실행해요. Sandbox의 <code style="color:#6EE7B7;">ndc_code</code>는 데모용 매핑이며, 프로덕션에서는 공인 NDC 디렉터리와 매칭돼요.</p>
+        </div>
+      </div>
+
+      <div class="mb-10">
+        <p class="text-[11px] font-bold tracking-widest mb-4 text-center" style="color:#34D399;">ERROR CODES &amp; FALLBACK GUIDE</p>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="rounded-2xl overflow-hidden" style="background:#1E293B; border:1px solid rgba(248,113,113,.3);">
+            <p class="text-xs font-bold px-4 pt-4 pb-2" style="color:#F87171;">400 Bad Request</p>
+            <div class="relative"><button type="button" class="dev-copy-btn absolute top-1 right-2 text-[9px] font-bold px-2 py-1 rounded-lg" data-copy-target="devErr400Box" style="background:rgba(148,163,184,.12); color:#CBD5E1;">📋</button>
+<pre id="devErr400Box" class="p-3 pt-6 text-[10px] overflow-x-auto" style="background:#020617; color:#FCA5A5; font-family:'SF Mono',Consolas,monospace;">{
+  "status": "ERROR",
+  "code": 400,
+  "message": "Missing required field: pet",
+  "fallback": "필수 파라미터 누락 시 위젯은 '데이터 부족' 상태로 표시돼요."
+}</pre></div>
+          </div>
+          <div class="rounded-2xl overflow-hidden" style="background:#1E293B; border:1px solid rgba(251,146,60,.3);">
+            <p class="text-xs font-bold px-4 pt-4 pb-2" style="color:#FB923C;">401 Unauthorized</p>
+            <div class="relative"><button type="button" class="dev-copy-btn absolute top-1 right-2 text-[9px] font-bold px-2 py-1 rounded-lg" data-copy-target="devErr401Box" style="background:rgba(148,163,184,.12); color:#CBD5E1;">📋</button>
+<pre id="devErr401Box" class="p-3 pt-6 text-[10px] overflow-x-auto" style="background:#020617; color:#FDBA74; font-family:'SF Mono',Consolas,monospace;">{
+  "status": "ERROR",
+  "code": 401,
+  "message": "Invalid or missing X-SEON-API-KEY",
+  "fallback": "키를 재확인하고, 위젯은 경고 없이 기본 화면으로 폴백하세요."
+}</pre></div>
+          </div>
+          <div class="rounded-2xl overflow-hidden" style="background:#1E293B; border:1px solid rgba(251,191,36,.3);">
+            <p class="text-xs font-bold px-4 pt-4 pb-2" style="color:#FBBF24;">422 Unprocessable</p>
+            <div class="relative"><button type="button" class="dev-copy-btn absolute top-1 right-2 text-[9px] font-bold px-2 py-1 rounded-lg" data-copy-target="devErr422Box" style="background:rgba(148,163,184,.12); color:#CBD5E1;">📋</button>
+<pre id="devErr422Box" class="p-3 pt-6 text-[10px] overflow-x-auto" style="background:#020617; color:#FDE68A; font-family:'SF Mono',Consolas,monospace;">{
+  "status": "ERROR",
+  "code": 422,
+  "message": "Unknown molecule name: 'Enrofloxacn'",
+  "did_you_mean": "Enrofloxacin",
+  "fallback": "성분명을 인식하지 못하면 일반 주의 문구로 안전하게 폴백돼요."
+}</pre></div>
+          </div>
+          <div class="rounded-2xl overflow-hidden" style="background:#1E293B; border:1px solid rgba(99,102,241,.3);">
+            <p class="text-xs font-bold px-4 pt-4 pb-2" style="color:#A5B4FC;">429 Rate Limit</p>
+            <div class="relative"><button type="button" class="dev-copy-btn absolute top-1 right-2 text-[9px] font-bold px-2 py-1 rounded-lg" data-copy-target="devErr429Box" style="background:rgba(148,163,184,.12); color:#CBD5E1;">📋</button>
+<pre id="devErr429Box" class="p-3 pt-6 text-[10px] overflow-x-auto" style="background:#020617; color:#C7D2FE; font-family:'SF Mono',Consolas,monospace;">{
+  "status": "ERROR",
+  "code": 429,
+  "message": "Rate limit exceeded (60 req/min)",
+  "fallback": "직전 응답을 캐싱해 위젯이 끊기지 않고 유지되도록 하세요."
+}</pre></div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <p class="text-[11px] font-bold tracking-widest mb-4 text-center" style="color:#34D399;">ENTERPRISE COMPLIANCE</p>
+        <div class="rounded-2xl p-5 sm:p-6" style="background:#1E293B; border:1px solid rgba(148,163,184,.15);">
+          <div class="flex flex-wrap gap-2 mb-4">
+            <span class="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full" style="background:rgba(16,185,129,.14); border:1px solid rgba(16,185,129,.35); color:#6EE7B7;">✅ FDA/CVM Non-Diagnostic Decision-Support Framework Compliant</span>
+            <span class="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full" style="background:rgba(99,102,241,.14); border:1px solid rgba(99,102,241,.35); color:#A5B4FC;">🔒 TLS 1.3 / AES-256 Encrypted</span>
+          </div>
+          <p class="text-[11px] leading-relaxed" style="color:#94A3B8;">SEON API/SDK의 모든 출력은 진단·처방을 대체하지 않는 비진단(Non-Diagnostic) 의사결정 보조 신호예요. 통신 구간은 TLS 1.3, 저장 데이터는 AES-256으로 암호화돼요. 최종 진단·처방 판단은 반드시 수의사가 내려야 해요.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== 🤝 ENTERPRISE PoC ===================== -->
+    <div id="pocPage" class="hidden">
+      <div class="text-center mb-8">
+        <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full mb-4 text-xs font-bold" style="background:rgba(16,185,129,.14); color:#34D399;"><span>🤝</span><span>ENTERPRISE PoC</span></div>
+        <h1 class="font-display font-bold mb-2" style="font-size:clamp(1.4rem,4vw,2rem); color:#F8FAFC;">Enterprise PoC &amp; Sandbox Key</h1>
+        <p class="text-sm max-w-2xl mx-auto leading-relaxed" style="color:#94A3B8;">보험사 · 커머스 · 수의 EMR 파트너를 위한 PoC 신청 창구예요. 신청과 동시에 Sandbox API Key가 발급돼요.</p>
+      </div>
+
+      <div class="grid lg:grid-cols-5 gap-4">
+        <div class="lg:col-span-3 rounded-2xl p-5 sm:p-6" style="background:#1E293B; border:1px solid rgba(99,102,241,.3);">
+          <p class="text-sm font-bold mb-4" style="color:#F1F5F9;">PoC Request Form</p>
+          <div class="space-y-3">
+            <div><label class="sbx-label" for="pocCompany">회사명</label><input id="pocCompany" class="sbx-input" placeholder="예: OO손해보험 / OO펫몰 / OO동물병원 EMR" autocomplete="organization"></div>
+            <div><label class="sbx-label" for="pocEmail">담당자 이메일</label><input id="pocEmail" type="email" class="sbx-input" placeholder="name@company.com" autocomplete="email"></div>
+            <div>
+              <span class="sbx-label">Target Vertical</span>
+              <div class="grid grid-cols-3 gap-2" id="pocVerticalGroup">
+                <label class="poc-vertical"><input type="radio" name="pocVertical" value="Pet Insurers"><span>🛡️ Pet Insurers</span></label>
+                <label class="poc-vertical"><input type="radio" name="pocVertical" value="Pet E-Commerce"><span>🛒 Pet E-Commerce</span></label>
+                <label class="poc-vertical"><input type="radio" name="pocVertical" value="Veterinary EMRs"><span>🩺 Veterinary EMRs</span></label>
+              </div>
+            </div>
+            <div>
+              <label class="sbx-label" for="pocVolume">예상 API Volume</label>
+              <select id="pocVolume" class="sbx-input">
+                <option value="">선택해주세요</option>
+                <option value="< 10K calls / month">&lt; 10K calls / month</option>
+                <option value="10K – 100K calls / month">10K – 100K calls / month</option>
+                <option value="100K – 1M calls / month">100K – 1M calls / month</option>
+                <option value="> 1M calls / month">&gt; 1M calls / month</option>
+              </select>
+            </div>
+          </div>
+          <p id="pocError" class="hidden text-[11px] mt-3" style="color:#F87171;"></p>
+          <button type="button" id="pocSubmitBtn" class="w-full mt-4 rounded-xl py-3 text-sm font-bold" style="background:#10B981; color:#022C22;">Submit PoC Request &amp; Generate Key</button>
+
+          <div id="pocResult" class="hidden mt-5 rounded-xl p-4" style="background:#0F172A; border:1px solid rgba(52,211,153,.35);">
+            <p id="pocResultMsg" class="text-xs leading-relaxed mb-3" style="color:#CBD5E1;"></p>
+            <div class="flex items-center gap-2 mb-3">
+              <code id="pocResultKey" class="flex-1 text-[12px] font-bold px-3 py-2 rounded-lg overflow-x-auto" style="background:#020617; color:#A5B4FC; font-family:'SF Mono',Consolas,monospace;"></code>
+              <button type="button" class="dev-copy-btn text-[10px] font-bold px-2.5 py-2 rounded-lg shrink-0" data-copy-target="pocResultKey" style="background:rgba(148,163,184,.12); color:#CBD5E1;">📋 Copy</button>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button type="button" id="pocUseKeyBtn" class="rounded-lg px-3 py-2 text-[11px] font-bold" style="background:#10B981; color:#022C22;">이 키로 Live API Sandbox 열기 →</button>
+              <a id="pocMailFallback" href="mailto:seon.forivy@gmail.com" class="hidden rounded-lg px-3 py-2 text-[11px] font-bold" style="background:transparent; border:1.5px solid rgba(148,163,184,.35); color:#F1F5F9;">📧 이메일로 문의 보내기</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-2 rounded-2xl p-5 sm:p-6" style="background:#1E293B; border:1px solid rgba(148,163,184,.15);">
+          <p class="text-sm font-bold mb-3" style="color:#F1F5F9;">🔑 Sandbox vs Production License Key</p>
+          <ul class="space-y-2 text-xs leading-relaxed mb-4" style="color:#94A3B8;">
+            <li><b style="color:#6EE7B7;">Sandbox Key</b> — 신청 즉시 발급, Live API Sandbox에서 실제 연산 엔진을 호출해볼 수 있어요.</li>
+            <li><b style="color:#A5B4FC;">Production License Key</b> — PoC 협의 및 계약(LOI) 후 SEON이 별도 발급해요.</li>
+          </ul>
+          <p class="text-[11px] font-bold mb-2" style="color:#CBD5E1;">문의 시 함께 알려주세요</p>
+          <div class="flex flex-wrap gap-2 mb-4">
+            <span class="text-[11px] font-bold px-3 py-1.5 rounded-full" style="background:rgba(99,102,241,.14); border:1px solid rgba(99,102,241,.35); color:#A5B4FC;">👤 Name (role)</span>
+            <span class="text-[11px] font-bold px-3 py-1.5 rounded-full" style="background:rgba(99,102,241,.14); border:1px solid rgba(99,102,241,.35); color:#A5B4FC;">🏢 Company</span>
+            <span class="text-[11px] font-bold px-3 py-1.5 rounded-full" style="background:rgba(99,102,241,.14); border:1px solid rgba(99,102,241,.35); color:#A5B4FC;">🎯 Purpose</span>
+          </div>
+          <p class="text-[11px] leading-relaxed" style="color:#94A3B8;">💡 기술 사양 · SDK 연동 문의: <b style="color:#6EE7B7;">seon.forivy@gmail.com</b></p>
+        </div>
+      </div>
+    </div>
+
+
+
 
   </main>
 
   <!-- ===================== FOOTER (관리자 진입 트리거 포함) ===================== -->
-  <footer class="mx-auto container-px px-4 pb-10 pt-4" style="max-width:var(--max-w-site);">
-    <div class="border-t border-token pt-5 flex flex-col items-center gap-1">
-      <button id="footerAdminTrigger" class="flex items-center gap-1.5 text-[11px] text-muted hover:text-current transition select-none" title="">
-        <span class="w-4 h-4 rounded bg-primary flex items-center justify-center shrink-0">
+  <footer id="appFooter" class="mx-auto container-px px-4 pb-10 pt-4" style="max-width:var(--max-w-site);">
+    <div class="footer-divider border-t border-slate-700 pt-5 flex flex-col items-center gap-2">
+      <button id="footerAdminTrigger" class="footer-admin-btn flex items-center gap-1.5 text-[11px] text-slate-300 hover:text-emerald-400 border border-slate-700 transition select-none" title="">
+        <span class="footer-admin-icon w-4 h-4 rounded flex items-center justify-center shrink-0">
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M6 10c1 0 1.8-1 1.8-2.4S7 5.2 6 5.2 4.2 6.2 4.2 7.6 5 10 6 10Zm12 0c1 0 1.8-1 1.8-2.4S19 5.2 18 5.2s-1.8 1-1.8 2.4S17 10 18 10Zm-4.6-1.3c1.1 0 2-1.2 2-2.7S14.5 3.3 13.4 3.3s-2 1.2-2 2.7 .9 2.7 2 2.7Zm-4.8 0c1.1 0 2-1.2 2-2.7S9.7 3.3 8.6 3.3s-2 1.2-2 2.7 .9 2.7 2 2.7Zm4.4 2.1c-2.6 0-6 1.9-6 4.6 0 1.4 1 2.3 2.3 2.3.9 0 1.4-.3 2.2-.3.9 0 1.3.3 2.2.3.9 0 1.3-.3 2.2-.3.8 0 1.4-.3 2.2-.3 1.3 0 2.3-.9 2.3-2.3 0-2.7-3.4-4.6-7.4-4.6Z" fill="#fff"/></svg>
         </span>
         <span>© 2026 서온 · seon</span>
       </button>
-      <p class="text-[10px] text-muted opacity-60">건강한 강아지, 행복한 보호자를 위해 · 수의영양학 기반 맞춤 다이어트 플랫폼</p>
+      <p class="footer-tagline text-[10px] text-slate-400">건강한 강아지, 행복한 보호자를 위해 · 수의영양학 기반 맞춤 다이어트 플랫폼</p>
     </div>
   </footer>
 
@@ -2351,8 +2425,8 @@ function stepFontScale(dir){
 function updateUserWidgetUI(){
   document.getElementById('fontScaleLabel').textContent = Math.round(userSettings.fontScale*100)+'%';
   document.querySelectorAll('.user-theme-btn').forEach(b=>{
-    b.style.background = b.dataset.mode===userSettings.themeMode ? 'var(--c-primary-light)' : '';
-    b.style.color = b.dataset.mode===userSettings.themeMode ? 'var(--c-primary-dark)' : '';
+    b.style.background = b.dataset.mode===userSettings.themeMode ? 'rgba(16,185,129,.2)' : '';
+    b.style.color = b.dataset.mode===userSettings.themeMode ? '#34D399' : '';
   });
 }
 function applyResolvedTheme(){
@@ -2630,9 +2704,11 @@ function renderMainFormPhaseIndicator(){
   const activePhase = getMainFormPhaseIndex(currentStep);
   el.innerHTML = MAIN_FORM_PHASES.map((p,i)=>{
     const done = i < activePhase, active = i === activePhase;
-    const color = done ? '#1F8F76' : active ? '#3A5A40' : '#9a9186';
-    const bg = done ? '#2FBF9F14' : active ? '#3A5A401A' : '#F5F4F0';
-    return `<span class="text-[10px] font-bold px-2.5 py-1 rounded-full" style="background:${bg}; color:${color};">${done?'✅ ':''}Step ${i+1} · ${p.title}</span>`;
+    // 다크 캔버스 위에서 또렷하게 보이도록: 완료=연한 에메랄드, 진행중=에메랄드 하이라이트+테두리, 대기=슬레이트
+    const color = done ? '#6EE7B7' : active ? '#34D399' : '#94A3B8';
+    const bg = done ? 'rgba(16,185,129,.10)' : active ? 'rgba(16,185,129,.20)' : 'rgba(51,65,85,.40)';
+    const border = active ? 'rgba(16,185,129,.5)' : 'transparent';
+    return `<span class="text-[10px] font-bold px-2.5 py-1 rounded-full" style="background:${bg}; color:${color}; border:1px solid ${border};">${done?'✅ ':''}Step ${i+1} · ${p.title}</span>`;
   }).join('');
 }
 
@@ -6541,18 +6617,31 @@ function bindStudioTabEvents(){
 /* ============================================================
    메인 탭 라우팅
 ============================================================ */
+/* GNB는 4개(Overview / Live API Sandbox / Developer Docs / Enterprise PoC)예요. 대사 부하 검문·1일 안전 투약
+   타임라인은 Live API Sandbox 안의 하위 모듈 뷰라서, 기존 코드가 쓰던 'metaload'/'insurance' 값은 그대로 받아서
+   Sandbox 탭 + 해당 하위 뷰로 연결해요(딥링크·랜딩 CTA·기존 호출부 모두 그대로 동작). */
+function resolveTabTarget(tab){
+  const alias = { demo:'sandbox', developers:'docs' };
+  tab = alias[tab] || tab;
+  if(tab === 'metaload') return { main:'sandbox', sub:'metaload' };
+  if(tab === 'insurance') return { main:'sandbox', sub:'chrono' };
+  if(tab === 'sandbox-health') return { main:'sandbox', sub:'health' };
+  if(tab === 'sandbox') return { main:'sandbox', sub:'full' };
+  return { main:tab, sub:null };
+}
 function switchMainTab(tab){
-  document.querySelectorAll('.main-tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
-  document.getElementById('homePage').classList.toggle('hidden', tab!=='home');
-  document.getElementById('demoPage').classList.toggle('hidden', tab!=='demo');
-  document.getElementById('developersPage').classList.toggle('hidden', tab!=='developers');
-  document.getElementById('metaLoadPage').classList.toggle('hidden', tab!=='metaload');
-  document.getElementById('insurancePage').classList.toggle('hidden', tab!=='insurance');
-  if(tab === 'metaload') renderMetaLoadPage(); // 진입할 때마다 최신 프로필/DNI 데이터 기준으로 다시 계산해요.
-  // 상단 [🏠 홈 / 진단] 탭을 누르면, 문진 중간(Step 1~5)이든 결과 대시보드를 보고 있든 상관없이
-  // 항상 맨 처음 랜딩 화면(서비스 소개 + 시작 버튼)으로 복귀해요. 입력해둔 답변 자체는 지우지
-  // 않아서(soft reset), '다시 시작하기'를 누르면 이어서 작성할 수 있어요.
-  if(tab === 'home') resetHomeTabToLandingView();
+  const t = resolveTabTarget(tab);
+  document.querySelectorAll('.main-tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===t.main));
+  ['home','sandbox','docs','poc'].forEach(name=>{
+    const el = document.getElementById(name==='home' ? 'homePage' : name+'Page');
+    if(el) el.classList.toggle('hidden', t.main!==name);
+  });
+  if(t.main === 'sandbox') applySandboxView(t.sub);
+  else applySandboxView(null, true);
+  if(t.sub === 'metaload') renderMetaLoadPage(); // 진입할 때마다 최신 프로필/DNI 데이터 기준으로 다시 계산해요.
+  // 상단 [🏠 Overview] 탭을 누르면, 문진 중간(Step 1~5)이든 결과 대시보드를 보고 있든 상관없이
+  // 항상 맨 처음 랜딩 화면으로 복귀해요. 입력해둔 답변 자체는 지우지 않아서(soft reset), '다시 시작하기'로 이어서 작성할 수 있어요.
+  if(t.main === 'home') resetHomeTabToLandingView();
   window.scrollTo({top:0, behavior:'smooth'});
 }
 function resetHomeTabToLandingView(){
@@ -8623,15 +8712,15 @@ function buildRollupWizardFromRanges(config){
 
     const badge = document.createElement('div');
     badge.className = 'hidden rounded-xl px-4 py-2.5 flex flex-wrap items-center gap-x-2 gap-y-1 cursor-pointer demo-wizard-step-done';
-    badge.style.cssText = 'background:#2FBF9F14; border:1px solid #2FBF9F44;';
-    badge.innerHTML = `<span class="text-xs font-bold" style="color:#1F8F76;">✅ Step ${i} · ${title}</span><span class="text-[11px] demo-step-summary" style="color:#3A5A40;"></span><span class="text-[10px] ml-auto" style="color:#6b6259;">(눌러서 수정)</span>`;
+    badge.style.cssText = 'background:rgba(16,185,129,.12); border:1px solid rgba(16,185,129,.4);';
+    badge.innerHTML = `<span class="text-xs font-bold" style="color:#34D399;">✅ Step ${i} · ${title}</span><span class="text-[11px] demo-step-summary" style="color:#A7F3D0;"></span><span class="text-[10px] ml-auto" style="color:#94A3B8;">(눌러서 수정)</span>`;
     badge.addEventListener('click', ()=>{ activeStep = i; refresh(); });
     stepBadges[i] = badge;
 
     const pending = document.createElement('div');
     pending.className = 'hidden rounded-xl px-4 py-2.5';
-    pending.style.cssText = 'background:#F5F4F0; border:1px dashed #3A5A4033;';
-    pending.innerHTML = `<span class="text-xs font-bold" style="color:#9a9186;">Step ${i} · ${title} (대기 중)</span>`;
+    pending.style.cssText = 'background:rgba(30,41,59,.5); border:1px dashed #334155;';
+    pending.innerHTML = `<span class="text-xs font-bold" style="color:#94A3B8;">Step ${i} · ${title} (대기 중)</span>`;
     stepPendings[i] = pending;
 
     const activeWrap = document.createElement('div');
@@ -8746,22 +8835,22 @@ function buildRollupWizard(config){
 
     const badge = document.createElement('div');
     badge.className = 'hidden rounded-xl px-4 py-2.5 flex flex-wrap items-center gap-x-2 gap-y-1 cursor-pointer demo-wizard-step-done';
-    badge.style.cssText = 'background:#2FBF9F14; border:1px solid #2FBF9F44;';
-    badge.innerHTML = `<span class="text-xs font-bold" style="color:#1F8F76;">✅ Step ${i} · ${title}</span><span class="text-[11px] demo-step-summary" style="color:#3A5A40;"></span><span class="text-[10px] ml-auto" style="color:#6b6259;">(눌러서 수정)</span>`;
+    badge.style.cssText = 'background:rgba(16,185,129,.12); border:1px solid rgba(16,185,129,.4);';
+    badge.innerHTML = `<span class="text-xs font-bold" style="color:#34D399;">✅ Step ${i} · ${title}</span><span class="text-[11px] demo-step-summary" style="color:#A7F3D0;"></span><span class="text-[10px] ml-auto" style="color:#94A3B8;">(눌러서 수정)</span>`;
     badge.addEventListener('click', ()=>{ activeStep = i; refresh(); });
     stepBadges[i] = badge;
 
     const pending = document.createElement('div');
     pending.className = 'hidden rounded-xl px-4 py-2.5';
-    pending.style.cssText = 'background:#F5F4F0; border:1px dashed #3A5A4033;';
-    pending.innerHTML = `<span class="text-xs font-bold" style="color:#9a9186;">Step ${i} · ${title} (대기 중)</span>`;
+    pending.style.cssText = 'background:rgba(30,41,59,.5); border:1px dashed #334155;';
+    pending.innerHTML = `<span class="text-xs font-bold" style="color:#94A3B8;">Step ${i} · ${title} (대기 중)</span>`;
     stepPendings[i] = pending;
 
     const activeWrap = document.createElement('div');
     activeWrap.className = 'hidden space-y-3 demo-wizard-step-active';
     const header = document.createElement('p');
     header.className = 'text-xs font-bold px-1';
-    header.style.color = '#3A5A40';
+    header.style.color = '#34D399';
     header.textContent = `Step ${i} · ${title}`;
     activeWrap.appendChild(header);
     stepEls.forEach(el=>activeWrap.appendChild(el)); // 기존 카드를 그대로 이동(딱 한 번만) — 내용/로직 변경 없음
@@ -10679,8 +10768,8 @@ function openChronoDniReport(){
 ============================================================ */
 /* '1일 안전 투약 타임라인'의 정식 경로는 #/safe-timeline이에요. 예전 링크(#/chrono)로 들어와도
    깨지지 않도록 과거 경로도 계속 인식하되, 화면에는 항상 새 경로로 자동 리다이렉트해요. */
-const ROUTE_TO_TAB = { '': 'home', 'main': 'home', 'safe-timeline': 'insurance', 'chrono': 'insurance', 'metabolic-load': 'metaload', 'demo': 'demo', 'developers': 'developers', 'sdk': 'developers' };
-const TAB_TO_ROUTE = { home: '', insurance: 'safe-timeline', metaload: 'metabolic-load', demo: 'demo', developers: 'developers' };
+const ROUTE_TO_TAB = { '': 'home', 'main': 'home', 'overview': 'home', 'sandbox': 'sandbox', 'demo': 'sandbox', 'health-scoring': 'sandbox-health', 'metabolic-load': 'metaload', 'safe-timeline': 'insurance', 'chrono': 'insurance', 'docs': 'docs', 'developers': 'docs', 'sdk': 'docs', 'poc': 'poc', 'enterprise': 'poc' };
+const TAB_TO_ROUTE = { home: '', sandbox: 'sandbox', 'sandbox-health': 'health-scoring', metaload: 'metabolic-load', insurance: 'safe-timeline', docs: 'docs', poc: 'poc' };
 const LEGACY_ROUTES = { 'chrono': 'safe-timeline' }; // 구 경로 → 신 경로 매핑 (자동 리다이렉트용)
 
 function getTabFromCurrentHash(){
@@ -10772,396 +10861,57 @@ window.addEventListener('hashchange', saveAppStateSnapshot);
 window.addEventListener('beforeunload', saveAppStateSnapshot);
 
 /* ============================================================
-   🧬 기술 & 데모 (Tech & Demo Showcase) — 완전한 Mock Data 기반
-   백엔드 DB 연동이나 외부 API 호출 없이, 프론트엔드 정적 더미 데이터만으로
-   동작하는 100% 안정적인 인터랙티브 프로토타입이에요.
+   🧑‍💻 SEON B2B Developer Portal
+   — Overview 5-Node 파이프라인 · Live API Sandbox · Developer Docs · Enterprise PoC
+   Live API Sandbox는 앱에 이미 있는 실제 연산 엔진(computeHealthScore / computeOrganBurden /
+   DNI_MOLECULE_RULES)을 그대로 호출해요. 엔진이 읽는 전역 입력 상태는 호출 전에 저장했다가
+   호출 직후 '같은 객체 그대로' 복원하므로, 대사 부하·Chrono-DNI 화면의 유저 입력은 절대 변하지 않아요.
+
+   -- Supabase SQL (Enterprise PoC 문의 저장용. 테이블이 없으면 화면은 이메일 전송 안내로 안전하게 폴백해요)
+   create table if not exists public.b2b_poc_requests (
+     id uuid primary key default gen_random_uuid(),
+     company text not null, contact_email text not null,
+     target_vertical text not null, expected_api_volume text not null,
+     sandbox_key text not null, created_at timestamptz not null default now()
+   );
+   alter table public.b2b_poc_requests enable row level security;
+   create policy "anon can insert poc requests" on public.b2b_poc_requests for insert to anon with check (true);
 ============================================================ */
-const DEMO_PIPELINE_NODES = [
-  { id:1, icon:"🐾", title:"Data Ingestion", subtitle:"Pet Bio Data, Prescriptions & Supplement Parsing", desc:"견종/체중/기저질환과 처방약·영양제 정보를 파싱해 구조화된 입력 데이터로 변환해요." },
-  { id:2, icon:"📋", title:"AI Health Report", subtitle:"Comprehensive Initial Health Assessment", desc:"AI 기반으로 종합 상태를 파악하고, 1차 맞춤 건강 리포트 생성을 위한 데이터를 구조화해요." },
-  { id:3, icon:"🫀", title:"Metabolic Load Engine", subtitle:"Hepatic & Renal Stress Quantification", desc:"간·신장 대사 부하를 정량적으로 연산하고 스코어링해요." },
-  { id:4, icon:"🧬", title:"DNI Matrix Analysis", subtitle:"Drug-Nutrient Interaction & Safety Schedule", desc:"약물-영양소 체내 충돌 매트릭스 알고리즘을 적용해 안전 투약 타임라인을 생성해요." },
-  { id:5, icon:"🔗", title:"Integrated API Output", subtitle:"B2C Dashboard & B2B JSON Stream", desc:"B2C 종합 대시보드와 B2B JSON API를 동시에 생성해요." },
+const PIPELINE_NODES = [
+  { id:1, icon:"🐾", title:"Data Ingestion", subtitle:"Pet Bio Data, Prescriptions & Supplement Parsing", desc:"견종·체중·나이·기저질환과 처방약·영양제 입력을 파싱해 표준화된 입력 데이터(성분명·NDC 매핑 포함)로 변환해요." },
+  { id:2, icon:"📋", title:"AI Health Report", subtitle:"Goal-Oriented Health Assessment", desc:"나이·품종·체형(BCS)·기저질환·건강 목표를 가중치 알고리즘에 반영해 0~100점 건강 스코어와 신호등 평가를 산출해요." },
+  { id:3, icon:"🫀", title:"Metabolic Load Engine", subtitle:"Hepatic & Renal Filtration Stress Quantification", desc:"식단·처방약·영양제가 간 대사와 신장 여과에 주는 누적 부담을 지수(%)로 정량화해요." },
+  { id:4, icon:"🧬", title:"DNI Matrix Analysis", subtitle:"CYP450 Competitive Inhibition & Chelation Schedule", desc:"CYP450 경쟁적 억제와 미네랄 킬레이트 규칙을 매트릭스로 평가해 상극 조합과 안전한 격리 복용 스케줄을 생성해요." },
+  { id:5, icon:"🔗", title:"Integrated API Output", subtitle:"B2B JSON Stream & Live SDK Widget", desc:"분석 결과를 B2B JSON 스트림과 파트너 앱에 이식되는 라이브 SDK 위젯으로 동시에 출력해요." },
 ];
-
-const DEMO_PRESETS = [
-  { id:"mixed_renal", label:"믹스견 · 신부전 + 항생제 + 칼슘 (1일 2회 급여)",
-    title:"🐕 믹스견 (신부전)", subtitle:"항생제 + 칼슘 보충제", badge:"🥣 1일 2회 급여",
-    input:{ name:"초코", breed:"믹스견", weight:6.2, ageYear:9, condition:"만성 신장질환(CKD 2기)", medication:"항생제(Enrofloxacin) 1일 2회", supplement:"칼슘/킬레이트 칼슘 1일 1회" },
-    output:{
-      healthScore:58, riskLevel:"주의",
-      summary:"신장 기능 저하가 진행 중이며, 현재 급여 중인 칼슘 보충제가 항생제 흡수를 방해하고 있어요.",
-      guides:["단백질·인 함량이 낮은 신장 처방식으로 전환을 고려해보세요.","칼슘 보충제는 항생제 복용과 최소 2시간 간격을 두세요.","목표 음수량을 하루 310mL 이상으로 유지해주세요."],
-      liverPct:92, kidneyPct:135,
-      dniPairs:[{ drug:"항생제(Enrofloxacin)", nutrient:"칼슘/킬레이트 칼슘", effect:"흡수율 약 60% 상쇄", severity:"주의" }],
-      timeline:[
-        { time:"08:00", icon:"🥣", label:"아침 사료 급여", type:"food", reason:"신장 처방식" },
-        { time:"08:30", icon:"💊", label:"항생제 복용", type:"med", reason:"식후 30분" },
-        { time:"10:30", icon:"🧪", label:"칼슘 보충제 급여", type:"supp", reason:"항생제 복용 2시간 후 격리" },
-        { time:"18:00", icon:"🥣", label:"저녁 사료 급여", type:"food", reason:"신장 처방식" },
-        { time:"18:30", icon:"💊", label:"항생제 복용", type:"med", reason:"식후 30분" },
-        { time:"20:30", icon:"🧪", label:"칼슘 보충제 급여", type:"supp", reason:"항생제 복용 2시간 후 격리" },
-      ],
-      b2b:{
-        severityLabel:"CRITICAL",
-        mechanism:"Chelation binding reduces antibiotic systemic absorption by approximately 64%",
-        optimalGapHours:3,
-        recommendedSchedule:"08:00 Antibiotics | 11:00 Calcium",
-        blockedItems:["Calcium Chelate","Magnesium Complex"],
-        substitutes:[{ product_id:"SUPP_PROT_092", name:"Renal-Safe Joint Collagen (Non-Mineral)", conversion_lift_est:"+18%" }],
-        claimRiskReduction:"42%",
-        lossRatioImpact:"-3.8%",
-      },
-    },
-    wizard:{
-      healthReport: { step1:["믹스견","9세","6.2kg"], step2:["만성 신장질환(CKD 2기)","식욕부진 · 체중감소"], step3:["1일 2회","약 280mL/일"] },
-      metabolicLoad: { step1:["신장(Kidney)","BUN 45mg/dL · Creatinine 2.1mg/dL"], step2:["항생제(Enrofloxacin)","칼슘/킬레이트 칼슘"], step3:["저단백(14%)","저나트륨(150mg/100g)"] },
-      chronoDni: { step1:["1일 2회","아침 08:00 · 저녁 18:00"], step2:["항생제(Enrofloxacin)","식후 30분"], step3:["칼슘/킬레이트 칼슘","항생제 복용 2시간 후(10:30·20:30)"] },
-    } },
-  { id:"senior_cardiac", label:"노령견 · 심장질환 + 이뇨제 + 나트륨 과다 (1일 3회 급여)",
-    title:"🐕‍🦺 노령견 (심장질환)", subtitle:"이뇨제 + 나트륨 과다 주의", badge:"🥣 1일 3회 급여",
-    input:{ name:"보리", breed:"포메라니안", weight:3.4, ageYear:12, condition:"심장질환(ACVIM B2)", medication:"이뇨제(Furosemide) 1일 2회", supplement:"나트륨 함량 높은 습식 위주 급여" },
-    output:{
-      healthScore:64, riskLevel:"주의",
-      summary:"이뇨제 복용 중 나트륨 섭취가 과다해 체액·전해질 균형에 부담을 주고 있어요.",
-      guides:["나트륨 함량이 낮은 저염 사료로 전환해주세요.","이뇨제 복용으로 손실되는 칼륨·마그네슘 보충을 고려해보세요.","체중 급변 여부를 주 1회 체크해주세요."],
-      liverPct:71, kidneyPct:88,
-      dniPairs:[{ drug:"이뇨제(Furosemide)", nutrient:"나트륨(고염 식이)", effect:"체액저류 위험 증가", severity:"주의" }],
-      timeline:[
-        { time:"07:30", icon:"💊", label:"심장약 & 이뇨제 복용", type:"med", reason:"아침 복용" },
-        { time:"08:00", icon:"🥣", label:"아침 사료 급여", type:"food", reason:"저나트륨 심장 처방식 1/3" },
-        { time:"13:00", icon:"🥣", label:"점심 사료 급여 & 음수량 체크", type:"food", reason:"저나트륨 심장 처방식 1/3 · 이뇨제 복용에 따른 탈수 방지" },
-        { time:"19:00", icon:"🥣", label:"저녁 사료 급여", type:"food", reason:"저나트륨 심장 처방식 1/3" },
-        { time:"19:30", icon:"💊", label:"심장약 2차 복용", type:"med", reason:"저녁 복용" },
-      ],
-      b2b:{
-        severityLabel:"MODERATE",
-        mechanism:"Excess dietary sodium counteracts diuretic-induced natriuresis, increasing fluid-retention risk",
-        optimalGapHours:null,
-        recommendedSchedule:"N/A — timing gap 대신 저나트륨 처방식으로 식이 조성 자체를 전환 필요",
-        blockedItems:["High-Sodium Wet Food"],
-        substitutes:[{ product_id:"FOOD_CARD_204", name:"Low-Sodium Cardiac Support Wet Food", conversion_lift_est:"+12%" }],
-        claimRiskReduction:"25%",
-        lossRatioImpact:"-2.1%",
-      },
-    },
-    wizard:{
-      healthReport: { step1:["포메라니안","12세","3.4kg"], step2:["심장질환(ACVIM B2)","기침 · 운동 후 호흡곤란"], step3:["1일 3회","약 200mL/일(이뇨제 소실 보정)"] },
-      metabolicLoad: { step1:["간·신장(순환 부담)","BNP 상승 · 전해질 경계"], step2:["이뇨제(Furosemide)","특이 영양제 없음"], step3:["표준 단백질","과다(고염 습식)"] },
-      chronoDni: { step1:["1일 3회","아침 08:00 · 점심 13:00 · 저녁 19:00"], step2:["심장약 & 이뇨제","아침 07:30 · 저녁 19:30"], step3:["특이사항 없음","음수량 체크 13:00"] },
-    } },
-  { id:"healthy_maintenance", label:"건강한 성견 · 유지 관리 케어 (1일 3회 급여)",
-    title:"🐩 건강한 성견", subtitle:"오메가-3 + 유산균 + 관절 영양제", badge:"🥣 1일 3회 급여",
-    input:{ name:"몽이", breed:"골든리트리버", weight:28.5, ageYear:4, condition:"특이 기저질환 없음", medication:"복용 중인 처방약 없음", supplement:"오메가3(관절/피모 보조)" },
-    output:{
-      healthScore:91, riskLevel:"양호",
-      summary:"전반적인 대사 지표가 안전 범위 내에 있어요. 예방적 관리를 꾸준히 유지해주세요.",
-      guides:["현재 급여 패턴을 그대로 유지해주세요.","활동량에 맞춰 오메가3 급여량을 정기적으로 재확인해주세요.","6개월 주기로 혈액검사를 통해 기초 대사 지표를 추적해보세요."],
-      liverPct:38, kidneyPct:42,
-      dniPairs:[],
-      timeline:[
-        { time:"08:00", icon:"🥣", label:"아침 사료 급여", type:"food", reason:"주식 1/3" },
-        { time:"08:30", icon:"🧪", label:"오메가-3 급여", type:"supp", reason:"식후 흡수율 증대" },
-        { time:"12:30", icon:"🥣", label:"점심 사료 급여", type:"food", reason:"주식 1/3" },
-        { time:"13:00", icon:"🦠", label:"유산균 급여", type:"supp", reason:"식간 급여" },
-        { time:"18:30", icon:"🥣", label:"저녁 사료 급여", type:"food", reason:"주식 1/3" },
-        { time:"19:00", icon:"🧪", label:"관절 종합 영양제 급여", type:"supp", reason:"식후 급여" },
-      ],
-      b2b:{
-        severityLabel:"NONE",
-        mechanism:null,
-        optimalGapHours:null,
-        recommendedSchedule:"N/A — 감지된 약물-영양소 상충 없음",
-        blockedItems:[],
-        substitutes:[],
-        claimRiskReduction:"N/A (예방적 관리 단계)",
-        lossRatioImpact:"N/A",
-      },
-    },
-    wizard:{
-      healthReport: { step1:["골든리트리버","4세","28.5kg"], step2:["특이 기저질환 없음","특이 증상 없음(예방적 관리)"], step3:["1일 3회","약 1,400mL/일"] },
-      metabolicLoad: { step1:["간·신장 모두 안전 범위","정상 범위"], step2:["처방약 없음","오메가3 · 유산균 · 관절 영양제"], step3:["표준~고단백","표준"] },
-      chronoDni: { step1:["1일 3회","아침 08:00 · 점심 12:30 · 저녁 18:30"], step2:["처방약 없음","해당 없음"], step3:["오메가3 · 유산균 · 관절영양제","08:30 · 13:00 · 19:00"] },
-    } },
-];
-let demoSelectedPresetId = DEMO_PRESETS[0].id;
-function getDemoSelectedPreset(){ return DEMO_PRESETS.find(p=>p.id===demoSelectedPresetId) || DEMO_PRESETS[0]; }
-
-/* Customized Roll-up Wizard — 피처별로 정말 필요한 질문만 3단계 롤업으로 노출해요.
-   step 필드 순서는 preset.wizard[tabId][stepId] 배열의 순서와 1:1로 대응돼요. */
-const DEMO_WIZARD_TABS = [
-  { id:"healthReport", label:"AI Health Report", steps:[
-    { id:"step1", title:"Bio Data", fields:["견종","나이","체중"] },
-    { id:"step2", title:"Health History", fields:["기저질환","현재 증상"] },
-    { id:"step3", title:"Daily Care", fields:["1일 사료 급여 횟수","음수량"] },
-  ]},
-  { id:"metabolicLoad", label:"Metabolic Load", steps:[
-    { id:"step1", title:"Target Organ", fields:["타겟 장기","검사 수치"] },
-    { id:"step2", title:"Active Compounds", fields:["처방약 성분","영양제"] },
-    { id:"step3", title:"Dietary Load", fields:["단백질 수준","나트륨 수준"] },
-  ]},
-  { id:"chronoDni", label:"Chrono-DNI", steps:[
-    { id:"step1", title:"Meal Routine Anchor", fields:["급여 횟수","식사 시간"] },
-    { id:"step2", title:"Prescriptions Timing", fields:["처방약","조건"] },
-    { id:"step3", title:"Supplement Group", fields:["영양제","투여 시간대"] },
-  ]},
-];
-let demoWizardActiveTab = "healthReport";
-let demoWizardCompletedSteps = { healthReport:0, metabolicLoad:0, chronoDni:0 };
-function resetDemoWizard(){
-  demoWizardActiveTab = "healthReport";
-  demoWizardCompletedSteps = { healthReport:0, metabolicLoad:0, chronoDni:0 };
-}
-
-/* ---- ① Pipeline Visualizer ---- */
-function renderDemoPipeline(){
-  const wrap = document.getElementById('demoPipelineWrap');
-  wrap.innerHTML = DEMO_PIPELINE_NODES.map((n,i)=>`
-    <button type="button" class="demo-pipeline-node flex-1 rounded-2xl p-4 text-center transition" data-node="${n.id}" style="background:rgba(255,255,255,.05); border:1.5px solid rgba(95,224,190,.25);">
+function renderOverviewPipeline(){
+  const wrap = document.getElementById('overviewPipelineWrap');
+  if(!wrap) return;
+  wrap.innerHTML = PIPELINE_NODES.map((n,i)=>`
+    <button type="button" class="pipeline-node flex-1 rounded-2xl p-4 text-center transition" data-node="${n.id}" style="background:#1E293B; border:1.5px solid rgba(148,163,184,.2);">
       <span class="text-2xl block mb-1">${n.icon}</span>
-      <p class="text-[10px] font-bold" style="color:#5FE0BE;">NODE ${n.id}</p>
-      <p class="text-xs font-bold" style="color:#fff;">${n.title}</p>
-      <p class="text-[9px] mt-0.5" style="color:rgba(255,255,255,.45);">${n.subtitle}</p>
+      <p class="text-[10px] font-bold" style="color:#34D399;">NODE ${n.id}</p>
+      <p class="text-xs font-bold" style="color:#F1F5F9;">${n.title}</p>
+      <p class="text-[9px] mt-0.5" style="color:#94A3B8;">${n.subtitle}</p>
     </button>
-    ${i < DEMO_PIPELINE_NODES.length-1 ? `<div class="hidden sm:flex items-center justify-center px-1 text-lg" style="color:rgba(95,224,190,.5);">➜</div>` : ''}
+    ${i < PIPELINE_NODES.length-1 ? `<div class="hidden sm:flex items-center justify-center px-1 text-lg" style="color:#475569;">➜</div>` : ''}
   `).join('');
-  const showNodeTooltip = (node, btn)=>{
-    wrap.querySelectorAll('.demo-pipeline-node').forEach(b=>{ b.style.borderColor = 'rgba(95,224,190,.25)'; b.style.boxShadow = 'none'; });
-    btn.style.borderColor = '#5FE0BE';
-    btn.style.boxShadow = '0 0 18px rgba(95,224,190,.45)'; // 노드 라이팅 효과
-    const tooltip = document.getElementById('demoNodeTooltip');
-    tooltip.classList.remove('hidden');
-    tooltip.innerHTML = `<b style="color:#5FE0BE;">Node ${node.id} · ${node.title}</b> <span style="color:rgba(255,255,255,.5);">(${node.subtitle})</span><br>${node.desc}`;
+  const showNode = (node, btn)=>{
+    wrap.querySelectorAll('.pipeline-node').forEach(b=>{ b.style.borderColor = 'rgba(148,163,184,.2)'; b.style.boxShadow = 'none'; });
+    btn.style.borderColor = '#34D399';
+    btn.style.boxShadow = '0 0 18px rgba(52,211,153,.4)';
+    const tip = document.getElementById('overviewNodeTooltip');
+    tip.classList.remove('hidden');
+    tip.innerHTML = `<b style="color:#34D399;">Node ${node.id} · ${node.title}</b> <span style="color:#94A3B8;">(${node.subtitle})</span><br>${node.desc}`;
   };
-  wrap.querySelectorAll('.demo-pipeline-node').forEach(btn=>{
-    const node = DEMO_PIPELINE_NODES.find(n=>n.id===parseInt(btn.dataset.node));
-    btn.addEventListener('click', ()=>showNodeTooltip(node, btn));
-    btn.addEventListener('mouseenter', ()=>showNodeTooltip(node, btn));
+  wrap.querySelectorAll('.pipeline-node').forEach(btn=>{
+    const node = PIPELINE_NODES.find(n=>n.id===parseInt(btn.dataset.node));
+    btn.addEventListener('click', ()=>showNode(node, btn));
+    btn.addEventListener('mouseenter', ()=>showNode(node, btn));
   });
 }
 
-/* ---- ② Live B2C Demo ---- */
-function renderDemoPresetGroup(){
-  const wrap = document.getElementById('demoPresetGroup');
-  wrap.innerHTML = DEMO_PRESETS.map(p=>{
-    const selected = p.id === demoSelectedPresetId;
-    return `
-    <button type="button" class="demo-preset-btn rounded-xl text-left flex flex-col items-start gap-1.5 p-4 transition" data-preset="${p.id}"
-      style="background:${selected?'#EAF5EF':'#FAF9F5'}; border:1.5px solid ${selected?'#3A5A40':'#3A5A4022'};">
-      <p class="font-bold text-base" style="color:#2C241F;">${p.title}</p>
-      <p class="text-xs text-gray-600">${p.subtitle}</p>
-      <span class="inline-block px-2 py-0.5 text-xs bg-emerald-100 text-emerald-800 rounded-full">${p.badge}</span>
-    </button>`;
-  }).join('');
-  wrap.querySelectorAll('.demo-preset-btn').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      demoSelectedPresetId = btn.dataset.preset;
-      renderDemoPresetGroup();
-      resetDemoOutputs();
-      renderDemoApiRequestJson();
-      resetDemoWizard();
-      renderDemoWizardTabs();
-      renderDemoWizardSteps();
-    });
-  });
-}
-function resetDemoOutputs(){
-  ['demoHealthReportCard','demoMetabolicLoadCard','demoDniMatrixCard'].forEach(id=>document.getElementById(id).classList.add('hidden'));
-  document.getElementById('demoApiResponseJson').textContent = '// [Execute Sandbox]를 눌러 실행해보세요';
-  document.getElementById('demoProcessingNote').classList.add('hidden');
-}
-
-/* ---- Customized Roll-up Wizard: Feature 탭 + 3단계 아코디언 ---- */
-function renderDemoWizardTabs(){
-  const wrap = document.getElementById('demoWizardTabGroup');
-  wrap.innerHTML = DEMO_WIZARD_TABS.map(t=>{
-    const active = t.id === demoWizardActiveTab;
-    return `<button type="button" class="demo-wizard-tab-btn rounded-xl py-2.5 text-xs font-bold transition" data-tab="${t.id}"
-      style="background:${active?'#3A5A40':'#FAF9F5'}; color:${active?'#fff':'#2C241F'}; border:1.5px solid ${active?'#3A5A40':'#3A5A4022'};">${t.label}</button>`;
-  }).join('');
-  wrap.querySelectorAll('.demo-wizard-tab-btn').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      demoWizardActiveTab = btn.dataset.tab;
-      renderDemoWizardTabs();
-      renderDemoWizardSteps();
-    });
-  });
-}
-function renderDemoWizardSteps(){
-  const preset = getDemoSelectedPreset();
-  const tab = DEMO_WIZARD_TABS.find(t=>t.id===demoWizardActiveTab);
-  const wizardData = preset.wizard[demoWizardActiveTab];
-  const completed = demoWizardCompletedSteps[demoWizardActiveTab];
-  const wrap = document.getElementById('demoWizardStepsWrap');
-  wrap.innerHTML = tab.steps.map((step,i)=>{
-    const values = wizardData[step.id];
-    if(i < completed){
-      // ✅ 완료된 Step — 슬림한 요약 배지로 롤업(접힘)
-      return `
-      <div class="demo-wizard-step-done rounded-xl px-4 py-2.5 flex flex-wrap items-center gap-x-2 gap-y-1" style="background:#2FBF9F14; border:1px solid #2FBF9F44;">
-        <span class="text-xs font-bold" style="color:#1F8F76;">✅ Step ${i+1} · ${step.title}</span>
-        <span class="text-[11px]" style="color:#3A5A40;">${step.fields.map((f,fi)=>`${f}: ${values[fi]}`).join(' · ')}</span>
-      </div>`;
-    }
-    if(i === completed){
-      // 현재 활성화된 Step — 펼쳐진 상태로 입력값(모의) 노출
-      return `
-      <div class="demo-wizard-step-active rounded-xl p-4" style="background:#FAF9F5; border:1.5px solid #3A5A40;">
-        <p class="text-xs font-bold mb-3" style="color:#3A5A40;">Step ${i+1} · ${step.title}</p>
-        <div class="grid sm:grid-cols-2 gap-2 mb-3">
-          ${step.fields.map((f,fi)=>`
-            <div class="rounded-lg p-2.5" style="background:#fff; border:1px solid #3A5A4014;">
-              <p class="text-[10px] text-muted mb-0.5">${f}</p>
-              <p class="text-xs font-bold" style="color:#2C241F;">${values[fi]}</p>
-            </div>`).join('')}
-        </div>
-        <button type="button" class="demo-wizard-complete-btn rounded-lg px-4 py-2 text-xs font-bold" style="background:#3A5A40; color:#fff;">${i < tab.steps.length-1 ? '다음 단계로 →' : '✅ 입력 완료'}</button>
-      </div>`;
-    }
-    // 아직 열리지 않은(대기 중) Step
-    return `
-    <div class="demo-wizard-step-pending rounded-xl px-4 py-2.5" style="background:#F5F4F0; border:1px dashed #3A5A4033;">
-      <span class="text-xs font-bold" style="color:#9a9186;">Step ${i+1} · ${step.title} (대기 중)</span>
-    </div>`;
-  }).join('');
-  const completeBtn = wrap.querySelector('.demo-wizard-complete-btn');
-  if(completeBtn){
-    completeBtn.addEventListener('click', ()=>{
-      demoWizardCompletedSteps[demoWizardActiveTab] = Math.min(tab.steps.length, completed + 1);
-      renderDemoWizardSteps();
-    });
-  }
-}
-
-function demoZoneColor(pct){ return pct>100 ? '#C0473A' : pct>80 ? '#D89A1E' : '#2FBF9F'; }
-function demoZoneLabel(pct){ return pct>100 ? 'Danger Zone' : pct>80 ? 'Caution' : 'Safe'; }
-
-function renderDemoHealthReportCard(preset){
-  const o = preset.output;
-  document.getElementById('demoHealthReportBody').innerHTML = `
-    <div class="grid sm:grid-cols-3 gap-3 mb-4">
-      <div class="rounded-xl p-3 text-center" style="background:#fff;"><p class="text-[10px] text-muted mb-1">종합 건강 스코어</p><p class="font-display font-bold text-2xl" style="color:#3A5A40;">${o.healthScore}점</p></div>
-      <div class="rounded-xl p-3 text-center" style="background:#fff;"><p class="text-[10px] text-muted mb-1">위험도</p><p class="font-display font-bold text-2xl" style="color:${o.riskLevel==='양호'?'#2FBF9F':'#D89A1E'};">${o.riskLevel}</p></div>
-      <div class="rounded-xl p-3 text-center" style="background:#fff;"><p class="text-[10px] text-muted mb-1">DNI 충돌 감지</p><p class="font-display font-bold text-2xl" style="color:${o.dniPairs.length?'#C0473A':'#2FBF9F'};">${o.dniPairs.length}건</p></div>
-    </div>
-    <p class="text-xs mb-3" style="color:#2C241F;">${o.summary}</p>
-    <p class="text-[11px] font-bold mb-1.5" style="color:#3A5A40;">💡 영양소 투여 가이드</p>
-    <ul class="text-xs space-y-1 mb-4" style="color:#2C241F;">${o.guides.map(g=>`<li>· ${g}</li>`).join('')}</ul>
-    <div class="rounded-xl p-3 mb-3" style="background:#3A5A400d;">
-      <p class="text-[10px] font-bold mb-1" style="color:#3A5A40;">🩺 수의사 상담용 요약 카드</p>
-      <p class="text-[11px]" style="color:#2C241F;">${preset.input.name}(${preset.input.breed}, ${preset.input.weight}kg, ${preset.input.ageYear}세) · 기저질환: ${preset.input.condition} · 복용약: ${preset.input.medication}</p>
-    </div>
-    <button type="button" class="demo-pdf-download-btn rounded-xl px-4 py-2 text-xs font-bold" style="background:#FAF9F5; border:1.5px solid #3A5A4055; color:#3A5A40;">📥 PDF 다운로드 (모의)</button>
-  `;
-  document.querySelector('#demoHealthReportBody .demo-pdf-download-btn').addEventListener('click', ()=>{
-    alert('📄 (Mock) 리포트 PDF 다운로드가 시작됐다고 가정해요 — 이 데모에서는 실제 파일이 생성되지 않아요.');
-  });
-}
-function renderDemoMetabolicLoadCard(preset){
-  const o = preset.output;
-  document.getElementById('demoMetabolicLoadBody').innerHTML = `
-    <div class="grid sm:grid-cols-2 gap-4">
-      ${[['간(Liver)', o.liverPct], ['신장(Kidney)', o.kidneyPct]].map(([label,pct])=>`
-        <div class="rounded-xl p-4" style="background:#fff;">
-          <p class="text-xs font-bold mb-2">${label} 대사 부하율</p>
-          <div class="w-full rounded-full overflow-hidden mb-2" style="height:14px; background:#3A5A401A;">
-            <div class="demo-gauge-bar" data-target="${Math.min(100,pct)}" style="width:0%; height:100%; background:${demoZoneColor(pct)}; transition:width 1.1s cubic-bezier(.22,.9,.34,1);"></div>
-          </div>
-          <p class="font-display font-bold text-xl" style="color:${demoZoneColor(pct)};">${pct}% <span class="text-xs font-bold px-2 py-0.5 rounded-full" style="background:${demoZoneColor(pct)}1A;">${demoZoneLabel(pct)}</span></p>
-        </div>`).join('')}
-    </div>`;
-  requestAnimationFrame(()=>{
-    requestAnimationFrame(()=>{
-      document.querySelectorAll('#demoMetabolicLoadBody .demo-gauge-bar').forEach(bar=>{ bar.style.width = bar.dataset.target + '%'; });
-    });
-  });
-}
-const DEMO_TIMELINE_TYPE_STYLE = {
-  food:  { bg:"#2FBF9F14", border:"#2FBF9F44", color:"#1F8F76" },
-  med:   { bg:"#C0473A14", border:"#C0473A44", color:"#C0473A" },
-  supp:  { bg:"#5B4FCF14", border:"#5B4FCF44", color:"#5B4FCF" },
-  water: { bg:"#2E86DE14", border:"#2E86DE44", color:"#2264A8" },
-};
-function renderDemoDniMatrixCard(preset){
-  const o = preset.output;
-  const pairsHtml = o.dniPairs.length ? o.dniPairs.map(p=>`
-    <div class="rounded-xl p-3 mb-2" style="background:#C0473A0d; border:1px solid #C0473A33;">
-      <p class="text-xs font-bold" style="color:#C0473A;">⚠️ ${p.drug} + ${p.nutrient} 동시 복용 시 ${p.effect} (${p.severity})</p>
-    </div>`).join('') : `<p class="text-xs" style="color:#2FBF9F;">✅ 감지된 약물-영양소 충돌이 없어요.</p>`;
-  const timelineHtml = o.timeline.map(t=>{
-    const style = DEMO_TIMELINE_TYPE_STYLE[t.type] || DEMO_TIMELINE_TYPE_STYLE.supp;
-    return `
-    <div class="flex items-center gap-2.5 rounded-lg p-2.5" style="background:${style.bg}; border:1px solid ${style.border};">
-      <span class="text-xs font-bold" style="color:#3A5A40; min-width:44px;">${t.time}</span>
-      <span class="inline-flex items-center justify-center rounded-full text-sm" style="width:26px; height:26px; background:#fff;">${t.icon}</span>
-      <span class="text-xs font-bold flex-1" style="color:${style.color};">${t.label}</span>
-      ${t.reason ? `<span class="text-[10px] px-2 py-1 rounded-full" style="background:#fff; color:${style.color};" title="${t.reason}">(${t.reason})</span>` : ''}
-    </div>`;
-  }).join('');
-  document.getElementById('demoDniMatrixBody').innerHTML = `
-    ${pairsHtml}
-    <p class="text-[11px] font-bold mt-3 mb-2" style="color:#3A5A40;">⏰ 24시간 안전 투약 타임라인 <span class="font-normal" style="color:#6b6259;">(🥣 사료 · 💊 약물 · 🧪 영양제)</span></p>
-    <div class="space-y-1.5">${timelineHtml}</div>
-  `;
-}
-function runSeonAnalysisDemo(){
-  const preset = getDemoSelectedPreset();
-  resetDemoOutputs();
-  const note = document.getElementById('demoProcessingNote');
-  note.classList.remove('hidden');
-  setTimeout(()=>{ renderDemoHealthReportCard(preset); document.getElementById('demoHealthReportCard').classList.remove('hidden'); }, 500);
-  setTimeout(()=>{ renderDemoMetabolicLoadCard(preset); document.getElementById('demoMetabolicLoadCard').classList.remove('hidden'); }, 1200);
-  setTimeout(()=>{ renderDemoDniMatrixCard(preset); document.getElementById('demoDniMatrixCard').classList.remove('hidden'); note.classList.add('hidden'); }, 2000);
-}
-
-/* ---- ③ Interactive B2B API Sandbox ---- */
-function buildDemoApiRequestPayload(preset){
-  return {
-    pet: { name: preset.input.name, breed: preset.input.breed, weight_kg: preset.input.weight, age_year: preset.input.ageYear },
-    condition: preset.input.condition,
-    medication: preset.input.medication,
-    supplement: preset.input.supplement,
-  };
-}
-function buildDemoApiResponsePayload(preset){
-  const o = preset.output;
-  const b2b = o.b2b || {};
-  const hasConflict = o.dniPairs.length > 0;
-  const primaryPair = hasConflict ? o.dniPairs[0] : null;
-  return {
-    status: "SUCCESS",
-    timestamp: new Date().toISOString(),
-    clinical_analytics: {
-      overall_health_score: o.healthScore,
-      dni_conflict_detected: hasConflict,
-      primary_risk: primaryPair ? {
-        pair: `${primaryPair.drug} x ${primaryPair.nutrient}`,
-        severity: b2b.severityLabel || "MODERATE",
-        mechanism: b2b.mechanism || primaryPair.effect,
-      } : null,
-      organ_metabolic_load: {
-        hepatic_strain_index: `${o.liverPct}% (${o.liverPct>100?'CRITICAL':o.liverPct>80?'ELEVATED':'NORMAL'})`,
-        renal_clearance_stress: `${o.kidneyPct}% (${o.kidneyPct>100?'CRITICAL':o.kidneyPct>80?'HIGH_RISK':'NORMAL'})`,
-      },
-    },
-    b2b_value_capture_outputs: {
-      chrono_care_plan: {
-        optimal_administration_gap_hours: b2b.optimalGapHours ?? null,
-        recommended_schedule: b2b.recommendedSchedule || "N/A",
-      },
-      ecommerce_recommendation_engine: {
-        action: hasConflict ? "SAFE_CROSS_SELL" : "NO_RISK_DETECTED",
-        blocked_items: b2b.blockedItems || [],
-        recommended_safe_substitutes: b2b.substitutes || [],
-      },
-      insurance_underwriting_metrics: {
-        avoidable_claim_risk_reduction: b2b.claimRiskReduction || "N/A",
-        projected_annual_loss_ratio_impact: b2b.lossRatioImpact || "N/A",
-      },
-    },
-  };
-}
-/* Response 패널의 'Raw JSON' 탭 전용 — 다크 모드 구문 하이라이팅(키/문자열/숫자/불리언/null 색상 구분) */
+/* JSON 구문 하이라이팅 (다크 뷰어용) */
 function syntaxHighlightJson(json){
   const escaped = json.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   return escaped.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\btrue\b|\bfalse\b|\bnull\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, (match)=>{
@@ -11172,161 +10922,40 @@ function syntaxHighlightJson(json){
     return `<span class="${cls}">${match}</span>`;
   });
 }
-function renderDemoApiRequestJson(){
-  document.getElementById('demoApiRequestJson').textContent = JSON.stringify(buildDemoApiRequestPayload(getDemoSelectedPreset()), null, 2);
-}
-let demoResponseActiveTab = 'raw';
-function renderDemoResponseTabs(){
-  document.querySelectorAll('.demo-response-tab-btn').forEach(btn=>{
-    btn.classList.toggle('active', btn.dataset.responseTab === demoResponseActiveTab);
-  });
-  document.getElementById('demoResponseRawPanel').classList.toggle('hidden', demoResponseActiveTab !== 'raw');
-  document.getElementById('demoResponseB2BPanel').classList.toggle('hidden', demoResponseActiveTab !== 'b2b');
-}
-function bindDemoResponseTabs(){
-  document.querySelectorAll('.demo-response-tab-btn').forEach(btn=>{
-    btn.addEventListener('click', ()=>{ demoResponseActiveTab = btn.dataset.responseTab; renderDemoResponseTabs(); });
-  });
-}
-/* [B2B Value Impact] 탭 — 방금 실행한 응답(payload)을 바탕으로 3개 B2B 가치 카드를 그려요. */
-function renderDemoB2BValueCards(preset, payload){
-  const o = preset.output;
-  const wrap = document.getElementById('demoResponseB2BPanel');
-  const eco = payload.b2b_value_capture_outputs.ecommerce_recommendation_engine;
-  const ins = payload.b2b_value_capture_outputs.insurance_underwriting_metrics;
-  const hasConflict = payload.clinical_analytics.dni_conflict_detected;
-  const maxPct = Math.max(o.liverPct, o.kidneyPct);
-  const reductionNum = parseFloat(ins.avoidable_claim_risk_reduction) || 0;
-  const reducedPct = Math.max(0, Math.round(maxPct * (1 - reductionNum/100)));
+function sbxEsc(v){ return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-  wrap.innerHTML = `
-    <div class="rounded-xl p-3" style="background:#0F1B14; border:1px solid rgba(95,224,190,.2);">
-      <p class="text-[11px] font-bold mb-2" style="color:#5FE0BE;">🛒 Pet E-Commerce</p>
-      ${hasConflict ? `
-        <span class="inline-block text-[10px] font-bold px-2 py-1 rounded-full mb-2" style="background:#C0473A22; color:#FF8A75;">🚫 구매 차단: ${eco.blocked_items.join(', ')}</span>
-        ${eco.recommended_safe_substitutes.map(s=>`
-          <div class="rounded-lg p-2 flex items-center justify-between gap-2" style="background:#050B08;">
-            <div class="min-w-0">
-              <p class="text-[11px] font-bold truncate" style="color:#fff;">✅ ${s.name}</p>
-              <p class="text-[9px]" style="color:rgba(255,255,255,.4);">${s.product_id}</p>
-            </div>
-            <span class="text-[11px] font-bold shrink-0" style="color:#4ADE80;">${s.conversion_lift_est}</span>
-          </div>`).join('')}
-      ` : `<p class="text-[11px]" style="color:rgba(255,255,255,.5);">감지된 위험 성분이 없어요 — 안전 교차판매 대상 없음</p>`}
-    </div>
-
-    <div class="rounded-xl p-3" style="background:#0F1B14; border:1px solid rgba(95,224,190,.2);">
-      <p class="text-[11px] font-bold mb-2" style="color:#5FE0BE;">🛡️ Pet Insurers</p>
-      <p class="text-[10px] mb-1" style="color:rgba(255,255,255,.5);">DNI 위험도 ${maxPct}% ➔ ${reducedPct}%로 감소</p>
-      <div class="w-full rounded-full overflow-hidden mb-1" style="height:8px; background:rgba(255,255,255,.08);">
-        <div style="width:${Math.min(100,maxPct)}%; height:100%; background:#C0473A;"></div>
-      </div>
-      <div class="w-full rounded-full overflow-hidden mb-2" style="height:8px; background:rgba(255,255,255,.08);">
-        <div style="width:${Math.min(100,reducedPct)}%; height:100%; background:#4ADE80;"></div>
-      </div>
-      <div class="flex flex-wrap gap-x-4 gap-y-1 text-[11px]" style="color:#fff;">
-        <span>회피 가능 청구 위험: <b style="color:#4ADE80;">${ins.avoidable_claim_risk_reduction}</b></span>
-        <span>손해율 개선: <b style="color:#4ADE80;">${ins.projected_annual_loss_ratio_impact}</b></span>
-      </div>
-    </div>
-
-    <div class="rounded-xl p-3 flex items-center justify-between gap-2" style="background:#0F1B14; border:1px solid rgba(95,224,190,.2);">
-      <div class="min-w-0">
-        <p class="text-[11px] font-bold mb-1" style="color:#5FE0BE;">🩺 Veterinary EMR</p>
-        <p class="text-[10px]" style="color:rgba(255,255,255,.55);">1-Click 24시간 Chrono-DNI 처방 안전 가이드 출력</p>
-      </div>
-      <span class="text-[10px] font-bold px-2.5 py-1.5 rounded-full shrink-0" style="background:#5FE0BE; color:#0F1B14;">✅ Ready</span>
-    </div>
-  `;
-}
-function executeDemoSandbox(){
-  const preset = getDemoSelectedPreset();
-  const responseEl = document.getElementById('demoApiResponseJson');
-  const statusBar = document.getElementById('demoResponseStatusBar');
-  statusBar.classList.add('hidden');
-  responseEl.textContent = '// 요청을 처리하는 중...';
-  document.getElementById('demoResponseB2BPanel').innerHTML = '';
-  setTimeout(()=>{
-    const payload = buildDemoApiResponsePayload(preset);
-    responseEl.innerHTML = syntaxHighlightJson(JSON.stringify(payload, null, 2));
-    statusBar.classList.remove('hidden');
-    document.getElementById('demoResponseStatusText').textContent = '200 OK | 14ms';
-    renderDemoB2BValueCards(preset, payload);
-  }, 600);
-}
-
-/* ============================================================
-   🏢 홈 페이지 B2B Hero 섹션 — 코드탭은 Developers 페이지에서 이미
-   정의한 DEV_CODE_SNIPPETS를 그대로 재사용해요(내용 중복 없이 표시 위치만 추가).
-============================================================ */
-let homeActiveCodeTab = 'html';
-function renderHomeCodeTabs(){
-  document.querySelectorAll('.home-code-tab-btn').forEach(btn=>{
-    btn.classList.toggle('active', btn.dataset.codeTab === homeActiveCodeTab);
-  });
-  const box = document.getElementById('homeCodeSnippetBox');
-  if(box) box.textContent = DEV_CODE_SNIPPETS[homeActiveCodeTab];
-}
-function bindHomeCodeTabs(){
-  document.querySelectorAll('.home-code-tab-btn').forEach(btn=>{
-    btn.addEventListener('click', ()=>{ homeActiveCodeTab = btn.dataset.codeTab; renderHomeCodeTabs(); });
-  });
-}
-function initHomeB2BSection(){
-  renderHomeCodeTabs();
-  bindHomeCodeTabs();
-  document.getElementById('homeGoSandboxBtn')?.addEventListener('click', ()=>navigateToTab('demo'));
-  document.getElementById('homeGoDevDocsBtn')?.addEventListener('click', ()=>navigateToTab('developers'));
-  document.getElementById('homeGoFullSandboxBtn')?.addEventListener('click', ()=>navigateToTab('demo'));
-  document.getElementById('homeGoDevDocsBtn2')?.addEventListener('click', ()=>navigateToTab('developers'));
-}
-
-function initDemoPage(){
-  renderDemoPipeline();
-  renderDemoPresetGroup();
-  renderDemoWizardTabs();
-  renderDemoWizardSteps();
-  renderDemoApiRequestJson();
-  renderDemoResponseTabs();
-  bindDemoResponseTabs();
-  document.getElementById('runSeonAnalysisBtn').addEventListener('click', runSeonAnalysisDemo);
-  document.getElementById('demoExecuteSandboxBtn').addEventListener('click', executeDemoSandbox);
-}
-
-/* ============================================================
-   🧑‍💻 SEON B2B SDK & API Developer Portal — 완전한 Mock/정적 콘텐츠로만
-   동작해요(실제 네트워크 요청 없음). 단, DNI 상충 판정은 앱에 이미 있는
-   실제 DNI_MOLECULE_RULES 규칙을 그대로 재사용해서 '진짜에 가까운' 결과를 보여줘요.
-============================================================ */
+/* ---------------- Developer Docs: 코드 스니펫 + Copy ---------------- */
+const SEON_DEMO_KEY_PREFIX = 'seon_demo_pk_';
 const DEV_DEMO_API_KEY = 'seon_demo_pk_sandbox_key';
+const ISSUED_KEY_STORAGE = 'seonIssuedSandboxKey';
+function getIssuedSandboxKey(){ try{ return window.localStorage.getItem(ISSUED_KEY_STORAGE) || ''; }catch(e){ return ''; } }
 const DEV_CODE_SNIPPETS = {
   html: `<script src="https://seon-ivy.vercel.app/seon-sdk.js" data-api-key="${DEV_DEMO_API_KEY}"><\/script>
 <div id="seon-dni-widget" data-pet-id="PET_123"></div>`,
   react: `import { SeonDniWidget } from '@seon-ai/react-sdk';
 
-export default function CartPage() {
-  return (
-    <SeonDniWidget apiKey="${DEV_DEMO_API_KEY}" petData={petProfile} theme="light" />
-  );
+export default function CartPage({ petId }) {
+  return <SeonDniWidget apiKey="${DEV_DEMO_API_KEY}" petId={petId} />;
 }`,
-  reactnative: `import { SeonDniWidget } from '@seon-ai/react-native-sdk';
+  reactnative: `import { SeonDniWidget } from '@seon-ai/react-native-sdk'; // iOS / Android
 
-export default function CartScreen() {
+export default function CartScreen({ petId }) {
   return (
     <SeonDniWidget
       apiKey="${DEV_DEMO_API_KEY}"
-      petData={petProfile}
+      petId={petId}
       theme="light"
     />
   );
-}`,
+}
+// iOS: cd ios && pod install`,
   curl: `curl -X POST https://seon-ivy.vercel.app/api/v1/seon/analyze \\
-  -H "Authorization: Bearer ${DEV_DEMO_API_KEY}" \\
+  -H "X-SEON-API-KEY: ${DEV_DEMO_API_KEY}" \\
   -H "Content-Type: application/json" \\
   -d '{
-    "pet": { "name": "초코", "breed": "말티즈", "weight_kg": 4.2 },
-    "medication": "Enrofloxacin",
-    "supplement": "칼슘/킬레이트 칼슘"
+    "pet": { "breed": "말티즈", "weight_kg": 4.2, "age_years": 10, "bcs": 5, "conditions": ["kidney"] },
+    "prescriptions": [{ "name": "Enrofloxacin", "frequency_per_day": 2 }],
+    "supplements": ["칼슘/킬레이트 칼슘"]
   }'`,
 };
 let devActiveCodeTab = 'html';
@@ -11334,15 +10963,14 @@ function renderDevCodeTabs(){
   document.querySelectorAll('.dev-code-tab-btn').forEach(btn=>{
     btn.classList.toggle('active', btn.dataset.codeTab === devActiveCodeTab);
   });
-  document.getElementById('devCodeSnippetBox').textContent = DEV_CODE_SNIPPETS[devActiveCodeTab];
+  const box = document.getElementById('devCodeSnippetBox');
+  if(box) box.textContent = DEV_CODE_SNIPPETS[devActiveCodeTab];
 }
 function bindDevCodeTabs(){
   document.querySelectorAll('.dev-code-tab-btn').forEach(btn=>{
     btn.addEventListener('click', ()=>{ devActiveCodeTab = btn.dataset.codeTab; renderDevCodeTabs(); });
   });
 }
-
-/* ---- Copy to Clipboard + 성공 토스트 (이 페이지 전용, 다른 영역에 영향 없음) ---- */
 function showDevToast(message){
   let toast = document.getElementById('devCopyToast');
   if(!toast){
@@ -11356,141 +10984,506 @@ function showDevToast(message){
   toast.style.opacity = '1';
   toast.style.transform = 'translateX(-50%) translateY(0)';
   clearTimeout(toast._hideTimer);
-  toast._hideTimer = setTimeout(()=>{
-    toast.style.opacity = '0';
-    toast.style.transform = 'translateX(-50%) translateY(20px)';
-  }, 1800);
+  toast._hideTimer = setTimeout(()=>{ toast.style.opacity = '0'; toast.style.transform = 'translateX(-50%) translateY(20px)'; }, 1800);
 }
 function fallbackCopyText(text){
   try{
     const ta = document.createElement('textarea');
-    ta.value = text;
-    ta.style.position = 'fixed'; ta.style.opacity = '0';
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-  }catch(e){ /* 클립보드 접근이 막힌 환경에서도 조용히 무시해요 */ }
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+  }catch(e){ /* 클립보드가 막힌 환경에서는 조용히 무시해요 */ }
 }
 function bindDevCopyButtons(){
   document.querySelectorAll('.dev-copy-btn').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       const targetEl = document.getElementById(btn.dataset.copyTarget);
       if(!targetEl) return;
-      const text = targetEl.tagName === 'TEXTAREA' || targetEl.tagName === 'INPUT' ? targetEl.value : targetEl.textContent;
+      const text = (targetEl.tagName === 'TEXTAREA' || targetEl.tagName === 'INPUT') ? targetEl.value : targetEl.textContent;
       const announce = ()=>showDevToast('✅ 클립보드에 복사됐어요!');
       if(navigator.clipboard && navigator.clipboard.writeText){
         navigator.clipboard.writeText(text).then(announce).catch(()=>{ fallbackCopyText(text); announce(); });
-      } else {
-        fallbackCopyText(text); announce();
-      }
+      } else { fallbackCopyText(text); announce(); }
     });
   });
 }
 
-/* ---- Interactive Sandbox: 실제 DNI_MOLECULE_RULES를 그대로 재사용해서 Request의
-   medication/supplement 조합을 진짜 규칙으로 판정해요(완전히 지어낸 값이 아니에요). ---- */
-const DEV_SANDBOX_DEFAULT_REQUEST = {
-  pet: { name: "초코", breed: "말티즈", weight_kg: 4.2 },
-  medication: "Enrofloxacin",
-  supplement: "칼슘/킬레이트 칼슘",
+/* ---------------- Live API Sandbox ---------------- */
+const SBX_SUPPLEMENT_OPTIONS = ['칼슘/킬레이트 칼슘','프로바이오틱스(유산균)','마그네슘','철분/구리/아연 미네랄','오메가3(EPA/DHA)','글루코사민','비타민K','비타민D3'];
+const SBX_CONDITION_OPTIONS = [{id:'kidney',label:'신장 질환'},{id:'liver',label:'간 질환'},{id:'heart',label:'심장 질환'},{id:'joint',label:'관절 질환'}];
+const SBX_DEFAULT_REQUEST = {
+  pet: { breed:'말티즈', weight_kg:4.2, age_years:10, bcs:5, conditions:['kidney'] },
+  prescriptions: [{ name:'Enrofloxacin', frequency_per_day:2 }],
+  supplements: ['칼슘/킬레이트 칼슘'],
 };
-function devNormalizeForMatch(s){
-  return String(s||'').replace(/[^\p{L}\p{N}]/gu, '').toLowerCase();
+/* Sandbox 전용 데모 NDC 매핑 — 단일 데모 labeler prefix(50320)만 사용해요. 프로덕션은 공인 NDC 디렉터리와 매칭돼요. */
+const SBX_NDC_MAP = {
+  enrofloxacin:'NDC 50320-012-10', amoxicillin:'NDC 50320-021-30', cephalexin:'NDC 50320-033-20', metronidazole:'NDC 50320-047-15',
+  prednisolone:'NDC 50320-058-10', furosemide:'NDC 50320-064-25', pimobendan:'NDC 50320-072-10', benazepril:'NDC 50320-081-30',
+  clopidogrel:'NDC 50320-095-30', warfarin:'NDC 50320-103-10', levothyroxine:'NDC 50320-118-20', meloxicam:'NDC 50320-126-10',
+  carprofen:'NDC 50320-137-10', phenobarbital:'NDC 50320-149-10',
+};
+let sbxView = 'full';
+let sbxSyncLock = false;
+let sbxReady = false;
+let sbxLastSig = ''; // 마지막으로 실행한 요청의 서명(뷰|키|JSON) — 같은 요청이면 재실행하지 않아 응답이 안정적으로 유지돼요.
+function sbxCurrentSig(){ return sbxView + '|' + document.getElementById('sbxApiKeyInput').value.trim() + '|' + document.getElementById('sbxRequestJson').value; }
+
+function sbxNorm(s){ return String(s||'').replace(/[^\p{L}\p{N}]/gu, '').toLowerCase(); }
+function sbxAllMolecules(){
+  return Object.keys(DRUG_MOLECULES_BY_CATEGORY).flatMap(cat=>DRUG_MOLECULES_BY_CATEGORY[cat].map(name=>({ name, category:cat })));
 }
-function devLookupDniConflict(medicationName, supplementName){
-  const medNorm = devNormalizeForMatch(medicationName);
-  const suppNorm = devNormalizeForMatch(supplementName);
-  if(!medNorm || !suppNorm) return null;
+function sbxFindMolecule(input){
+  const n = sbxNorm(input);
+  if(!n) return null;
+  const all = sbxAllMolecules();
+  return all.find(m=>sbxNorm(m.name)===n) || all.find(m=>{ const mn = sbxNorm(m.name); return mn.includes(n) || n.includes(mn); }) || null;
+}
+function sbxLevenshtein(a,b){
+  const m=a.length, n=b.length, d=[];
+  for(let i=0;i<=m;i++){ d[i]=[i]; }
+  for(let j=1;j<=n;j++){ d[0][j]=j; }
+  for(let i=1;i<=m;i++) for(let j=1;j<=n;j++) d[i][j]=Math.min(d[i-1][j]+1, d[i][j-1]+1, d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));
+  return d[m][n];
+}
+function sbxDidYouMean(input){
+  const n = sbxNorm(input);
+  let best = null, bestD = 99;
+  sbxAllMolecules().forEach(m=>{ const d = sbxLevenshtein(n, sbxNorm(m.name)); if(d < bestD){ bestD = d; best = m.name; } });
+  return bestD <= 3 ? best : null;
+}
+function sbxLookupConflict(medName, suppName){
+  const mn = sbxNorm(medName), sn = sbxNorm(suppName);
+  if(!mn || !sn) return null;
   return DNI_MOLECULE_RULES.find(r=>{
     if(r.type !== 'CONFLICT') return false;
-    const ruleMedNorm = devNormalizeForMatch(r.molecule);
-    const ruleSuppNorm = devNormalizeForMatch(r.nutrient);
-    const medMatch = ruleMedNorm.includes(medNorm) || medNorm.includes(ruleMedNorm);
-    const suppMatch = ruleSuppNorm.includes(suppNorm) || suppNorm.includes(ruleSuppNorm);
-    return medMatch && suppMatch;
+    const rm = sbxNorm(r.molecule), rs = sbxNorm(r.nutrient);
+    return (rm.includes(mn) || mn.includes(rm)) && (rs.includes(sn) || sn.includes(rs));
   }) || null;
 }
-/* 파트너 사이트(장바구니/EMR)에 임베드됐을 때 보이는 위젯 — Sandbox의 Request/Response에 따라
-   실시간으로 내용이 바뀌어요(더 이상 고정된 정적 시나리오가 아니에요). */
-function renderDevWidgetPreview(medicationName, supplementName, matchedRule){
-  const wrap = document.getElementById('devWidgetPreview');
-  if(!matchedRule){
-    wrap.innerHTML = `
-      <div class="rounded-xl p-4" style="background:#fff; border:1.5px solid #A7F3D0; box-shadow:0 4px 14px -6px rgba(0,0,0,.1);">
-        <div class="flex items-center gap-2 mb-2 flex-wrap">
-          <span class="text-[10px] font-bold px-2 py-1 rounded-full" style="background:#0F172A; color:#34D399;">🧬 SEON Chrono-DNI</span>
-          <span class="text-[10px] font-bold px-2 py-1 rounded-full" style="background:#DCFCE7; color:#166534;">✅ 상충 없음</span>
-        </div>
-        <p class="text-xs font-bold" style="color:#0F172A;">${medicationName || '약물'}과(와) ${supplementName || '영양제'} 조합에서 감지된 위험이 없어요.</p>
-        <p class="text-[11px] mt-1" style="color:#64748B;">평소 급여 스케줄을 그대로 유지하셔도 안전해요.</p>
-      </div>`;
-    return;
-  }
-  wrap.innerHTML = `
-    <div class="rounded-xl p-4" style="background:#fff; border:1.5px solid #FBBF24; box-shadow:0 4px 14px -6px rgba(0,0,0,.12);">
-      <div class="flex items-center gap-2 mb-2 flex-wrap">
-        <span class="text-[10px] font-bold px-2 py-1 rounded-full" style="background:#0F172A; color:#34D399;">🧬 SEON Chrono-DNI</span>
-        <span class="text-[10px] font-bold px-2 py-1 rounded-full" style="background:#FEF3C7; color:#B45309;">⚠️ 상호작용 주의</span>
-      </div>
-      <p class="text-xs font-bold mb-1" style="color:#0F172A;">'${supplementName}'가 등록된 처방약(${medicationName})과 상충할 수 있어요.</p>
-      <p class="text-[11px] mb-3" style="color:#64748B;">${matchedRule.note} 최소 ${matchedRule.isolationHours}시간 간격을 두고 급여하거나, 아래 안전한 대체 상품을 확인해보세요.</p>
-      <div class="rounded-lg p-2.5 flex items-center justify-between gap-2" style="background:#F0FDF4; border:1px solid #BBF7D0;">
-        <div class="min-w-0">
-          <p class="text-[11px] font-bold truncate" style="color:#166534;">✅ Renal-Safe Joint Collagen (Non-Mineral)</p>
-          <p class="text-[10px]" style="color:#65A30D;">SEON 인증 안전 대체 상품</p>
-        </div>
-        <button type="button" class="text-[10px] font-bold px-3 py-1.5 rounded-lg shrink-0" style="background:#059669; color:#fff;">담기</button>
-      </div>
-    </div>`;
+function sbxMetaBreedId(label){
+  if(label === '토이/미니어처 푸들') return 'poodle_toy';
+  const hit = META_BREED_DB.find(b=>b.label === label);
+  return hit ? hit.id : 'other';
 }
-function runDevSandboxRequest(){
-  const input = document.getElementById('devSandboxRequestInput');
-  const errorEl = document.getElementById('devSandboxRequestError');
-  const responseBox = document.getElementById('devSandboxResponseBox');
-  errorEl.classList.add('hidden');
-  let req;
-  try{
-    req = JSON.parse(input.value);
-  }catch(e){
-    errorEl.textContent = '⚠️ JSON 형식이 올바르지 않아요. 콤마/따옴표를 확인해주세요.';
-    errorEl.classList.remove('hidden');
-    return;
-  }
-  const medicationName = req.medication || '';
-  const supplementName = req.supplement || '';
-  const matchedRule = devLookupDniConflict(medicationName, supplementName);
-  const response = matchedRule ? {
-    status: "SUCCESS",
-    dni_conflict_detected: true,
-    conflict: {
-      pair: `${medicationName} x ${supplementName}`,
-      isolation_hours: matchedRule.isolationHours,
-      mechanism: matchedRule.note,
-    },
-    recommended_schedule: `복용 직후 → 최소 ${matchedRule.isolationHours}시간 격리 후 급여`,
-  } : {
-    status: "SUCCESS",
-    dni_conflict_detected: false,
-    conflict: null,
-    recommended_schedule: "제약 없음 — 평소 급여 스케줄을 유지하세요.",
-  };
-  responseBox.textContent = JSON.stringify(response, null, 2);
-  renderDevWidgetPreview(medicationName, supplementName, matchedRule);
+function sbxMetaMedCategory(dniCategory){
+  return META_MEDICATION_CATEGORIES.some(c=>c.id === dniCategory) ? dniCategory : 'other';
 }
-function initDevSandbox(){
-  const input = document.getElementById('devSandboxRequestInput');
-  input.value = JSON.stringify(DEV_SANDBOX_DEFAULT_REQUEST, null, 2);
-  document.getElementById('devSandboxSendBtn').addEventListener('click', runDevSandboxRequest);
-  runDevSandboxRequest(); // 첫 진입 시에도 기본 요청값 기준으로 바로 계산된 결과를 보여줘요.
+function sbxSuppToMetaCategory(name){
+  const s = String(name||'');
+  if(/오메가|EPA|DHA/i.test(s)) return 'omega3';
+  if(/유산균|프로바이오/.test(s)) return 'probiotic_standard';
+  if(/글루코사민|콘드로|관절/.test(s)) return 'joint';
+  if(/콜라겐/.test(s)) return 'collagen';
+  if(/신장|방광|크랜베리/.test(s)) return 'kidney_bladder';
+  if(/눈|루테인/.test(s)) return 'eye';
+  if(/피부/.test(s)) return 'skin';
+  return 'multivit_standard';
+}
+function sbxZone(pct, kind){
+  if(pct > 100) return 'CRITICAL';
+  if(pct > 80) return kind === 'renal' ? 'HIGH_RISK' : 'ELEVATED';
+  return 'NORMAL';
 }
 
-function initDevelopersPage(){
+/* 엔진이 읽는 전역 상태를 '같은 객체 그대로' 저장/복원해요(대사 부하·Chrono-DNI 화면의 입력·이벤트 핸들러가 잡고 있는 참조를 깨지 않기 위해). */
+function sbxSnapshotEngineState(){
+  const pick = (o, keys)=>{ const s = {}; keys.forEach(k=>{ s[k] = o[k]; }); return s; };
+  return {
+    dog: pick(dog, ['bcs','conditions','ageYear','breed','plan']),
+    hp: pick(metaHealthProfile, ['breed','breedOtherSize','weight','ageGroup','activityLevel']),
+    hpConds: Object.assign({}, metaHealthProfile.conditions),
+    fi: pick(metaFoodInput, ['dailyG','freqPerDay','treatQuantity']),
+    mix: Object.keys(metaFoodInput.mixins).reduce((a,k)=>{ a[k] = metaFoodInput.mixins[k].active; return a; }, {}),
+    li: pick(metaLoadInput, ['medicationInputMode']),
+    liEntries: metaLoadInput.medicationEntries.slice(),
+    liInferred: Object.assign({}, metaLoadInput.inferredConditions),
+    ss: Object.keys(metaSupplementState).reduce((a,k)=>{ a[k] = metaSupplementState[k].active; return a; }, {}),
+  };
+}
+function sbxRestoreEngineState(sn){
+  Object.assign(dog, sn.dog);
+  Object.assign(metaHealthProfile, sn.hp);
+  Object.keys(metaHealthProfile.conditions).forEach(k=>{ delete metaHealthProfile.conditions[k]; });
+  Object.assign(metaHealthProfile.conditions, sn.hpConds);
+  Object.assign(metaFoodInput, sn.fi);
+  Object.keys(sn.mix).forEach(k=>{ metaFoodInput.mixins[k].active = sn.mix[k]; });
+  Object.assign(metaLoadInput, sn.li);
+  metaLoadInput.medicationEntries.length = 0;
+  sn.liEntries.forEach(e=>metaLoadInput.medicationEntries.push(e));
+  Object.keys(metaLoadInput.inferredConditions).forEach(k=>{ delete metaLoadInput.inferredConditions[k]; });
+  Object.assign(metaLoadInput.inferredConditions, sn.liInferred);
+  Object.keys(sn.ss).forEach(k=>{ metaSupplementState[k].active = sn.ss[k]; });
+}
+function sbxRunEngines(pet, rxList, suppNames){
+  const sn = sbxSnapshotEngineState();
+  try{
+    const conds = Array.isArray(pet.conditions) ? pet.conditions : [];
+    // ① 건강 스코어 (실제 computeHealthScore)
+    dog.bcs = pet.bcs; dog.conditions = conds.slice(); dog.ageYear = pet.age_years; dog.breed = pet.breed; dog.plan = 'general';
+    const health = computeHealthScore({ allocation:{ snackRatio:0.05, supplementRatio:Math.min(0.15, 0.03*suppNames.length) } });
+    // ② 간·신장 대사 부하 (실제 computeOrganBurden)
+    const w = pet.weight_kg;
+    metaHealthProfile.breed = sbxMetaBreedId(pet.breed);
+    metaHealthProfile.breedOtherSize = w < 7 ? '소형' : w < 15 ? '중형' : w < 30 ? '대형' : '초대형';
+    metaHealthProfile.weight = w;
+    metaHealthProfile.ageGroup = pet.age_years < 1 ? 'young' : pet.age_years >= 7 ? 'senior' : 'adult';
+    metaHealthProfile.activityLevel = 'normal';
+    Object.keys(metaHealthProfile.conditions).forEach(k=>{ delete metaHealthProfile.conditions[k]; });
+    conds.forEach(c=>{
+      if(!META_CONDITIONS.some(mc=>mc.id === c)) return;
+      const sev = META_CONDITION_SEVERITY[c] || [];
+      metaHealthProfile.conditions[c] = { active:true, severity:(sev[1] || sev[0] || {}).id };
+    });
+    const kcalPerG = (metaFoodInput.kcalPerKg || 3650) / 1000;
+    metaFoodInput.dailyG = Math.round((1.6 * 70 * Math.pow(w, 0.75)) / kcalPerG);
+    metaFoodInput.freqPerDay = 2; metaFoodInput.treatQuantity = 0;
+    Object.keys(metaFoodInput.mixins).forEach(k=>{ metaFoodInput.mixins[k].active = false; });
+    metaLoadInput.medicationInputMode = 'manual';
+    Object.keys(metaLoadInput.inferredConditions).forEach(k=>{ delete metaLoadInput.inferredConditions[k]; });
+    metaLoadInput.medicationEntries.length = 0;
+    rxList.forEach(r=>metaLoadInput.medicationEntries.push(metaNewMedicationEntry({ category:sbxMetaMedCategory(r.category), freqPerDay:r.frequency_per_day })));
+    Object.keys(metaSupplementState).forEach(k=>{ metaSupplementState[k].active = false; });
+    suppNames.forEach(name=>{ const c = sbxSuppToMetaCategory(name); if(metaSupplementState[c]) metaSupplementState[c].active = true; });
+    const burden = computeOrganBurden();
+    return { health, burden };
+  } finally {
+    sbxRestoreEngineState(sn);
+  }
+}
+function sbxRequestId(){ return 'req_sbx_' + Math.random().toString(36).slice(2, 10); }
+function sbxError(http, message, extra){
+  return { http, body: Object.assign({ status:'ERROR', code:http, message, request_id:sbxRequestId() }, extra || {}) };
+}
+/* 요청 JSON → 응답 JSON. view: 'full' | 'health' */
+function sbxProcessRequest(req, view, key){
+  const t0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+  if(!key || !String(key).startsWith(SEON_DEMO_KEY_PREFIX)) return sbxError(401, 'Invalid or missing X-SEON-API-KEY', { fallback:'Sandbox 키는 seon_demo_pk_ 로 시작해야 해요. Enterprise PoC 탭에서 발급받을 수 있어요.' });
+  if(!req || typeof req !== 'object' || !req.pet || typeof req.pet !== 'object') return sbxError(400, 'Missing required field: pet');
+  const w = Number(req.pet.weight_kg);
+  if(!(w >= 0.5 && w <= 100)) return sbxError(422, 'pet.weight_kg must be a number between 0.5 and 100');
+  const age = req.pet.age_years == null ? 5 : Number(req.pet.age_years);
+  if(!(age >= 0 && age <= 30)) return sbxError(422, 'pet.age_years must be a number between 0 and 30');
+  const bcsRaw = req.pet.bcs == null ? 5 : Number(req.pet.bcs);
+  if(!(bcsRaw >= 1 && bcsRaw <= 9)) return sbxError(422, 'pet.bcs must be a number between 1 and 9');
+  const pet = { breed:String(req.pet.breed || '믹스견'), weight_kg:w, age_years:age, bcs:Math.round(bcsRaw), conditions:Array.isArray(req.pet.conditions) ? req.pet.conditions.map(String) : [] };
+
+  const rx = [];
+  const suppNames = Array.isArray(req.supplements) ? req.supplements.map(String).filter(Boolean) : [];
+  if(view === 'full'){
+    const list = Array.isArray(req.prescriptions) ? req.prescriptions : [];
+    for(const item of list){
+      const rawName = typeof item === 'string' ? item : (item && item.name);
+      const freq = Math.max(1, Math.min(4, parseInt(item && item.frequency_per_day) || 1));
+      const found = sbxFindMolecule(rawName);
+      if(!found) return sbxError(422, `Unknown molecule name: '${rawName}'`, { did_you_mean: sbxDidYouMean(rawName), fallback:'성분명을 인식하지 못하면 일반 주의 문구로 안전하게 폴백돼요.' });
+      rx.push({ name:found.name, category:found.category, frequency_per_day:freq, ndc_code: SBX_NDC_MAP[found.name.toLowerCase().split(' ')[0]] || null });
+    }
+  }
+  let engines;
+  try{ engines = sbxRunEngines(pet, rx, view === 'full' ? suppNames : []); }
+  catch(e){ return sbxError(500, 'Engine error: ' + (e && e.message ? e.message : e)); }
+  const { health, burden } = engines;
+  const latency = Math.max(1, Math.round(((typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now()) - t0));
+  const meta = { mode:'sandbox', engine:'seon-engine (computeHealthScore · computeOrganBurden · DNI rules)', ndc_mapping:'sandbox-illustrative (production maps to a licensed NDC directory)' };
+
+  if(view === 'health'){
+    return { http:200, body:{
+      status:'SUCCESS', request_id:sbxRequestId(), latency_ms:latency,
+      health_score:health.score, health_light:health.light, verdict:health.verdict,
+      inputs:{ breed:pet.breed, age_years:pet.age_years, bcs:pet.bcs, conditions_count:pet.conditions.length },
+      fhir_compatible:true, meta,
+    }};
+  }
+  const conflicts = [];
+  rx.forEach(r=>suppNames.forEach(s=>{
+    const rule = sbxLookupConflict(r.name, s);
+    if(rule) conflicts.push({ pair:`${r.name} x ${s}`, medication:r.name, supplement:s, isolation_hours:rule.isolationHours, mechanism:rule.note, reference:rule.reference });
+  }));
+  const isolationHours = conflicts.reduce((m,c)=>Math.max(m, c.isolation_hours), 0);
+  const hepatic = burden.liverPct, renal = burden.kidneyPct;
+  const first = conflicts[0];
+  const schedule = first
+    ? `08:00 ${first.medication} | ${String(8 + first.isolation_hours).padStart(2,'0')}:00 ${first.supplement}`
+    : (rx.length ? '제약 없음 — 평소 급여 스케줄을 유지하세요.' : '처방약 미입력 — 스케줄 산출 대상 없음');
+  return { http:200, body:{
+    status:'SUCCESS', request_id:sbxRequestId(), latency_ms:latency,
+    ndc_code: rx.length ? rx[0].ndc_code : null,
+    health_score:health.score,
+    hepatic_strain_index:hepatic,
+    renal_clearance_burden:renal,
+    isolation_hours:isolationHours,
+    fhir_compatible:true,
+    health_light:health.light,
+    organ_strain_zones:{ hepatic:sbxZone(hepatic,'hepatic'), renal:sbxZone(renal,'renal') },
+    dni_conflict_detected:conflicts.length > 0,
+    conflicts,
+    recommended_schedule:schedule,
+    prescriptions:rx.map(r=>({ name:r.name, ndc_code:r.ndc_code, category:r.category, frequency_per_day:r.frequency_per_day })),
+    meta,
+  }};
+}
+
+/* --- Widget 렌더 (API 응답 → 파트너 앱에 이식되는 카드) --- */
+function sbxBar(label, pct, zone){
+  const color = zone === 'CRITICAL' ? '#DC2626' : (zone === 'ELEVATED' || zone === 'HIGH_RISK') ? '#D97706' : '#059669';
+  return `<div class="mb-1.5"><div class="flex justify-between text-[10px] font-bold" style="color:#334155;"><span>${label}</span><span>${pct}% · ${zone}</span></div>
+    <div style="height:6px; border-radius:9999px; background:#E2E8F0;"><div style="height:6px; border-radius:9999px; width:${Math.min(100, pct)}%; background:${color};"></div></div></div>`;
+}
+function renderSbxWidget(result, view){
+  const wrap = document.getElementById('sbxWidgetPreview');
+  if(!wrap) return;
+  const b = result.body;
+  if(b.status !== 'SUCCESS'){
+    wrap.innerHTML = `<div class="rounded-xl p-4" style="background:#fff; border:1.5px solid #FCA5A5;">
+      <div class="flex items-center gap-2 mb-2"><span class="text-[10px] font-bold px-2 py-1 rounded-full" style="background:#0F172A; color:#34D399;">🧬 SEON Chrono-DNI</span><span class="text-[10px] font-bold px-2 py-1 rounded-full" style="background:#FEE2E2; color:#B91C1C;">${sbxEsc(b.code)} ERROR</span></div>
+      <p class="text-xs font-bold" style="color:#0F172A;">${sbxEsc(b.message)}</p>
+      <p class="text-[11px] mt-1" style="color:#64748B;">${sbxEsc(b.fallback || '위젯은 안전하게 기본 화면으로 폴백돼요.')}</p></div>`;
+    return;
+  }
+  if(view === 'health'){
+    const c = b.health_light === 'green' ? '#059669' : b.health_light === 'yellow' ? '#D97706' : '#DC2626';
+    wrap.innerHTML = `<div class="rounded-xl p-4" style="background:#fff; border:1.5px solid ${c}55;">
+      <div class="flex items-center gap-2 mb-3"><span class="text-[10px] font-bold px-2 py-1 rounded-full" style="background:#0F172A; color:#34D399;">🧬 SEON Health Score</span></div>
+      <div class="flex items-center gap-4"><p class="font-display font-bold" style="font-size:2.4rem; color:${c};">${b.health_score}</p>
+      <div><p class="text-xs font-bold" style="color:#0F172A;">${sbxEsc(b.verdict)}</p><p class="text-[11px]" style="color:#64748B;">목표 기반 종합 건강 스코어 (0–100)</p></div></div></div>`;
+    return;
+  }
+  const conflict = b.conflicts[0];
+  const zones = b.organ_strain_zones;
+  wrap.innerHTML = `<div class="rounded-xl p-4" style="background:#fff; border:1.5px solid ${conflict ? '#FBBF24' : '#A7F3D0'}; box-shadow:0 4px 14px -6px rgba(0,0,0,.12);">
+    <div class="flex items-center gap-2 mb-2 flex-wrap">
+      <span class="text-[10px] font-bold px-2 py-1 rounded-full" style="background:#0F172A; color:#34D399;">🧬 SEON Chrono-DNI</span>
+      ${conflict ? `<span class="text-[10px] font-bold px-2 py-1 rounded-full" style="background:#FEF3C7; color:#B45309;">⚠️ 상호작용 주의 · ${b.isolation_hours}시간 격리</span>` : `<span class="text-[10px] font-bold px-2 py-1 rounded-full" style="background:#DCFCE7; color:#166534;">✅ 상충 없음</span>`}
+      <span class="text-[10px] font-bold px-2 py-1 rounded-full" style="background:#E0E7FF; color:#3730A3;">Health ${b.health_score}</span>
+    </div>
+    ${conflict ? `<p class="text-xs font-bold mb-1" style="color:#0F172A;">'${sbxEsc(conflict.supplement)}'가 복용 중인 처방약(${sbxEsc(conflict.medication)})과 상충할 수 있어요.</p>
+      <p class="text-[11px] mb-2" style="color:#64748B;">${sbxEsc(conflict.mechanism)} 최소 ${conflict.isolation_hours}시간 간격을 두고 급여해주세요.</p>
+      <p class="text-[11px] font-bold mb-3" style="color:#0F172A;">🕒 ${sbxEsc(b.recommended_schedule)}</p>` : `<p class="text-xs font-bold mb-2" style="color:#0F172A;">등록된 처방약·영양제 조합에서 감지된 상극이 없어요.</p><p class="text-[11px] mb-3" style="color:#64748B;">${sbxEsc(b.recommended_schedule)}</p>`}
+    ${sbxBar('간 대사 부하 (Hepatic)', b.hepatic_strain_index, zones.hepatic)}
+    ${sbxBar('신장 여과 부담 (Renal)', b.renal_clearance_burden, zones.renal)}
+    ${conflict ? `<div class="rounded-lg p-2.5 mt-3 flex items-center justify-between gap-2" style="background:#F0FDF4; border:1px solid #BBF7D0;">
+      <div class="min-w-0"><p class="text-[11px] font-bold truncate" style="color:#166534;">✅ Renal-Safe Joint Collagen (Non-Mineral)</p><p class="text-[10px]" style="color:#65A30D;">SEON 안전 대체 상품 추천</p></div>
+      <span class="text-[10px] font-bold px-3 py-1.5 rounded-lg shrink-0" style="background:#059669; color:#fff;">담기</span></div>` : ''}
+  </div>`;
+}
+
+/* --- 폼 ↔ Live JSON 양방향 동기화 --- */
+function sbxBuildStaticControls(){
+  const breedSel = document.getElementById('sbxBreed');
+  breedSel.innerHTML = BREEDS.filter(b=>b !== '직접입력').map(b=>`<option value="${sbxEsc(b)}">${sbxEsc(b)}</option>`).join('');
+  document.getElementById('sbxBcs').innerHTML = [1,2,3,4,5,6,7,8,9].map(n=>`<option value="${n}">${n}</option>`).join('');
+  document.getElementById('sbxMoleculeList').innerHTML = sbxAllMolecules().map(m=>`<option value="${sbxEsc(m.name)}"></option>`).join('');
+  document.getElementById('sbxCondGroup').innerHTML = SBX_CONDITION_OPTIONS.map(c=>`<label class="sbx-chip"><input type="checkbox" value="${c.id}"><span>${c.label}</span></label>`).join('');
+  document.getElementById('sbxSuppChips').innerHTML = SBX_SUPPLEMENT_OPTIONS.map(s=>`<label class="sbx-chip"><input type="checkbox" value="${sbxEsc(s)}"><span>${sbxEsc(s)}</span></label>`).join('');
+}
+function sbxAddRxRow(name, freq){
+  const row = document.createElement('div');
+  row.className = 'sbx-rx-row flex items-center gap-2';
+  row.innerHTML = `<input class="sbx-input sbx-rx-name" list="sbxMoleculeList" placeholder="성분명 (예: Enrofloxacin)" value="${sbxEsc(name || '')}">
+    <select class="sbx-input sbx-rx-freq" style="width:84px;">${[1,2,3].map(n=>`<option value="${n}" ${n===(freq||1)?'selected':''}>${n}회/일</option>`).join('')}</select>
+    <button type="button" class="sbx-rx-remove rounded-lg px-2 py-1.5 text-[11px] font-bold" style="background:rgba(248,113,113,.15); color:#FCA5A5;" aria-label="처방약 삭제">✕</button>`;
+  row.querySelector('.sbx-rx-remove').addEventListener('click', ()=>{ row.remove(); sbxWriteJson(); });
+  document.getElementById('sbxRxList').appendChild(row);
+}
+function sbxReadForm(){
+  const num = id=>parseFloat(document.getElementById(id).value);
+  return {
+    pet: {
+      breed: document.getElementById('sbxBreed').value,
+      weight_kg: num('sbxWeight'),
+      age_years: num('sbxAge'),
+      bcs: parseInt(document.getElementById('sbxBcs').value),
+      conditions: [...document.querySelectorAll('#sbxCondGroup input:checked')].map(i=>i.value),
+    },
+    prescriptions: [...document.querySelectorAll('#sbxRxList .sbx-rx-row')]
+      .map(r=>({ name:r.querySelector('.sbx-rx-name').value.trim(), frequency_per_day:parseInt(r.querySelector('.sbx-rx-freq').value) || 1 }))
+      .filter(r=>r.name),
+    supplements: [...document.querySelectorAll('#sbxSuppChips input:checked')].map(i=>i.value),
+  };
+}
+function sbxWriteJson(){
+  if(sbxSyncLock) return;
+  document.getElementById('sbxRequestJson').value = JSON.stringify(sbxReadForm(), null, 2);
+}
+function sbxApplyToForm(req){
+  sbxSyncLock = true;
+  try{
+    const pet = (req && req.pet) || {};
+    const breedSel = document.getElementById('sbxBreed');
+    if([...breedSel.options].some(o=>o.value === pet.breed)) breedSel.value = pet.breed;
+    if(pet.weight_kg != null) document.getElementById('sbxWeight').value = pet.weight_kg;
+    if(pet.age_years != null) document.getElementById('sbxAge').value = pet.age_years;
+    if(pet.bcs != null) document.getElementById('sbxBcs').value = String(pet.bcs);
+    const conds = Array.isArray(pet.conditions) ? pet.conditions : [];
+    document.querySelectorAll('#sbxCondGroup input').forEach(i=>{ i.checked = conds.includes(i.value); });
+    const supps = Array.isArray(req && req.supplements) ? req.supplements : [];
+    document.querySelectorAll('#sbxSuppChips input').forEach(i=>{ i.checked = supps.includes(i.value); });
+    document.getElementById('sbxRxList').innerHTML = '';
+    (Array.isArray(req && req.prescriptions) ? req.prescriptions : []).forEach(r=>{
+      if(typeof r === 'string') sbxAddRxRow(r, 1); else if(r) sbxAddRxRow(r.name, parseInt(r.frequency_per_day) || 1);
+    });
+  } finally { sbxSyncLock = false; }
+}
+function sbxSendCurrent(){
+  if(!sbxReady) return;
+  const errEl = document.getElementById('sbxRequestError');
+  errEl.classList.add('hidden');
+  let req;
+  try{ req = JSON.parse(document.getElementById('sbxRequestJson').value); }
+  catch(e){ errEl.textContent = '⚠️ JSON 형식이 올바르지 않아요. 콤마/따옴표를 확인해주세요.'; errEl.classList.remove('hidden'); return; }
+  const view = sbxView === 'health' ? 'health' : 'full';
+  sbxLastSig = sbxCurrentSig();
+  const result = sbxProcessRequest(req, view, document.getElementById('sbxApiKeyInput').value.trim());
+  const ok = result.http === 200;
+  const names = { 200:'OK', 400:'Bad Request', 401:'Unauthorized', 422:'Unprocessable Entity', 500:'Server Error' };
+  const ms = result.body.latency_ms != null ? ` | ${result.body.latency_ms}ms` : '';
+  document.getElementById('sbxResponseBox').innerHTML = syntaxHighlightJson(JSON.stringify(result.body, null, 2));
+  const bar = document.getElementById('sbxStatusBar');
+  bar.classList.remove('hidden');
+  document.getElementById('sbxStatusText').textContent = `${result.http} ${names[result.http] || ''}${ms}`;
+  document.getElementById('sbxStatusDot').style.color = ok ? '#4ADE80' : '#F87171';
+  renderSbxWidget(result, view);
+}
+
+/* --- Sub-module(대사 부하 / Chrono-DNI) 실시간 API Response --- */
+function sbxBuildMetaApi(){
+  try{
+    const b = computeOrganBurden();
+    return { status:'SUCCESS', module:'metabolic_load', hepatic_strain_index:b.liverPct, renal_clearance_burden:b.kidneyPct,
+      organ_strain_zones:{ hepatic:sbxZone(b.liverPct,'hepatic'), renal:sbxZone(b.kidneyPct,'renal') },
+      active_combinations:(b.activeCombos || []).length, active_synergies:(b.activeSynergies || []).length,
+      fhir_compatible:true, source:'아래 Metabolic Load 모듈의 현재 입력값' };
+  }catch(e){ return { status:'ERROR', message:String(e && e.message || e) }; }
+}
+function sbxBuildChronoApi(){
+  try{
+    const warnings = detectDniWarnings();
+    const cards = buildDniChronoSchedule(warnings);
+    const conflicts = warnings.filter(w=>w.interaction_type === 'CONFLICT');
+    return { status:'SUCCESS', module:'chrono_dni', dni_conflict_detected:conflicts.length > 0,
+      isolation_hours:conflicts.reduce((m,w)=>Math.max(m, w.isolation_hours || 0), 0),
+      conflicts:conflicts.map(w=>({ pair:`${w.molecule} x ${w.nutrient}`, isolation_hours:w.isolation_hours, mechanism:w.recommendation_note || '' })),
+      timeline:cards.map(c=>({ type:c.type, time:c.time, label:c.label, items:c.items, food_g:c.foodG, isolation_hours:c.isolationHours })),
+      fhir_compatible:true, source:'아래 Chrono-DNI 모듈의 현재 입력값' };
+  }catch(e){ return { status:'ERROR', message:String(e && e.message || e) }; }
+}
+function sbxRefreshModuleApi(kind){
+  const isMeta = kind === 'meta';
+  const box = document.getElementById(isMeta ? 'sbxMetaApiBox' : 'sbxChronoApiBox');
+  if(!box) return;
+  box.innerHTML = syntaxHighlightJson(JSON.stringify(isMeta ? sbxBuildMetaApi() : sbxBuildChronoApi(), null, 2));
+}
+
+/* --- 뷰 전환 (switchMainTab에서 호출) --- */
+function applySandboxView(sub, hideOnly){
+  if(!document.getElementById('sandboxPlayground')) return;
+  if(hideOnly){ ['metaLoadPage','insurancePage'].forEach(id=>document.getElementById(id).classList.add('hidden')); return; }
+  sbxView = sub || 'full';
+  document.querySelectorAll('.sandbox-view-btn').forEach(b=>b.classList.toggle('active', b.dataset.sandboxView === sbxView));
+  const isPlay = sbxView === 'full' || sbxView === 'health';
+  document.getElementById('sandboxPlayground').classList.toggle('hidden', !isPlay);
+  document.getElementById('sandboxSubMeta').classList.toggle('hidden', sbxView !== 'metaload');
+  document.getElementById('sandboxSubChrono').classList.toggle('hidden', sbxView !== 'chrono');
+  document.getElementById('metaLoadPage').classList.toggle('hidden', sbxView !== 'metaload');
+  document.getElementById('insurancePage').classList.toggle('hidden', sbxView !== 'chrono');
+  document.getElementById('sbxRxGroup').classList.toggle('hidden', sbxView === 'health');
+  document.getElementById('sbxSuppGroup').classList.toggle('hidden', sbxView === 'health');
+  document.getElementById('sbxOpenDiagnosticBtn').classList.toggle('hidden', sbxView !== 'health');
+  if(isPlay && sbxCurrentSig() !== sbxLastSig) sbxSendCurrent();
+  if(sbxView === 'metaload') sbxRefreshModuleApi('meta');
+  if(sbxView === 'chrono') sbxRefreshModuleApi('chrono');
+}
+function initApiSandbox(){
+  sbxBuildStaticControls();
+  sbxApplyToForm(SBX_DEFAULT_REQUEST);
+  sbxWriteJson();
+  sbxReady = true;
+  const left = document.querySelector('#sandboxPlayground .grid > div');
+  left.addEventListener('input', e=>{ if(e.target.id !== 'sbxRequestJson' && e.target.id !== 'sbxApiKeyInput') sbxWriteJson(); });
+  left.addEventListener('change', e=>{ if(e.target.id !== 'sbxRequestJson' && e.target.id !== 'sbxApiKeyInput') sbxWriteJson(); });
+  document.getElementById('sbxRequestJson').addEventListener('input', ()=>{
+    try{ sbxApplyToForm(JSON.parse(document.getElementById('sbxRequestJson').value)); }catch(e){ /* 입력 중인 미완성 JSON은 무시해요 */ }
+  });
+  document.getElementById('sbxAddRxBtn').addEventListener('click', ()=>{ sbxAddRxRow('', 1); sbxWriteJson(); });
+  document.getElementById('sbxSendBtn').addEventListener('click', sbxSendCurrent);
+  document.getElementById('sbxGoPocBtn').addEventListener('click', ()=>navigateToTab('poc'));
+  document.getElementById('sbxOpenDiagnosticBtn').addEventListener('click', ()=>{ navigateToTab('home'); goToDiagnosisForm(); });
+  const routes = { full:'sandbox', health:'sandbox-health', metaload:'metaload', chrono:'insurance' };
+  document.querySelectorAll('.sandbox-view-btn').forEach(b=>b.addEventListener('click', ()=>navigateToTab(routes[b.dataset.sandboxView])));
+  document.getElementById('sbxMetaApiRefreshBtn').addEventListener('click', ()=>sbxRefreshModuleApi('meta'));
+  document.getElementById('sbxChronoApiRefreshBtn').addEventListener('click', ()=>sbxRefreshModuleApi('chrono'));
+  // 모듈에서 값을 바꾸면(입력/클릭) 상태 반영 후 API Response도 자동 갱신해요.
+  let moduleTimer = null;
+  const scheduleRefresh = kind=>()=>{ clearTimeout(moduleTimer); moduleTimer = setTimeout(()=>sbxRefreshModuleApi(kind), 200); };
+  document.getElementById('metaLoadPage').addEventListener('input', scheduleRefresh('meta'));
+  document.getElementById('metaLoadPage').addEventListener('click', scheduleRefresh('meta'));
+  document.getElementById('insurancePage').addEventListener('input', scheduleRefresh('chrono'));
+  document.getElementById('insurancePage').addEventListener('click', scheduleRefresh('chrono'));
+  const issued = getIssuedSandboxKey();
+  if(issued) document.getElementById('sbxApiKeyInput').value = issued;
+  sbxSendCurrent();
+}
+
+/* ---------------- Enterprise PoC ---------------- */
+function generateSandboxKey(){
+  let hex = '';
+  try{ hex = Array.from(crypto.getRandomValues(new Uint8Array(8))).map(b=>b.toString(16).padStart(2,'0')).join(''); }
+  catch(e){ hex = Array.from({length:16}, ()=>Math.floor(Math.random()*16).toString(16)).join(''); }
+  return SEON_DEMO_KEY_PREFIX + hex;
+}
+async function submitPocRequest(){
+  const errEl = document.getElementById('pocError');
+  errEl.classList.add('hidden');
+  const company = document.getElementById('pocCompany').value.trim();
+  const email = document.getElementById('pocEmail').value.trim();
+  const vEl = document.querySelector('input[name="pocVertical"]:checked');
+  const volume = document.getElementById('pocVolume').value;
+  const fail = msg=>{ errEl.textContent = '⚠️ ' + msg; errEl.classList.remove('hidden'); };
+  if(!company) return fail('회사명을 입력해주세요.');
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail('올바른 담당자 이메일을 입력해주세요.');
+  if(!vEl) return fail('Target Vertical을 선택해주세요.');
+  if(!volume) return fail('예상 API Volume을 선택해주세요.');
+
+  const key = generateSandboxKey();
+  try{ window.localStorage.setItem(ISSUED_KEY_STORAGE, key); }catch(e){}
+  document.getElementById('sbxApiKeyInput').value = key;
+  const record = { company, contact_email:email, target_vertical:vEl.value, expected_api_volume:volume, sandbox_key:key };
+  let saved = false;
+  try{
+    if(supabaseClient){ const { error } = await supabaseClient.from('b2b_poc_requests').insert(record); saved = !error; if(error) console.warn('[seon] b2b_poc_requests insert 실패:', error.message); }
+  }catch(e){ console.warn('[seon] b2b_poc_requests insert 예외:', e); }
+
+  const msg = document.getElementById('pocResultMsg');
+  msg.innerHTML = saved
+    ? `✅ <b>${sbxEsc(company)}</b>의 PoC 요청이 접수됐고 Sandbox API Key가 발급됐어요. 담당자가 확인 후 <b>${sbxEsc(email)}</b>로 연락드려요.`
+    : `✅ Sandbox API Key가 발급됐어요. 다만 이 환경에서는 문의 내용이 서버에 자동 접수되지 않았어요. 아래 <b>이메일로 문의 보내기</b>를 눌러 전송해주시면 바로 확인할게요.`;
+  document.getElementById('pocResultKey').textContent = key;
+  const mail = document.getElementById('pocMailFallback');
+  const body = `Company: ${company}\nContact email: ${email}\nTarget vertical: ${vEl.value}\nExpected API volume: ${volume}\nSandbox key: ${key}`;
+  mail.setAttribute('href', 'mailto:seon.forivy@gmail.com?subject=' + encodeURIComponent('SEON Enterprise PoC Request') + '&body=' + encodeURIComponent(body));
+  mail.classList.toggle('hidden', saved);
+  document.getElementById('pocResult').classList.remove('hidden');
+  return { saved, key };
+}
+function initPocPage(){
+  document.getElementById('pocSubmitBtn').addEventListener('click', submitPocRequest);
+  document.getElementById('pocUseKeyBtn').addEventListener('click', ()=>navigateToTab('sandbox'));
+}
+function initDocsPage(){
   renderDevCodeTabs();
   bindDevCodeTabs();
   bindDevCopyButtons();
-  initDevSandbox();
 }
+function initHomeOverview(){
+  renderOverviewPipeline();
+  document.getElementById('homeGoSandboxBtn')?.addEventListener('click', ()=>navigateToTab('sandbox'));
+  document.getElementById('homeGoDevDocsBtn')?.addEventListener('click', ()=>navigateToTab('docs'));
+  document.getElementById('homeGoFullSandboxBtn')?.addEventListener('click', ()=>navigateToTab('sandbox'));
+  document.getElementById('homeGoEnterpriseLoiBtn')?.addEventListener('click', ()=>navigateToTab('poc'));
+  document.getElementById('homeGoDevDocsBtn2')?.addEventListener('click', ()=>navigateToTab('docs'));
+}
+
+
 
 
 /* ============================================================
@@ -11501,9 +11494,10 @@ restoreAppStateSnapshot(); // 다른 init 함수들이 state를 읽어 DOM을 �
 // 페이지를 새로 열 때마다 항상 빈 값에서 시작해야, 유저가 직접 입력하기 전까지 어떤 임의의
 // 값도 모달에 보이지 않아요. (저장 자체는 계속하므로, 필요 시 백엔드/분석 용도로는 남아있어요.)
 init();
-initDemoPage();
-initDevelopersPage();
-initHomeB2BSection();
+initHomeOverview();
+initApiSandbox();
+initPocPage();
+initDocsPage();
 initMetaLoadPage();
 initInsurancePage();
 redirectLegacyRouteIfNeeded(); // #/chrono로 딥링크 접속해도 조용히 #/safe-timeline으로 갱신
