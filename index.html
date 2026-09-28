@@ -10870,9 +10870,9 @@ window.addEventListener('beforeunload', saveAppStateSnapshot);
    -- Supabase SQL (Enterprise PoC 문의 저장용. 테이블이 없으면 화면은 이메일 전송 안내로 안전하게 폴백해요)
    create table if not exists public.b2b_poc_requests (
      id uuid primary key default gen_random_uuid(),
-     company text not null, contact_email text not null,
-     target_vertical text not null, expected_api_volume text not null,
-     sandbox_key text not null, created_at timestamptz not null default now()
+     company_name text not null, contact_email text not null,
+     target_vertical text not null, expected_volume text not null,
+     sandbox_api_key text not null, created_at timestamptz not null default now()
    );
    alter table public.b2b_poc_requests enable row level security;
    create policy "anon can insert poc requests" on public.b2b_poc_requests for insert to anon with check (true);
@@ -11447,7 +11447,7 @@ async function submitPocRequest(){
   const key = generateSandboxKey();
   try{ window.localStorage.setItem(ISSUED_KEY_STORAGE, key); }catch(e){}
   document.getElementById('sbxApiKeyInput').value = key;
-  const record = { company, contact_email:email, target_vertical:vEl.value, expected_api_volume:volume, sandbox_key:key };
+  const record = { company_name:company, contact_email:email, target_vertical:vEl.value, expected_volume:volume, sandbox_api_key:key };
   let saved = false;
   try{
     if(supabaseClient){ const { error } = await supabaseClient.from('b2b_poc_requests').insert(record); saved = !error; if(error) console.warn('[seon] b2b_poc_requests insert 실패:', error.message); }
