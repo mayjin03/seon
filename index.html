@@ -11056,23 +11056,43 @@ function renderSbxWidget(result, view){
       <div><p class="text-xs font-bold" style="color:#0F172A;">${sbxEsc(SBX_LIGHT_LABEL[b.health_light] || '평가 완료')}</p><p class="text-[11px]" style="color:#64748B;">목표 기반 종합 건강 스코어 (0–100)</p></div></div></div>`;
     return;
   }
-  const conflict = b.conflicts[0];
-  const zones = b.organ_strain_zones;
+  /* 백엔드 응답 스키마는 배포본마다 달라질 수 있어요(예: organ_strain_zones·hepatic_strain_index·
+     health_score 같은 선택 필드가 아예 없는 "경량" 버전). 이 위젯은 dni_conflict_detected ·
+     isolation_hours · recommended_schedule · conflicts[] 4개만 있으면 그려지고, 나머지는 실제로
+     '숫자로' 존재할 때만 추가로 표시해요 — 없는 필드를 읽다가 예외가 나서 상위 try/catch의
+     "위젯을 그릴 수 없어요" 폴백으로 떨어지는 일이 없도록 해요. */
+  const hasNum = v => typeof v === 'number' && Number.isFinite(v);
+  const conflictsArr = Array.isArray(b.conflicts) ? b.conflicts : [];
+  // dni_conflict_detected 가 있으면 그 값을 신뢰하고, 없으면 conflicts 배열 유무로 판단해요.
+  const hasConflict = ('dni_conflict_detected' in b) ? !!b.dni_conflict_detected : conflictsArr.length > 0;
+  const conflict = hasConflict ? (conflictsArr[0] || {}) : null;
+  const isolationHours = conflict && hasNum(conflict.isolation_hours) ? conflict.isolation_hours : (hasNum(b.isolation_hours) ? b.isolation_hours : null);
+  const medication = conflict ? (conflict.medication || (conflict.pair || '').split(' x ')[0] || '처방약') : '';
+  const supplement = conflict ? (conflict.supplement || (conflict.pair || '').split(' x ')[1] || '영양제') : '';
+  const mechanism = conflict && conflict.mechanism ? conflict.mechanism : '';
+  const zones = b.organ_strain_zones || {};
+  const showOrganBars = hasNum(b.hepatic_strain_index) || hasNum(b.renal_clearance_burden);
+  const showHealthBadge = hasNum(b.health_score);
   wrap.innerHTML = `<div class="rounded-xl p-4" style="background:#fff; border:1.5px solid ${conflict ? '#FBBF24' : '#A7F3D0'}; box-shadow:0 4px 14px -6px rgba(0,0,0,.12);">
     <div class="flex items-center gap-2 mb-2 flex-wrap">
       <span class="text-[10px] font-bold px-2 py-1 rounded-full" style="background:#0F172A; color:#34D399;">🧬 SEON Chrono-DNI</span>
-      ${conflict ? `<span class="text-[10px] font-bold px-2 py-1 rounded-full" style="background:#FEF3C7; color:#B45309;">⚠️ 상호작용 주의 · ${b.isolation_hours}시간 격리</span>` : `<span class="text-[10px] font-bold px-2 py-1 rounded-full" style="background:#DCFCE7; color:#166534;">✅ 상충 없음</span>`}
-      <span class="text-[10px] font-bold px-2 py-1 rounded-full" style="background:#E0E7FF; color:#3730A3;">Health ${b.health_score}</span>
+      ${conflict ? `<span class="text-[10px] font-bold px-2 py-1 rounded-full" style="background:#FEF3C7; color:#B45309;">⚠️ 상호작용 주의${isolationHours != null ? ` · ${isolationHours}시간 격리` : ''}</span>` : `<span class="text-[10px] font-bold px-2 py-1 rounded-full" style="background:#DCFCE7; color:#166534;">✅ 상충 없음</span>`}
+      ${showHealthBadge ? `<span class="text-[10px] font-bold px-2 py-1 rounded-full" style="background:#E0E7FF; color:#3730A3;">Health ${b.health_score}</span>` : ''}
     </div>
-    ${conflict ? `<p class="text-xs font-bold mb-1" style="color:#0F172A;">'${sbxEsc(conflict.supplement)}'가 복용 중인 처방약(${sbxEsc(conflict.medication)})과 상충할 수 있어요.</p>
-      <p class="text-[11px] mb-2" style="color:#64748B;">${sbxEsc(conflict.mechanism)} 최소 ${conflict.isolation_hours}시간 간격을 두고 급여해주세요.</p>
-      <p class="text-[11px] font-bold mb-3" style="color:#0F172A;">🕒 ${sbxEsc(b.recommended_schedule)}</p>` : `<p class="text-xs font-bold mb-2" style="color:#0F172A;">등록된 처방약·영양제 조합에서 감지된 상극이 없어요.</p><p class="text-[11px] mb-3" style="color:#64748B;">${sbxEsc(b.recommended_schedule)}</p>`}
-    ${sbxBar('간 대사 부하 (Hepatic)', b.hepatic_strain_index, zones.hepatic)}
-    ${sbxBar('신장 여과 부담 (Renal)', b.renal_clearance_burden, zones.renal)}
+    ${conflict ? `<p class="text-xs font-bold mb-1" style="color:#0F172A;">'${sbxEsc(supplement)}'가 복용 중인 처방약(${sbxEsc(medication)})과 상충할 수 있어요.</p>
+      ${mechanism ? `<p class="text-[11px] mb-2" style="color:#64748B;">${sbxEsc(mechanism)}${isolationHours != null ? ` 최소 ${isolationHours}시간 간격을 두고 급여해주세요.` : ''}</p>` : ''}
+      ${b.recommended_schedule ? `<p class="text-[11px] font-bold mb-3" style="color:#0F172A;">🕒 ${sbxEsc(b.recommended_schedule)}</p>` : ''}` : `<p class="text-xs font-bold mb-2" style="color:#0F172A;">등록된 처방약·영양제 조합에서 감지된 상극이 없어요.</p>${b.recommended_schedule ? `<p class="text-[11px] mb-3" style="color:#64748B;">${sbxEsc(b.recommended_schedule)}</p>` : ''}`}
+    ${showOrganBars && hasNum(b.hepatic_strain_index) ? sbxBar('간 대사 부하 (Hepatic)', b.hepatic_strain_index, zones.hepatic || hepaticZoneFallback(b.hepatic_strain_index)) : ''}
+    ${showOrganBars && hasNum(b.renal_clearance_burden) ? sbxBar('신장 여과 부담 (Renal)', b.renal_clearance_burden, zones.renal || hepaticZoneFallback(b.renal_clearance_burden)) : ''}
     ${conflict ? `<div class="rounded-lg p-2.5 mt-3 flex items-center justify-between gap-2" style="background:#F0FDF4; border:1px solid #BBF7D0;">
       <div class="min-w-0"><p class="text-[11px] font-bold truncate" style="color:#166534;">✅ Renal-Safe Joint Collagen (Non-Mineral)</p><p class="text-[10px]" style="color:#65A30D;">SEON 안전 대체 상품 추천</p></div>
       <span class="text-[10px] font-bold px-3 py-1.5 rounded-lg shrink-0" style="background:#059669; color:#fff;">담기</span></div>` : ''}
   </div>`;
+}
+/* 서버가 organ_strain_zones 를 안 내려줄 때, 수치만으로 구간(zone) 라벨을 매겨요.
+   서버(server.js)의 sbxZone() 과 같은 기준(100/80 초과)을 그대로 써서 표시가 어긋나지 않게 해요. */
+function hepaticZoneFallback(pct){
+  return pct > 100 ? 'CRITICAL' : pct > 80 ? 'ELEVATED' : 'NORMAL';
 }
 
 /* --- 폼 ↔ Live JSON 양방향 동기화 --- */
