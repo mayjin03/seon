@@ -11087,22 +11087,32 @@ function renderSbxWidget(result, view){
      당사자인지 특정할 수 없을 때는(짝지을 단서가 전혀 없을 때는) 엉뚱한 약물명을 잘못 표시하는
      대신 정직하게 일반 명칭('처방약'/'영양제')으로 남겨둬요. */
   const firstNonEmpty = (...vals) => { for(const v of vals){ const s = typeof v === 'string' ? v.trim() : v; if(s) return s; } return null; };
-  const pairParts = (conflict && typeof conflict.pair === 'string') ? conflict.pair.split(/\s+x\s+/i).map(s => s.trim()) : [];
   const arrName = item => typeof item === 'string' ? item : (item && (item.name || item.nonproprietary_name)) || null;
-  function resolveAgentName(conflict, pairIndex, keys, responseArr){
-    const direct = firstNonEmpty(...keys.map(k => conflict && conflict[k]), pairParts[pairIndex]);
+  // conflict 항목 하나에서 약물/영양제 이름을 뽑아요. pairIndex 0=약물 쪽, 1=영양제 쪽.
+  function agentNameFromItem(item, pairIndex, keys, responseArr){
+    const parts = (item && typeof item.pair === 'string') ? item.pair.split(/\s+x\s+/i).map(s => s.trim()) : [];
+    const direct = firstNonEmpty(...keys.map(k => item && item[k]), parts[pairIndex]);
     if(direct) return direct;
     const arr = Array.isArray(responseArr) ? responseArr.map(arrName).filter(Boolean) : [];
     if(arr.length === 1) return arr[0]; // 후보가 정확히 하나뿐이면 그것을 써요.
-    if(arr.length > 1 && pairParts.length){ // 짝지을 실마리(pair)가 있으면 그 안에 포함되는 이름을 찾아요.
-      const other = pairParts[1 - pairIndex] || '';
+    if(arr.length > 1 && parts.length){ // 짝지을 실마리(pair)가 있으면 그 안에 포함되는 이름을 찾아요.
+      const other = parts[1 - pairIndex] || '';
       const hit = arr.find(n => other && (n.includes(other) || other.includes(n)));
       if(hit) return hit;
     }
     return null; // 특정할 수 없으면 억지로 추측하지 않아요.
   }
-  const medication = conflict ? (resolveAgentName(conflict, 0, ['medication', 'medication_name', 'drug', 'drug_name', 'prescription', 'prescription_name'], b.prescriptions) || '처방약') : '';
-  const supplement = conflict ? (resolveAgentName(conflict, 1, ['supplement', 'supplement_name', 'nutrient', 'nutrient_name'], b.supplements) || '영양제') : '';
+  const MED_KEYS = ['medication', 'medication_name', 'drug', 'drug_name', 'prescription', 'prescription_name'];
+  const SUPP_KEYS = ['supplement', 'supplement_name', 'nutrient', 'nutrient_name'];
+  // conflicts_count(백엔드에 있을 수도, 없을 수도 있는 필드) 대신 배열 길이 자체를 신뢰해요 — 그래야 이
+  // 필드가 없는 백엔드에서도 '2개 이상 감지' 판단이 정확해요.
+  const uniq = arr => [...new Set(arr)];
+  const medNames = conflict ? uniq(conflictsArr.map(c => agentNameFromItem(c, 0, MED_KEYS, b.prescriptions)).filter(Boolean)) : [];
+  const suppNames = conflict ? uniq(conflictsArr.map(c => agentNameFromItem(c, 1, SUPP_KEYS, b.supplements)).filter(Boolean)) : [];
+  const medication = medNames.length ? medNames.join(', ') : (conflict ? '처방약' : '');
+  const supplement = suppNames.length ? suppNames.join(', ') : (conflict ? '영양제' : '');
+  // 문장에 쓸 대표 mechanism/isolation 은 지금까지처럼 첫 번째(가장 심각한) 충돌 기준을 그대로 유지해요
+  // (이번 요청은 '이름 표출'만 다중화하는 것이지, 메커니즘·격리시간 집계 방식은 바꾸지 않아요).
   const mechanism = conflict && conflict.mechanism ? conflict.mechanism : '';
   const zones = b.organ_strain_zones || {};
   /* 대사 부하 수치·상태는 필드명이 배포본마다 다를 수 있어요.
