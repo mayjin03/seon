@@ -11045,21 +11045,43 @@ function renderSbxWidget(result, view){
   const wrap = document.getElementById('sbxWidgetPreview');
   if(!wrap) return;
   const b = result.body;
+  const UNKNOWN_DRUG_MSG = '알 수 없는 약물 정보입니다. 수의사 상담을 권장합니다.';
   if(b.status !== 'SUCCESS'){
     /* Fail-safe 안내: 네트워크 장애(연결 실패/타임아웃/손상된 응답)이거나 500대 서버 오류, 404,
-       또는 '미인식 약물'(422 + did_you_mean 이 있는 경우만 — 체중/나이 같은 다른 422 검증 오류와
-       구분해요)일 때는 기술적인 원문 메시지 대신 보호자가 이해할 수 있는 안내 문구로 바꿔서 보여줘요.
+       또는 '미인식 약물'(422 + did_you_mean 이 있는 경우, 또는 { error:'UNKNOWN_DRUG', unknown_drug }
+       형태 — 체중/나이 같은 다른 422 검증 오류와는 구분해요)일 때는 기술적인 원문 메시지 대신
+       보호자가 이해할 수 있는 안내 문구로 바꿔서 보여줘요. 백엔드 배포본마다 에러 바디 모양이
+       달라서(어떤 곳은 body.code 에 상태코드를 담고, 어떤 곳은 아예 안 담고 실제 HTTP 상태
+       (result.http)에만 있어요), 두 곳을 모두 확인해요.
        위젯 전체는 어떤 경우에도 깨지지 않고, 그 아래 작은 글씨로 원문(디버그용)과 안내를 같이 남겨요. */
-    const isUnknownDrug = b.code === 422 && 'did_you_mean' in b;
-    const isConnectionOrServerDown = b.source === 'client' || [0, 404, 500, 502, 503, 504].includes(b.code);
-    const friendly = (isUnknownDrug || isConnectionOrServerDown) ? '알 수 없는 약물 정보입니다. 수의사 상담을 권장합니다.' : null;
-    const badgeText = isConnectionOrServerDown ? 'CONNECTION ERROR' : (isUnknownDrug ? '미인식 약물' : `${sbxEsc(b.code)} ERROR`);
+    const httpCode = Number.isFinite(b.code) ? b.code : (result && result.http) || null;
+    const isUnknownDrug = (b.code === 422 && 'did_you_mean' in b) || b.error === 'UNKNOWN_DRUG';
+    const isConnectionOrServerDown = !isUnknownDrug && (b.source === 'client' || [0, 404, 500, 502, 503, 504].includes(httpCode));
+    const friendly = (isUnknownDrug || isConnectionOrServerDown) ? UNKNOWN_DRUG_MSG : null;
+    const badgeText = isConnectionOrServerDown ? 'CONNECTION ERROR' : (isUnknownDrug ? '미인식 약물' : `${sbxEsc(httpCode)} ERROR`);
+    // message 필드가 아예 없는 백엔드( { error:'UNKNOWN_DRUG', unknown_drug:'hehehe' } 형태)도 있어서,
+    // 디버그 줄에 보여줄 원문을 최대한 살려서 구성해요.
+    const debugMsg = b.message || (b.error ? `${b.error}${b.unknown_drug ? ': ' + b.unknown_drug : ''}` : `HTTP ${httpCode}`);
     wrap.innerHTML = `<div class="rounded-xl p-4" style="background:#fff; border:1.5px solid #FCA5A5;">
       <div class="flex items-center gap-2 mb-2 flex-wrap"><span class="text-[10px] font-bold px-2 py-1 rounded-full" style="background:#0F172A; color:#34D399;">🧬 SEON Chrono-DNI</span><span class="text-[10px] font-bold px-2 py-1 rounded-full" style="background:#FEE2E2; color:#B91C1C;">${badgeText}</span></div>
-      <p class="text-xs font-bold" style="color:#0F172A;">${sbxEsc(friendly || b.message)}</p>
-      ${friendly ? `<p class="text-[10px] mt-1" style="color:#94A3B8;">(디버그) ${sbxEsc(b.message)}</p>` : ''}
+      <p class="text-xs font-bold" style="color:#0F172A;">${sbxEsc(friendly || debugMsg)}</p>
+      ${friendly ? `<p class="text-[10px] mt-1" style="color:#94A3B8;">(디버그) ${sbxEsc(debugMsg)}</p>` : ''}
       ${isUnknownDrug && b.did_you_mean ? `<p class="text-[11px] mt-1" style="color:#334155;">혹시 <b>'${sbxEsc(b.did_you_mean)}'</b>을(를) 뜻하셨나요?</p>` : ''}
+      ${isUnknownDrug && !b.did_you_mean && b.unknown_drug ? `<p class="text-[11px] mt-1" style="color:#334155;">입력하신 <b>'${sbxEsc(b.unknown_drug)}'</b>은(는) 등록된 약물 데이터베이스에서 확인되지 않았어요.</p>` : ''}
       <p class="text-[11px] mt-1" style="color:#64748B;">${sbxEsc(b.fallback || '위젯은 안전하게 기본 화면으로 폴백돼요.')}</p></div>`;
+    return;
+  }
+  /* [Fail-safe ②] 백엔드가 422 없이 200 OK 를 유지하는 배포본이어도, 응답의 prescriptions[] 안에
+     미인식 약물(product_type:"UNKNOWN" 또는 ndc_verified:false)이 하나라도 섞여 있으면, 의미 없는
+     대사 부하 수치·충돌 판정을 보여주는 대신 이 경고를 최우선으로 덮어씌워요(health 뷰 포함). */
+  const unknownRx = Array.isArray(b.prescriptions) ? b.prescriptions.find(p => p && (p.product_type === 'UNKNOWN' || p.ndc_verified === false)) : null;
+  if(unknownRx){
+    const rxLabel = unknownRx.name || unknownRx.proprietary_name || '';
+    wrap.innerHTML = `<div class="rounded-xl p-4" style="background:#fff; border:1.5px solid #FCA5A5;">
+      <div class="flex items-center gap-2 mb-2 flex-wrap"><span class="text-[10px] font-bold px-2 py-1 rounded-full" style="background:#0F172A; color:#34D399;">🧬 SEON Chrono-DNI</span><span class="text-[10px] font-bold px-2 py-1 rounded-full" style="background:#FEE2E2; color:#B91C1C;">미인식 약물</span></div>
+      <p class="text-xs font-bold" style="color:#0F172A;">${sbxEsc(UNKNOWN_DRUG_MSG)}</p>
+      ${rxLabel ? `<p class="text-[11px] mt-1" style="color:#334155;">입력하신 <b>'${sbxEsc(rxLabel)}'</b>은(는) 등록된 약물 데이터베이스에서 확인되지 않았어요.</p>` : ''}
+      <p class="text-[11px] mt-1" style="color:#64748B;">서버가 응답 자체는 정상(200 OK)으로 보냈지만, 이 처방약이 식별되지 않아 대사 부하·상호작용 수치는 신뢰할 수 없어 표시하지 않아요.</p></div>`;
     return;
   }
   if(view === 'health'){
