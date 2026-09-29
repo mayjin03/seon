@@ -11067,8 +11067,28 @@ function renderSbxWidget(result, view){
   const hasConflict = ('dni_conflict_detected' in b) ? !!b.dni_conflict_detected : conflictsArr.length > 0;
   const conflict = hasConflict ? (conflictsArr[0] || {}) : null;
   const isolationHours = conflict && hasNum(conflict.isolation_hours) ? conflict.isolation_hours : (hasNum(b.isolation_hours) ? b.isolation_hours : null);
-  const medication = conflict ? (conflict.medication || (conflict.pair || '').split(' x ')[0] || '처방약') : '';
-  const supplement = conflict ? (conflict.supplement || (conflict.pair || '').split(' x ')[1] || '영양제') : '';
+  /* 실제 약물명/영양제명을 최대한 진짜 값으로 채워요. conflict 객체의 키 이름은 배포본마다
+     다를 수 있어서(medication/drug/prescription 등) 후보를 여러 개 시도하고, 그래도 없으면
+     응답의 prescriptions[] / supplements[] 배열에서 가져와요. 여러 개라 어떤 게 이 상호작용의
+     당사자인지 특정할 수 없을 때는(짝지을 단서가 전혀 없을 때는) 엉뚱한 약물명을 잘못 표시하는
+     대신 정직하게 일반 명칭('처방약'/'영양제')으로 남겨둬요. */
+  const firstNonEmpty = (...vals) => { for(const v of vals){ const s = typeof v === 'string' ? v.trim() : v; if(s) return s; } return null; };
+  const pairParts = (conflict && typeof conflict.pair === 'string') ? conflict.pair.split(/\s+x\s+/i).map(s => s.trim()) : [];
+  const arrName = item => typeof item === 'string' ? item : (item && (item.name || item.nonproprietary_name)) || null;
+  function resolveAgentName(conflict, pairIndex, keys, responseArr){
+    const direct = firstNonEmpty(...keys.map(k => conflict && conflict[k]), pairParts[pairIndex]);
+    if(direct) return direct;
+    const arr = Array.isArray(responseArr) ? responseArr.map(arrName).filter(Boolean) : [];
+    if(arr.length === 1) return arr[0]; // 후보가 정확히 하나뿐이면 그것을 써요.
+    if(arr.length > 1 && pairParts.length){ // 짝지을 실마리(pair)가 있으면 그 안에 포함되는 이름을 찾아요.
+      const other = pairParts[1 - pairIndex] || '';
+      const hit = arr.find(n => other && (n.includes(other) || other.includes(n)));
+      if(hit) return hit;
+    }
+    return null; // 특정할 수 없으면 억지로 추측하지 않아요.
+  }
+  const medication = conflict ? (resolveAgentName(conflict, 0, ['medication', 'medication_name', 'drug', 'drug_name', 'prescription', 'prescription_name'], b.prescriptions) || '처방약') : '';
+  const supplement = conflict ? (resolveAgentName(conflict, 1, ['supplement', 'supplement_name', 'nutrient', 'nutrient_name'], b.supplements) || '영양제') : '';
   const mechanism = conflict && conflict.mechanism ? conflict.mechanism : '';
   const zones = b.organ_strain_zones || {};
   const showOrganBars = hasNum(b.hepatic_strain_index) || hasNum(b.renal_clearance_burden);
