@@ -11033,9 +11033,11 @@ function sbxZone(pct, kind){
 /* 요청 JSON → 응답 JSON. view: 'full' | 'health' */
 /* --- Widget 렌더 (API 응답 → 파트너 앱에 이식되는 카드) --- */
 function sbxBar(label, pct, zone){
-  const color = zone === 'CRITICAL' ? '#DC2626' : (zone === 'ELEVATED' || zone === 'HIGH_RISK') ? '#D97706' : '#059669';
-  return `<div class="mb-1.5"><div class="flex justify-between text-[10px] font-bold" style="color:#334155;"><span>${label}</span><span>${pct}% · ${zone}</span></div>
-    <div style="height:6px; border-radius:9999px; background:#E2E8F0;"><div style="height:6px; border-radius:9999px; width:${Math.min(100, pct)}%; background:${color};"></div></div></div>`;
+  const z = String(zone || '').toUpperCase();
+  const color = z === 'CRITICAL' ? '#DC2626' : (z === 'ELEVATED' || z === 'HIGH_RISK' || z === 'HIGH' || z === 'MODERATE') ? '#D97706' : '#059669';
+  const shown = Math.max(0, Math.round(pct));
+  return `<div class="mb-1.5"><div class="flex justify-between text-[10px] font-bold" style="color:#334155;"><span>${label}</span><span>${shown}% · ${z || 'NORMAL'}</span></div>
+    <div style="height:6px; border-radius:9999px; background:#E2E8F0;"><div style="height:6px; border-radius:9999px; width:${Math.max(0, Math.min(100, pct))}%; background:${color};"></div></div></div>`;
 }
 function renderSbxWidget(result, view){
   const wrap = document.getElementById('sbxWidgetPreview');
@@ -11091,7 +11093,16 @@ function renderSbxWidget(result, view){
   const supplement = conflict ? (resolveAgentName(conflict, 1, ['supplement', 'supplement_name', 'nutrient', 'nutrient_name'], b.supplements) || '영양제') : '';
   const mechanism = conflict && conflict.mechanism ? conflict.mechanism : '';
   const zones = b.organ_strain_zones || {};
-  const showOrganBars = hasNum(b.hepatic_strain_index) || hasNum(b.renal_clearance_burden);
+  /* 대사 부하 수치·상태는 필드명이 배포본마다 다를 수 있어요.
+     - 수치: 간은 hepatic_strain_index 그대로. 신장은 새 필드 renal_strain_index 를 먼저 보고,
+       없으면 이전 배포가 쓰던 renal_clearance_burden 으로 대체해요(같은 뜻의 수치예요).
+     - 상태(STATUS): 각 지표에 붙어 오는 hepatic_status/renal_status 를 최우선으로 쓰고,
+       없으면 기존 organ_strain_zones.{hepatic,renal}, 그마저 없으면 수치 기준으로 직접 계산해요.
+     세 경로 다 수치가 없으면 그 바는 아예 그리지 않아요(허구 수치를 만들지 않아요). */
+  const hepaticPct = hasNum(b.hepatic_strain_index) ? b.hepatic_strain_index : null;
+  const renalPct = hasNum(b.renal_strain_index) ? b.renal_strain_index : (hasNum(b.renal_clearance_burden) ? b.renal_clearance_burden : null);
+  const hepaticStatus = firstNonEmpty(b.hepatic_status, zones.hepatic) || (hepaticPct != null ? sbxStrainZoneFallback(hepaticPct) : null);
+  const renalStatus = firstNonEmpty(b.renal_status, zones.renal) || (renalPct != null ? sbxStrainZoneFallback(renalPct) : null);
   const showHealthBadge = hasNum(b.health_score);
   wrap.innerHTML = `<div class="rounded-xl p-4" style="background:#fff; border:1.5px solid ${conflict ? '#FBBF24' : '#A7F3D0'}; box-shadow:0 4px 14px -6px rgba(0,0,0,.12);">
     <div class="flex items-center gap-2 mb-2 flex-wrap">
@@ -11102,16 +11113,16 @@ function renderSbxWidget(result, view){
     ${conflict ? `<p class="text-xs font-bold mb-1" style="color:#0F172A;">'${sbxEsc(supplement)}'가 복용 중인 처방약(${sbxEsc(medication)})과 상충할 수 있어요.</p>
       ${mechanism ? `<p class="text-[11px] mb-2" style="color:#64748B;">${sbxEsc(mechanism)}${isolationHours != null ? ` 최소 ${isolationHours}시간 간격을 두고 급여해주세요.` : ''}</p>` : ''}
       ${b.recommended_schedule ? `<p class="text-[11px] font-bold mb-3" style="color:#0F172A;">🕒 ${sbxEsc(b.recommended_schedule)}</p>` : ''}` : `<p class="text-xs font-bold mb-2" style="color:#0F172A;">등록된 처방약·영양제 조합에서 감지된 상극이 없어요.</p>${b.recommended_schedule ? `<p class="text-[11px] mb-3" style="color:#64748B;">${sbxEsc(b.recommended_schedule)}</p>` : ''}`}
-    ${showOrganBars && hasNum(b.hepatic_strain_index) ? sbxBar('간 대사 부하 (Hepatic)', b.hepatic_strain_index, zones.hepatic || hepaticZoneFallback(b.hepatic_strain_index)) : ''}
-    ${showOrganBars && hasNum(b.renal_clearance_burden) ? sbxBar('신장 여과 부담 (Renal)', b.renal_clearance_burden, zones.renal || hepaticZoneFallback(b.renal_clearance_burden)) : ''}
+    ${hepaticPct != null ? sbxBar('간 대사 부하 (Hepatic)', hepaticPct, hepaticStatus) : ''}
+    ${renalPct != null ? sbxBar('신장 대사 부하 (Renal)', renalPct, renalStatus) : ''}
     ${conflict ? `<div class="rounded-lg p-2.5 mt-3 flex items-center justify-between gap-2" style="background:#F0FDF4; border:1px solid #BBF7D0;">
       <div class="min-w-0"><p class="text-[11px] font-bold truncate" style="color:#166534;">✅ Renal-Safe Joint Collagen (Non-Mineral)</p><p class="text-[10px]" style="color:#65A30D;">SEON 안전 대체 상품 추천</p></div>
       <span class="text-[10px] font-bold px-3 py-1.5 rounded-lg shrink-0" style="background:#059669; color:#fff;">담기</span></div>` : ''}
   </div>`;
 }
-/* 서버가 organ_strain_zones 를 안 내려줄 때, 수치만으로 구간(zone) 라벨을 매겨요.
+/* 서버가 상태(STATUS) 필드를 안 내려줄 때, 수치만으로 구간을 매겨요. 간·신장 공용이에요.
    서버(server.js)의 sbxZone() 과 같은 기준(100/80 초과)을 그대로 써서 표시가 어긋나지 않게 해요. */
-function hepaticZoneFallback(pct){
+function sbxStrainZoneFallback(pct){
   return pct > 100 ? 'CRITICAL' : pct > 80 ? 'ELEVATED' : 'NORMAL';
 }
 
