@@ -853,6 +853,15 @@
               <div><label class="sbx-label" for="sbxBcs">BCS (1–9)</label><select id="sbxBcs" class="sbx-input"></select></div>
             </div>
             <div id="sbxCondGroup" class="flex flex-wrap gap-2 mt-3"></div>
+            <div id="sbxGoalExtraGroup" class="hidden">
+              <p class="sbx-sub">🍽️ Calories &amp; Water</p>
+              <div class="grid grid-cols-2 gap-2">
+                <div><label class="sbx-label" for="sbxNeutered">중성화</label><select id="sbxNeutered" class="sbx-input"></select></div>
+                <div><label class="sbx-label" for="sbxActivity">활동량</label><select id="sbxActivity" class="sbx-input"></select></div>
+                <div><label class="sbx-label" for="sbxFoodKcal">사료 칼로리 (kcal/100g)</label><input id="sbxFoodKcal" type="number" step="1" min="1" class="sbx-input" placeholder="예: 380"></div>
+                <div><label class="sbx-label" for="sbxFoodTexture">사료 형태</label><select id="sbxFoodTexture" class="sbx-input"></select></div>
+              </div>
+            </div>
 
             <div id="sbxRxGroup">
               <p class="sbx-sub">💊 Prescriptions</p>
@@ -1424,7 +1433,7 @@
               <tbody>
                 <tr><th>Base URL</th><td><code>https://seon-api-orb2.onrender.com</code></td></tr>
                 <tr><th>Endpoint</th><td><code>POST /v1/analyze</code></td></tr>
-                <tr><th>Request Body</th><td><code>pet_bio</code> (breed, weight_kg, age_years, bcs, conditions) · <code>prescriptions</code> · <code>supplements</code></td></tr>
+                <tr><th>Request Body</th><td><code>pet_bio</code> (breed, weight_kg, age_years, bcs, conditions · 선택: neutered, activity, food_kcal_per_100g, food_texture) ·<code>prescriptions</code> · <code>supplements</code></td></tr>
                 <tr><th>Auth Header</th><td><code>X-SEON-API-KEY: &lt;YOUR_PARTNER_KEY&gt;</code></td></tr>
                 <tr><th>Content-Type</th><td><code>application/json</code></td></tr>
                 <tr><th>Latency SLA</th><td>Sub-20ms target (server-side compute, p50)</td></tr>
@@ -1454,6 +1463,8 @@
               <tbody>
                 <tr><td><code>ndc_code</code></td><td>U.S. National Drug Code 식별자 매핑 (예: <code>NDC 50320-012-10</code>)</td></tr>
                 <tr><td><code>health_score</code></td><td>목표 건강 스코어 (0–100)</td></tr>
+                <tr><td><code>daily_calories_kcal</code></td><td>하루 권장 칼로리 (kcal, 정수) · neutered·activity 필요, 없으면 null</td></tr>
+                <tr><td><code>daily_water_ml</code></td><td>하루 권장 음수량 (ml, 정수) · 위 값 + food_kcal_per_100g·food_texture 필요, 없으면 null</td></tr>
                 <tr><td><code>hepatic_strain_index</code></td><td>간 대사 부하 지수 (%)</td></tr>
                 <tr><td><code>renal_clearance_burden</code></td><td>신장 여과 부담 지수 (%)</td></tr>
                 <tr><td><code>isolation_hours</code></td><td>DNI 상극 회피를 위한 격리 복용 시간 (h)</td></tr>
@@ -11130,11 +11141,28 @@ function renderSbxWidget(result, view){
     return;
   }
   if(view === 'health'){
-    const c = b.health_light === 'green' ? '#059669' : b.health_light === 'yellow' ? '#D97706' : '#DC2626';
-    wrap.innerHTML = `<div class="rounded-xl p-4" style="background:#fff; border:1.5px solid ${c}55;">
-      <div class="flex items-center gap-2 mb-3"><span class="text-[10px] font-bold px-2 py-1 rounded-full" style="background:#0F172A; color:#34D399;">🧬 SEON Health Score</span></div>
-      <div class="flex items-center gap-4"><p class="font-display font-bold" style="font-size:2.4rem; color:${c};">${b.health_score}</p>
-      <div><p class="text-xs font-bold" style="color:#0F172A;">${sbxEsc(SBX_LIGHT_LABEL[b.health_light] || '평가 완료')}</p><p class="text-[11px]" style="color:#64748B;">목표 기반 종합 건강 스코어 (0–100)</p></div></div></div>`;
+    // 서버가 pet_bio 로 계산해 주는 건강 스코어 · 권장 칼로리 · 권장 음수량을 정수로 보여줘요.
+    // 값이 없으면(null, 이전 버전 서버) 'undefined'/'null' 대신 '—' 로 표시해요.
+    const isNum = v => typeof v === 'number' && Number.isFinite(v);
+    const intOrDash = v => isNum(v) ? Math.round(v).toLocaleString() : '—';
+    const hasScore = isNum(b.health_score);
+    const c = !hasScore ? '#64748B' : b.health_light === 'green' ? '#059669' : b.health_light === 'yellow' ? '#D97706' : '#DC2626';
+    const tile = (label, value, unit, color) => `<div class="rounded-lg p-3 text-center" style="background:#F8FAFC; border:1px solid #E2E8F0;">
+        <p class="text-[10px] font-bold mb-1" style="color:#64748B;">${label}</p>
+        <p class="font-display font-bold" style="font-size:1.6rem; line-height:1.1; color:${color};">${value}</p>
+        <p class="text-[10px]" style="color:#94A3B8;">${unit}</p></div>`;
+    const note = !hasScore ? '체중과 BCS를 입력한 뒤 다시 요청해주세요.'
+      : (!isNum(b.daily_calories_kcal) || !isNum(b.daily_water_ml)) ? '칼로리·음수량은 중성화 · 활동량 · 사료 칼로리 · 사료 형태를 선택하면 계산돼요.'
+      : '체중·BCS·나이·품종·질환 정보를 기반으로 계산한 목표 기반 종합 건강 지표예요.';
+    wrap.innerHTML = `<div class="rounded-xl p-4" style="background:#fff; border:1.5px solid ${c}55; box-shadow:0 4px 14px -6px rgba(0,0,0,.12);">
+      <div class="flex items-center gap-2 mb-3 flex-wrap"><span class="text-[10px] font-bold px-2 py-1 rounded-full" style="background:#0F172A; color:#34D399;">🧬 SEON Health Score</span>
+        ${hasScore ? `<span class="text-[10px] font-bold px-2 py-1 rounded-full" style="background:${c}1A; color:${c};">${sbxEsc(SBX_LIGHT_LABEL[b.health_light] || '평가 완료')}</span>` : ''}</div>
+      <div class="grid grid-cols-3 gap-2">
+        ${tile('건강 스코어', intOrDash(b.health_score), '/ 100', c)}
+        ${tile('하루 권장 칼로리', intOrDash(b.daily_calories_kcal), 'kcal', '#0F172A')}
+        ${tile('하루 권장 음수량', intOrDash(b.daily_water_ml), 'ml', '#0F172A')}
+      </div>
+      <p class="text-[11px] mt-3" style="color:#64748B;">${note}</p></div>`;
     return;
   }
   /* 백엔드 응답 스키마는 배포본마다 달라질 수 있어요(예: organ_strain_zones·hepatic_strain_index·
@@ -11223,6 +11251,11 @@ function sbxBuildStaticControls(){
   document.getElementById('sbxMoleculeList').innerHTML = sbxAllMolecules().map(m=>`<option value="${sbxEsc(m.name)}"></option>`).join('');
   document.getElementById('sbxCondGroup').innerHTML = SBX_CONDITION_OPTIONS.map(c=>`<label class="sbx-chip"><input type="checkbox" value="${c.id}"><span>${c.label}</span></label>`).join('');
   document.getElementById('sbxSuppChips').innerHTML = SBX_SUPPLEMENT_OPTIONS.map(s=>`<label class="sbx-chip"><input type="checkbox" value="${sbxEsc(s)}"><span>${sbxEsc(s)}</span></label>`).join('');
+  // 칼로리·음수량 입력은 기본값 없이 '선택'(빈 값)으로 시작해요. 비어 있으면 요청에서 빠지고, 서버는 해당 값을 null 로 돌려줘요.
+  const opts = list=>['<option value="">선택</option>'].concat(list.map(([v,l])=>`<option value="${v}">${l}</option>`)).join('');
+  document.getElementById('sbxNeutered').innerHTML = opts([['true','예'],['false','아니오']]);
+  document.getElementById('sbxActivity').innerHTML = opts([['low','적음'],['normal','보통'],['high','많음']]);
+  document.getElementById('sbxFoodTexture').innerHTML = opts(FOOD_TEXTURES.map(t=>[t.id, t.label]));
 }
 function sbxAddRxRow(name, freq){
   const row = document.createElement('div');
@@ -11242,12 +11275,26 @@ function sbxReadForm(){
       age_years: num('sbxAge'),
       bcs: parseInt(document.getElementById('sbxBcs').value),
       conditions: [...document.querySelectorAll('#sbxCondGroup input:checked')].map(i=>i.value),
+      ...sbxReadGoalExtra(),
     },
     prescriptions: [...document.querySelectorAll('#sbxRxList .sbx-rx-row')]
       .map(r=>({ name:r.querySelector('.sbx-rx-name').value.trim(), frequency_per_day:parseInt(r.querySelector('.sbx-rx-freq').value) || 1 }))
       .filter(r=>r.name),
     supplements: [...document.querySelectorAll('#sbxSuppChips input:checked')].map(i=>i.value),
   };
+}
+/* 칼로리·음수량 계산용 선택 입력 — 선택한 값만 pet_bio 에 넣어요. */
+function sbxReadGoalExtra(){
+  const extra = {};
+  const neutered = document.getElementById('sbxNeutered').value;
+  if(neutered) extra.neutered = neutered === 'true';
+  const activity = document.getElementById('sbxActivity').value;
+  if(activity) extra.activity = activity;
+  const foodKcal = parseFloat(document.getElementById('sbxFoodKcal').value);
+  if(foodKcal > 0) extra.food_kcal_per_100g = foodKcal;
+  const foodTexture = document.getElementById('sbxFoodTexture').value;
+  if(foodTexture) extra.food_texture = foodTexture;
+  return extra;
 }
 function sbxWriteJson(){
   if(sbxSyncLock) return;
@@ -11264,6 +11311,10 @@ function sbxApplyToForm(req){
     if(pet.bcs != null) document.getElementById('sbxBcs').value = String(pet.bcs);
     const conds = Array.isArray(pet.conditions) ? pet.conditions : [];
     document.querySelectorAll('#sbxCondGroup input').forEach(i=>{ i.checked = conds.includes(i.value); });
+    document.getElementById('sbxNeutered').value = typeof pet.neutered === 'boolean' ? String(pet.neutered) : '';
+    document.getElementById('sbxActivity').value = ['low','normal','high'].includes(pet.activity) ? pet.activity : '';
+    document.getElementById('sbxFoodKcal').value = pet.food_kcal_per_100g != null ? pet.food_kcal_per_100g : '';
+    document.getElementById('sbxFoodTexture').value = FOOD_TEXTURES.some(t=>t.id === pet.food_texture) ? pet.food_texture : '';
     const supps = Array.isArray(req && req.supplements) ? req.supplements : [];
     document.querySelectorAll('#sbxSuppChips input').forEach(i=>{ i.checked = supps.includes(i.value); });
     document.getElementById('sbxRxList').innerHTML = '';
@@ -11421,6 +11472,7 @@ function applySandboxView(sub, hideOnly){
   document.getElementById('insurancePage').classList.toggle('hidden', sbxView !== 'chrono');
   document.getElementById('sbxRxGroup').classList.toggle('hidden', sbxView === 'health');
   document.getElementById('sbxSuppGroup').classList.toggle('hidden', sbxView === 'health');
+  document.getElementById('sbxGoalExtraGroup').classList.toggle('hidden', sbxView !== 'health');
   document.getElementById('sbxOpenDiagnosticBtn').classList.toggle('hidden', sbxView !== 'health');
   if(isPlay) sbxRenderCurrentView(); // 서버 호출은 [Send Request]를 눌렀을 때만 해요.
   if(sbxView === 'metaload') sbxRefreshModuleApi('meta');
